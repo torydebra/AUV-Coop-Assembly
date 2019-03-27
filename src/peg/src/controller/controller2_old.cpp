@@ -57,7 +57,7 @@ int main(int argc, char **argv)
   //initialize task
   Task vehicleReaching(6,10); //4DOF ARM
 
-  ros::Rate r(1000); //1Hz
+  ros::Rate r(1000); //1000Hz
   while(ros::ok()){
     try {
 

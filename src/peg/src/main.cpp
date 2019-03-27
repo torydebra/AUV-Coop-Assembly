@@ -43,21 +43,25 @@ int main(int argc, char **argv)
   RosInterface rosInterface("girona500_A", "/uwsim/g500_A/", argc, argv);
 
   rosInterface.init();
-  Eigen::Matrix4d wTv_eigen;
   int ms = 100;
   while(ros::ok()){
 
     rosInterface.getwTv(&(transf.wTv_eigen));
     rosInterface.getvTee(&(transf.vTee_eigen));
+
     std::vector <Eigen::Matrix4d> vTjoints;
     rosInterface.getvTjoints(&vTjoints);
     transf.vTjoints = vTjoints;
+
+    rosInterface.getJointState(&(transf.jState));
 
     controller.updateTransforms(&transf);
 
     std::vector<double> qDot = controller.execAlgorithm();
 
     rosInterface.sendQDot(qDot);
+
+    rosInterface.spinOnce(); // actually the spinonce is called here and not in sendQdot
 
     boost::this_thread::sleep_for(boost::chrono::milliseconds(ms));
   }

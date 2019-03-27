@@ -163,6 +163,7 @@ add_library(Task src/tasks/task.cpp)
 add_library(LastTask src/tasks/lastTask.cpp)
 add_library(VehicleReachTask src/tasks/vehicleReachTask.cpp)
 add_library(EEReachTask src/tasks/endEffectorReachTask.cpp)
+add_library(JointLimitsTask src/tasks/jointLimitTask.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -209,6 +210,7 @@ target_link_libraries(Controller
     #put below new task (is it necessary? YES)
     VehicleReachTask
     EEReachTask
+    JointLimitsTask
 )
 
 target_link_libraries(RosInterface
@@ -238,6 +240,11 @@ target_link_libraries(EEReachTask
     Task
     linuxcmat
     Conversions
+)
+
+target_link_libraries(JointLimitsTask
+    Task
+    linuxcmat
 )
 
 # to add compiler flags (-Wall -pedantic)

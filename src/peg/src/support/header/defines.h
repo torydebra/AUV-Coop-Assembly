@@ -1,6 +1,8 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#define PI_TORI 3.141592654
+
 #define VEHICLE_DOF 6 // assuming vehicle full attuated
 #define ARM_DOF 4 //CSIP ARM5E has actually 4dof (the 5th is open/close gripper
 #define TOT_DOF 10
@@ -18,5 +20,18 @@
 
 #define EQUALITY 0
 #define INEQUALITY 1
+
+///Joint limits (in rad) (slew shoulder elbow jawrotate)
+/// find in the urdf file of the robot
+#define JLIM1_MIN -PI_TORI/2
+#define JLIM1_MAX 0.5488
+#define JLIM2_MIN 0
+#define JLIM2_MAX 1.58665
+#define JLIM3_MIN 0
+#define JLIM3_MAX 2.15294
+//not in urdf file, probably they are default value
+//find this one with keyboard command, the jaw stops rotating at these values
+#define JLIM4_MIN -PI_TORI
+#define JLIM4_MAX PI_TORI
 
 #endif // DEFINES_H

@@ -19,7 +19,9 @@ RosInterface::RosInterface(std::string robotName, std::string topicRoot, int arg
   pubTwist = nh.advertise<geometry_msgs::TwistStamped>((topicRoot + "twist_command_A"),1);
   pubJoint = nh.advertise<sensor_msgs::JointState>((topicRoot + "joint_command_A"),1);
 
+  subJointState = nh.subscribe(topicRoot+"joint_state_A", 1, &RosInterface::subJointStateCallback, this);
 }
+
 
 int RosInterface::init(){
 
@@ -30,6 +32,13 @@ int RosInterface::init(){
   //Wait to transform wTv to be ready (or fail if wait more than 3 sec)
   std::string topic = "/" + robotName;
   tfListener_wTv.waitForTransform("world", topic, ros::Time(0), ros::Duration(3.0));
+
+  //Wait to joint state to be ready (ie : the callback is called at least once)
+  ros::Rate rate(100);
+  while (jState_priv.size()==0){
+    ros::spinOnce();
+    rate.sleep();
+  }
 
   return 0;
 }
@@ -113,6 +122,27 @@ int RosInterface::getvTjoints(std::vector<Eigen::Matrix4d> *vTjoints) {
   return 0;
 }
 
+void RosInterface::subJointStateCallback(const sensor_msgs::JointState& js)
+{
+   jState_priv = js.position;
+}
+
+/**
+ * @brief RosInterface::getJointState
+ * @param jState
+ * @return
+ * @note Doing so, only when main call this function it gets the joint state position
+ */
+int RosInterface::getJointState(std::vector<double> *jState){
+
+  if(!ros::ok()){
+    return -1;
+  }
+
+  *jState = jState_priv;
+  return 0;
+}
+
 
 int RosInterface::sendQDot(std::vector<double> qDot){
 
@@ -138,7 +168,10 @@ int RosInterface::sendQDot(std::vector<double> qDot){
 
   pubJoint.publish(js);
   pubTwist.publish(twist);
-  ros::spinOnce();
   return 0;
 
+}
+
+void RosInterface::spinOnce(){
+  ros::spinOnce();
 }

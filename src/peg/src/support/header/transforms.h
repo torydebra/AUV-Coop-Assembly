@@ -13,6 +13,8 @@ struct Transforms {
   Eigen::Matrix4d vTee_eigen; //vehicle to endEffector
   Eigen::Matrix4d wTgoalEE_eigen; //goal for EE (will be projected on veh inside task)
 
+  std::vector<double> jState; //joint state (rad)
+
 
 };
 

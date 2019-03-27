@@ -9,7 +9,7 @@
 #include "../../tasks/header/lastTask.h"
 #include "../../tasks/header/vehicleReachTask.h"
 #include "../../tasks/header/endEffectorReachTask.h"
-
+#include "../../tasks/header/jointLimitTask.h"
 
 
 /** @brief The Controller class is responsabile of taking matrices and giving them to Tasks classes,

@@ -19,7 +19,9 @@ Controller::Controller() {
   // note: order of priority at the moment is here
   bool eqType = true;
   bool ineqType = false;
-  //
+
+  tasks.push_back(new JointLimitTask(4,TOT_DOF, ineqType));
+
   tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
 
   tasks.push_back(new VehicleReachTask(6, TOT_DOF, eqType));
@@ -78,23 +80,25 @@ std::vector<double> Controller::execAlgorithm(){
   CMAT::Matrix Q = CMAT::Matrix::Eye(TOT_DOF);
   //std::cout << "eereer\n\n\n"; ///DEBUG
   for (int i=0; i<numTasks; i++){
+
+    /// DEBUG WITH MATLAB CODE
+    std::cout << "JACOBIAN " << i << ": \n";
+    tasks[i]->getJacobian().PrintMtx();
+    std::cout<< "\n";
+    std::cout << "REFERENCE " << i << ": \n";
+    tasks[i]->getReference().PrintMtx() ;
+    std::cout << "\n";
+
     if (tasks[i]->eqType){
       //std::cout<<tasks[i]->gain<<"\n";  ///DEBUG
-
-      /// DEBUG WITH MATLAB CODE
-      std::cout << "JACOBIAN " << i << ": \n";
-      tasks[i]->getJacobian().PrintMtx();
-      std::cout<< "\n";
-      std::cout << "REFERENCE " << i << ": \n";
-      tasks[i]->getReference().PrintMtx() ;
-      std::cout << "\n";
-
       Controller::equalityIcat(tasks[i], &qDot_cmat, &Q);
-      Q.PrintMtx("Q"); ///DEBUG
-      qDot_cmat.PrintMtx("qdot");
+
     } else {
       Controller::inequalityIcat(tasks[i], &qDot_cmat, &Q);
     }
+
+    Q.PrintMtx("Q"); ///DEBUG
+    qDot_cmat.PrintMtx("qdot");
   }
 
   std::vector<double> qDot_vect(TOT_DOF);
