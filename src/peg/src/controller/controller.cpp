@@ -19,7 +19,14 @@ Controller::Controller() {
   // note: order of priority at the moment is here
   bool eqType = true;
   bool ineqType = false;
+  //
+  tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
+
   tasks.push_back(new VehicleReachTask(6, TOT_DOF, eqType));
+
+  //tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
+
+  tasks.push_back(new LastTask(TOT_DOF, TOT_DOF, eqType)); //The "fake task" with all eye and zero matrices, needed as last one for algo
 
   // store number of task inserted
   numTasks = tasks.size();
@@ -49,7 +56,7 @@ Controller::~Controller(){
  */
 int Controller::updateTransforms(struct Transforms* const transf){
 
-  for (int i=0; i<numTasks; i++){
+  for (int i=0; i<(numTasks-1); i++){ //LastTask has everything fixed
     tasks[i]->updateMatrices(transf);
   }
 
@@ -67,12 +74,24 @@ std::vector<double> Controller::execAlgorithm(){
 
   //initialize qdot and Q for algorithm
   //qdot = [arm arm arm arm wx wy wz x y z]
-  CMAT::Matrix qDot_cmat = CMAT::Matrix (TOT_DOF,1);
+  CMAT::Matrix qDot_cmat = CMAT::Matrix::Zeros(TOT_DOF,1);
   CMAT::Matrix Q = CMAT::Matrix::Eye(TOT_DOF);
-
+  //std::cout << "eereer\n\n\n"; ///DEBUG
   for (int i=0; i<numTasks; i++){
     if (tasks[i]->eqType){
+      //std::cout<<tasks[i]->gain<<"\n";  ///DEBUG
+
+      /// DEBUG WITH MATLAB CODE
+      std::cout << "JACOBIAN " << i << ": \n";
+      tasks[i]->getJacobian().PrintMtx();
+      std::cout<< "\n";
+      std::cout << "REFERENCE " << i << ": \n";
+      tasks[i]->getReference().PrintMtx() ;
+      std::cout << "\n";
+
       Controller::equalityIcat(tasks[i], &qDot_cmat, &Q);
+      Q.PrintMtx("Q"); ///DEBUG
+      qDot_cmat.PrintMtx("qdot");
     } else {
       Controller::inequalityIcat(tasks[i], &qDot_cmat, &Q);
     }
@@ -82,6 +101,7 @@ std::vector<double> Controller::execAlgorithm(){
   int i = 1;
   for(std::vector<double>::iterator it = qDot_vect.begin(); it != qDot_vect.end(); ++it) {
     *it = qDot_cmat(i);
+    //qDot_cmat.PrintMtx(); /// DEBUG
     i++;
   }
 

@@ -3,8 +3,8 @@ devel
 install
 .rosinstall
 src/CMakeLists.txt
-UWsim.workspace
-UWsim.workspace.user
+Peg.workspace
+Peg.workspace.user
 #autosave
 *.autosave
 .catkin_workspace

@@ -8,10 +8,14 @@
  * @param eqType true or false for equality or inequality task
  */
 VehicleReachTask::VehicleReachTask(int dimension, int dof, bool eqType)
-  : Task(dimension, dof, eqType) {}
+  : Task(dimension, dof, eqType) {
+  gain = 0.2;
+}
 
 VehicleReachTask::VehicleReachTask(int dimension, bool eqType)
-  : Task(dimension, eqType) {}
+  : Task(dimension, eqType) {
+  gain = 0.2;
+}
 
 /**
  * @brief VehicleReachTask::updateMatrices overriden of the pure virtual method of Task parent class
@@ -22,7 +26,7 @@ int VehicleReachTask::updateMatrices(struct Transforms* const transf){
 
   setActivation();
   setJacobian(transf->wTv_eigen);
-  setReference(transf->wTv_eigen, transf->wTgoal_eigen);
+  setReference(transf->wTv_eigen, transf->wTgoalVeh_eigen);
   return 0;
 }
 
@@ -44,6 +48,8 @@ int VehicleReachTask::setJacobian(Eigen::Matrix4d wTv_eigen){
   //eigen unroll to vector for cmat function
   this->J = CMAT::Matrix(dimension, dof, jacobian_eigen.data());
 
+  //J.PrintMtx("JACOB");  ///DEBUG
+
 }
 
 int VehicleReachTask::setActivation(){
@@ -52,6 +58,7 @@ int VehicleReachTask::setActivation(){
   std::fill_n(vectDiag, 6, 1);
   this->A.SetDiag(vectDiag);
 
+  return 0;
 }
 
 int VehicleReachTask::setReference(
@@ -59,7 +66,11 @@ int VehicleReachTask::setReference(
 
   CMAT::TransfMatrix wTv_cmat = CONV::matrix_eigen2cmat(wTv_eigen);
   CMAT::TransfMatrix wTg_cmat = CONV::matrix_eigen2cmat(wTg_eigen);
-  CMAT::Vect6 error = CMAT::CartError(wTg_cmat, wTv_cmat);
-  double k = 0.2;
-  this->reference = k * (error); //ang,lin
+  CMAT::Vect6 errorSwapped = CMAT::CartError(wTg_cmat, wTv_cmat); //ang,lin
+  // ang and lin must be swapped because in qDot and jacob linear part is before
+  CMAT::Vect6 error;
+  error.SetFirstVect3(errorSwapped.GetSecondVect3());
+  error.SetSecondVect3(errorSwapped.GetFirstVect3());
+
+  this->reference = this->gain * (error);
 }

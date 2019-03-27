@@ -3,14 +3,18 @@
 
 #include <cmat/cmat.h>
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 #include "../../support/header/transforms.h"
 #include "../../support/header/conversions.h"
+#include "../../support/header/formulas.h"
 #include "../../support/header/defines.h"
 
 
 /** @brief ABSTRACT class task. Each task is a derived class of this class. It contains all the variable that the
  * task must have, methods to get these protected variables, and a pure virtual function that the derived class must
  * implement.
+ *
+ * @remark VERY IMPORTANT: QDOT is [joints(0...1) x, y, z, wx, wy, wz] take care when doing JACOBIAN and REFERENCES
 */
 class Task
 {
@@ -60,6 +64,7 @@ public:
   int getDimension();
 
   bool eqType;
+  double gain;
 
 };
 

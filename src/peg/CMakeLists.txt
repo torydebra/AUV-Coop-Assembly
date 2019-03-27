@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(peg)
 
+## set list of compile option to later use target_compile_options(my_target INTERFACE ${REPLACED_FLAGS}) in the added files
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Werror -Wextra")
+## CMAKE_CXX_FLAGS expects a single string (parameters are separated by spaces)
+## while target_compile_options uses a list (parameters are separated by semicolons).
+#string(REPLACE " " ";" REPLACED_FLAGS ${CMAKE_CXX_FLAGS})
+
+#add_compile_options(-Wall -pedantic)
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
@@ -153,7 +160,9 @@ add_library(Controller src/controller/controller.cpp)
 add_library(RosInterface src/rosInterface/rosInterface.cpp)
 ## ADD library new task here
 add_library(Task src/tasks/task.cpp)
+add_library(LastTask src/tasks/lastTask.cpp)
 add_library(VehicleReachTask src/tasks/vehicleReachTask.cpp)
+add_library(EEReachTask src/tasks/endEffectorReachTask.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -193,18 +202,30 @@ target_link_libraries(Conversions
     tf_conversions
 )
 
-
 target_link_libraries(Controller
     linuxcmat
     Task
+    LastTask
     #put below new task (is it necessary? YES)
     VehicleReachTask
+    EEReachTask
 )
 
 target_link_libraries(RosInterface
     tf
 )
 
+target_link_libraries(LastTask
+    Task
+    linuxcmat
+)
+
+# to add compiler flags (-Wall -pedantic)
+#target_compile_options(Main INTERFACE ${REPLACED_FLAGS})
+#target_compile_options(Conversions INTERFACE ${REPLACED_FLAGS})
+#target_compile_options(Controller INTERFACE ${REPLACED_FLAGS})
+#target_compile_options(RosInterface INTERFACE ${REPLACED_FLAGS})
+#target_compile_options(LastTask INTERFACE ${REPLACED_FLAGS})
 
 ### ADD lik libraries for new task here
 #NOTE:: eigen e tf not to include, they are already include for all above
@@ -213,6 +234,15 @@ target_link_libraries(VehicleReachTask
     linuxcmat
     Conversions
 )
+target_link_libraries(EEReachTask
+    Task
+    linuxcmat
+    Conversions
+)
+
+# to add compiler flags (-Wall -pedantic)
+#target_compile_options(VehicleReachTask INTERFACE ${REPLACED_FLAGS})
+#target_compile_options(EEReachTask INTERFACE ${REPLACED_FLAGS})
 
 
 #############

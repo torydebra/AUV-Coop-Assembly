@@ -3,6 +3,8 @@
 
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
+#include <geometry_msgs/Twist.h>
+#include <sensor_msgs/JointState.h>
 
 #include <Eigen/Core>
 #include "../../support/header/conversions.h"
@@ -14,18 +16,23 @@
 class RosInterface
 {
 public:
-  RosInterface(std::string robotName, std::string topicTwist, int argc, char **argv);
+  RosInterface(std::string robotName, std::string topicRoot, int argc, char **argv);
   int init();
   int getwTv(Eigen::Matrix4d* wTv_eigen);
+  int getvTee(Eigen::Matrix4d* vTee_eigen);
+  int getvTjoints(std::vector<Eigen::Matrix4d>* vTjoints);
   int sendQDot(std::vector<double> qDot);
 
 
 private:
-  std::string robotName;
-  ros::Publisher pubTwist;
-  std::string topicTwist;
+  std::string robotName; //for tf listener (girona500_A,B)
+  std::string topicRoot; //for publishing qDot and subscribing to sensors ("/uwsim/g500_A/")
   tf::TransformListener tfListener_wTv;
-  tf::StampedTransform wTv_tf;
+  ros::Publisher pubTwist;
+  ros::Publisher pubJoint;
+  std::string topicJoint;
+
+
 };
 
 #endif // ROSINTERFACE_H

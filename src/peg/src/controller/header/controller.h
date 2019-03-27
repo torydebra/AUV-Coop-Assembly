@@ -6,7 +6,11 @@
 #include "../../support/header/defines.h"
 #include "../../support/header/transforms.h"
 
+#include "../../tasks/header/lastTask.h"
 #include "../../tasks/header/vehicleReachTask.h"
+#include "../../tasks/header/endEffectorReachTask.h"
+
+
 
 /** @brief The Controller class is responsabile of taking matrices and giving them to Tasks classes,
  * so they can compute their activations, references, jacobians, etc matrices
