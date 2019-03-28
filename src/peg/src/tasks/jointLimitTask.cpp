@@ -35,8 +35,6 @@ int JointLimitTask::updateMatrices(struct Transforms* const transf){
 
   setActivation(transf->jState);
   setJacobian();
-
-
   setReference(transf->jState);
   return 0;
 

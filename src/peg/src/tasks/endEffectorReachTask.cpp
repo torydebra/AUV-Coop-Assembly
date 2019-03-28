@@ -106,7 +106,7 @@ int EndEffectorReachTask::setJacobian(std::vector<Eigen::Matrix4d> vTjoints, Eig
   J_eigen.block<3,3>(3,4) = Eigen::Matrix3d::Zero(); //linear contribution to angular velocities
   J_eigen.bottomRightCorner(3,3) = Eigen::Matrix3d::Identity(); //angular contribution to angular velocities
 
-  this->J = CMAT::Matrix(dimension, dof, J_eigen.data());
+  this->J = CONV::matrix_eigen2cmat(J_eigen);
   //J.PrintMtx();
 
   return 0;

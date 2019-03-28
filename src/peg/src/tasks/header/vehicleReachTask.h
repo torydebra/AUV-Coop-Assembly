@@ -2,6 +2,7 @@
 #define VEHICLEREACHTASK_H
 
 #include "task.h" // task.h will include other header (like cmat and eigen)
+#include "../../support/header/conversions.h"
 
 /** @brief Task to make the vehicle reach a goal (both linear and angular position)
 */

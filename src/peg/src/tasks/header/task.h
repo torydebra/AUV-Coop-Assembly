@@ -3,11 +3,8 @@
 
 #include <cmat/cmat.h>
 #include <Eigen/Core>
-#include <Eigen/Geometry>
-#include "../../support/header/transforms.h"
-#include "../../support/header/conversions.h"
-#include "../../support/header/formulas.h"
 #include "../../support/header/defines.h"
+#include "../../support/header/transforms.h"
 
 
 /** @brief ABSTRACT class task. Each task is a derived class of this class. It contains all the variable that the

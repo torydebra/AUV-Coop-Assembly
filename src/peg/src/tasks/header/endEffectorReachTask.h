@@ -1,6 +1,9 @@
 #ifndef ENDEFFECTORREACHTASK_H
 #define ENDEFFECTORREACHTASK_H
-#include "task.h" // task.h will include other header (like cmat and eigen)
+
+#include "../../support/header/conversions.h"
+#include "../../support/header/formulas.h"
+#include "task.h"
 
 /** @brief Task to make the end effector reach a goal (both linear and angular position)
  * @note this task makes calculations with things projected on vehicle frame

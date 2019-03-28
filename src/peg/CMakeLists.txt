@@ -155,15 +155,19 @@ link_directories(
 #   src/${PROJECT_NAME}/peg_pkg.cpp
 # )
 add_library(Conversions src/support/conversions.cpp)
+add_library(Formulas src/support/formulas.cpp)
 add_library(Prints src/support/prints.cpp)
 add_library(Controller src/controller/controller.cpp)
 add_library(RosInterface src/rosInterface/rosInterface.cpp)
+
 ## ADD library new task here
+
 add_library(Task src/tasks/task.cpp)
 add_library(LastTask src/tasks/lastTask.cpp)
 add_library(VehicleReachTask src/tasks/vehicleReachTask.cpp)
 add_library(EEReachTask src/tasks/endEffectorReachTask.cpp)
 add_library(JointLimitsTask src/tasks/jointLimitTask.cpp)
+add_library(HorizontalAttitudeTask src/tasks/horizontalAttitudeTask.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -203,6 +207,10 @@ target_link_libraries(Conversions
     tf_conversions
 )
 
+target_link_libraries(Formulas
+    m #it is math.h for atan2
+)
+
 target_link_libraries(Controller
     linuxcmat
     Task
@@ -211,6 +219,7 @@ target_link_libraries(Controller
     VehicleReachTask
     EEReachTask
     JointLimitsTask
+    HorizontalAttitudeTask
 )
 
 target_link_libraries(RosInterface
@@ -240,11 +249,18 @@ target_link_libraries(EEReachTask
     Task
     linuxcmat
     Conversions
+    Formulas
 )
 
 target_link_libraries(JointLimitsTask
     Task
     linuxcmat
+)
+
+target_link_libraries(HorizontalAttitudeTask
+    Task
+    linuxcmat
+    Formulas
 )
 
 # to add compiler flags (-Wall -pedantic)
