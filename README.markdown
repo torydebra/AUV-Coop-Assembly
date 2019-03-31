@@ -1,3 +1,6 @@
+# MASTER THESIS in development
+
+
 eigen not found soluz
 dovuto al fatto che eigen è dentro la cartella eigen3
 root@Aspire-E15:/usr/include# ln -s /usr/include/eigen3/Eigen Eigen

@@ -23,11 +23,11 @@ Controller::Controller() {
   tasks.push_back(new JointLimitTask(4,TOT_DOF, ineqType));
   tasks.push_back(new HorizontalAttitudeTask(1, TOT_DOF, ineqType));
 
-  //tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, ineqType));
+  tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, ineqType));
 
   tasks.push_back(new VehicleReachTask(6, TOT_DOF, eqType));
 
-  tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
+  //tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
 
   tasks.push_back(new LastTask(TOT_DOF, TOT_DOF, eqType)); //The "fake task" with all eye and zero matrices, needed as last one for algo
 
