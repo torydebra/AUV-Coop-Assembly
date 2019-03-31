@@ -11,7 +11,7 @@ class LastTask : public Task {
 public:
   LastTask(int dimension, int dof, bool eqType);
 private: //to not use, so putted private
-  int updateMatrices(struct Transforms* const transf);
+  int updateMatrices(struct Infos* const robInfo);
 };
 
 

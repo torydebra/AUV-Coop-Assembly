@@ -8,7 +8,7 @@ ManipulabilityTask::ManipulabilityTask(int dim, int dof, bool eqType)
 }
 
 
-int ManipulabilityTask::updateMatrices(struct Transforms* const transf){
+int ManipulabilityTask::updateMatrices(struct Infos* const robInfo){
 
   setActivation();
   setJacobian();

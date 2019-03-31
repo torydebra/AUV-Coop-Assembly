@@ -83,3 +83,40 @@ Eigen::Matrix4d CONV::transfMatrix_tf2eigen(tf::Transform mat_tf){
 //  return mat_tf;
 //}
 
+/**
+ * @brief CONV::transfMatrix_kdl2eigen
+ * @param mat_kdl KDL matrix to convert
+ * @return mat_eigen matrix converted
+ * @warning WARNING: KDL is row major. Eigen and cmat column major
+ */
+Eigen::Matrix4d CONV::transfMatrix_kdl2eigen(KDL::Frame mat_kdl){
+
+  Eigen::Matrix4d mat_eigen = Eigen::Matrix4d::Identity();
+
+  // with << operand we have to indicate elements row by row. kdl store matrix rowMajor so
+  // we can do this
+  mat_eigen.topLeftCorner(3,3) << mat_kdl.M.data[0], mat_kdl.M.data[1], mat_kdl.M.data[2],
+                                  mat_kdl.M.data[3], mat_kdl.M.data[4], mat_kdl.M.data[5],
+                                  mat_kdl.M.data[6], mat_kdl.M.data[7], mat_kdl.M.data[8];
+
+  mat_eigen(0,3) = mat_kdl.p.x();
+  mat_eigen(1,3) = mat_kdl.p.y();
+  mat_eigen(2,3) = mat_kdl.p.z();
+
+  return mat_eigen;
+}
+
+/**
+ * @brief CONV::jacobian_kdl2eigen
+ * @param mat_kdl KDL matrix to convert
+ * @return mat_eigen matrix converted
+ * @warning WARNING: KDL is row major. Eigen and cmat column major.
+ * BUT kdl::jacobian is actually stored as eigen matrix so the conv is a simply copy
+ * (function here to completeness, even if it is banal)
+ */
+Eigen::MatrixXd CONV::jacobian_kdl2eigen(KDL::Jacobian mat_kdl){
+  Eigen::MatrixXd mat_eigen = mat_kdl.data;
+  return mat_eigen;
+}
+
+

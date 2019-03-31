@@ -12,12 +12,13 @@ class EndEffectorReachTask : public Task {
 
 public:
   EndEffectorReachTask(int dimension, int dof, bool eqType);
-  int updateMatrices(struct Transforms* const transf);
+  int updateMatrices(struct Infos* const robInfo);
 private:
   int setActivation();
-  int setJacobian(std::vector<Eigen::Matrix4d> vTjoints, Eigen::Matrix4d vTee_eigen);
-  int setReference(
-      Eigen::Matrix4d vTee_eigen, Eigen::Matrix4d vTgoalEE_eigen, Eigen::Matrix4d wTv_eigen);
+  int setReference(Eigen::Matrix4d wTgoalEE_eigen, Eigen::Matrix4d wTee_eigen);
+  //int setJacobian(std::vector<Eigen::Matrix4d> vTjoints, Eigen::Matrix4d vTee_eigen);
+  //int setReference(
+      //Eigen::Matrix4d vTee_eigen, Eigen::Matrix4d vTgoalEE_eigen, Eigen::Matrix4d wTv_eigen);
 };
 
 

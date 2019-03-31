@@ -4,14 +4,14 @@
 #include <cmat/cmat.h>
 #include <Eigen/Core>
 #include "../../support/header/defines.h"
-#include "../../support/header/transforms.h"
+#include "../../helper/header/infos.h"
 
 
 /** @brief ABSTRACT class task. Each task is a derived class of this class. It contains all the variable that the
  * task must have, methods to get these protected variables, and a pure virtual function that the derived class must
  * implement.
  *
- * @remark VERY IMPORTANT: QDOT is [joints(0...1) x, y, z, wx, wy, wz] take care when doing JACOBIAN and REFERENCES
+ * @remark VERY IMPORTANT: QDOT is [joints(1...n) x, y, z, wx, wy, wz] take care when doing JACOBIAN and REFERENCES
 */
 class Task
 {
@@ -40,7 +40,7 @@ public:
 
   virtual ~Task();
 
-  virtual int updateMatrices(struct Transforms* const transf) = 0;
+  virtual int updateMatrices(struct Infos* const robInfo) = 0;
 
   CMAT::Matrix getJacobian();
   CMAT::Matrix getActivation();

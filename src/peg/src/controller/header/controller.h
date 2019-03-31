@@ -4,7 +4,7 @@
 #include <cmat/cmat.h>
 
 #include "../../support/header/defines.h"
-#include "../../support/header/transforms.h"
+#include "../../helper/header/infos.h"
 
 #include "../../tasks/header/lastTask.h"
 #include "../../tasks/header/vehicleReachTask.h"
@@ -31,7 +31,7 @@ public:
   ~Controller();
 
 
-  int updateTransforms(struct Transforms* const transf);
+  int updateTransforms(struct Infos* const robInfo);
   std::vector<double> execAlgorithm();
 
 private:

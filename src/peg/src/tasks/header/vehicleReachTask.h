@@ -12,7 +12,7 @@ public:
   VehicleReachTask(int dimension, int dof, bool eqType);
   VehicleReachTask(int dimension, bool eqType);
 
-  int updateMatrices(struct Transforms* const transf);
+  int updateMatrices(struct Infos* const robInfo);
 
 private:
   int setActivation();

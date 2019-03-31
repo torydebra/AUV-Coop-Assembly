@@ -19,8 +19,8 @@ public:
   RosInterface(std::string robotName, std::string topicRoot, int argc, char **argv);
   int init();
   int getwTv(Eigen::Matrix4d* wTv_eigen);
-  int getvTee(Eigen::Matrix4d* vTee_eigen);
-  int getvTjoints(std::vector<Eigen::Matrix4d>* vTjoints);
+//  int getvTee(Eigen::Matrix4d* vTee_eigen);
+//  int getvTjoints(std::vector<Eigen::Matrix4d>* vTjoints);
   int getJointState(std::vector<double>* jState);
   int sendQDot(std::vector<double> qDot);
   void spinOnce();
@@ -33,7 +33,7 @@ private:
   ros::Publisher pubTwist;
   ros::Publisher pubJoint;
   ros::Subscriber subJointState;
-  std::string topicJoint;
+  //std::string topicJoint;
 
   std::vector<double> jState_priv;
   void subJointStateCallback(const sensor_msgs::JointState& js);

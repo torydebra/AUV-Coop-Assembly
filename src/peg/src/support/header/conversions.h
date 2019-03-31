@@ -1,9 +1,11 @@
 #ifndef CONVERSIONS_H
 #define CONVERSIONS_H
 
-#include <Eigen/Core>
 #include <cmat/cmat.h>
+#include <Eigen/Core>
 #include <tf_conversions/tf_eigen.h>
+#include <kdl/chainjnttojacsolver.hpp>
+#include <kdl/chainfksolverpos_recursive.hpp>
 
 namespace CONV{
 
@@ -28,8 +30,11 @@ namespace CONV{
 
     /// eigen to tf
     //not necessary at moment
-//    tf::Transform transfMatrix_eigen2tf(Eigen::Matrix4d mat_eigen);
+    //tf::Transform transfMatrix_eigen2tf(Eigen::Matrix4d mat_eigen);
 
+    // KDL to Eigen.
+    Eigen::Matrix4d transfMatrix_kdl2eigen(KDL::Frame mat_kdl);
+    Eigen::MatrixXd jacobian_kdl2eigen(KDL::Jacobian mat_kdl);
 
 }
 

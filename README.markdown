@@ -10,6 +10,10 @@ cmat library installation
 
 boost (already installed?)
 
+kdl (already installed with ros)
+
+parse_urdf (already installed ros)
+
 
 
 
@@ -18,6 +22,10 @@ CMAKE:
 add_library
 add target_linl_libraries sia per task cpp sia metti sto task cpp come link al main
 
+
+#### robe
+in cmat_defines.h there is a #define PI 3.14....    this is a problem because kdl library has a const int called PI.
+solution is to change in cmat_defines.h : from #define PI 3.14....  to const int PI 3.14....
 
 
 Libraries:

@@ -9,7 +9,7 @@ class ManipulabilityTask : public Task
 public:
   ManipulabilityTask(int dimension, int dof, bool eqType);
   //~ManipulabilityTask();
-  int updateMatrices(struct Transforms* const transf);
+  int updateMatrices(struct Infos* const robInfo);
 private:
   void setActivation();
   int setJacobian();

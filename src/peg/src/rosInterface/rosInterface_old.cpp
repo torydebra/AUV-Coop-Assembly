@@ -65,6 +65,63 @@ int RosInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
   return 0;
 }
 
+int RosInterface::getvTee(Eigen::Matrix4d* vTee_eigen){
+  if(!ros::ok()){
+    return -1;
+  }
+
+  tf::StampedTransform vTee_tf;
+
+  std::string topic1 = "/" + robotName;
+  std::string topic2 = "/" + robotName + "/part4_base";//ASSUMING this name for ee (as in xml files of scenes)
+  try {
+    tfListener_wTv.lookupTransform(topic1, topic2, ros::Time(0), vTee_tf);
+
+  } catch (tf::TransformException &ex) {
+    ROS_ERROR("%s",ex.what());
+    ros::Duration(1.0).sleep();
+  }
+
+  *vTee_eigen = CONV::transfMatrix_tf2eigen(vTee_tf);
+
+  return 0;
+
+}
+
+int RosInterface::getvTjoints(std::vector<Eigen::Matrix4d> *vTjoints) {
+  if(!ros::ok()){
+    return -1;
+  }
+
+  std::vector<tf::StampedTransform> vTJoints_tf(ARM_DOF);
+
+  std::string topic1 = "/" + robotName;
+  try {
+    for(int i=0; i<ARM_DOF; i++){
+      std::ostringstream s;
+      s << (i+1);
+      const std::string si(s.str());
+      std::string topic2 = topic1+"/part" + si;
+      if (i==3){
+        topic2 += "_base";
+      }
+      tfListener_wTv.lookupTransform(topic1, topic2, ros::Time(0), vTJoints_tf[i]);
+    }
+
+
+  } catch (tf::TransformException &ex) {
+    ROS_ERROR("%s",ex.what());
+    ros::Duration(1.0).sleep();
+  }
+
+  for(int i=0; i<ARM_DOF; i++){
+    vTjoints->push_back(CONV::transfMatrix_tf2eigen(vTJoints_tf[i]));
+  }
+
+
+  return 0;
+}
+
 void RosInterface::subJointStateCallback(const sensor_msgs::JointState& js)
 {
    jState_priv = js.position;

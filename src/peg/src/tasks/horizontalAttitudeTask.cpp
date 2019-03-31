@@ -6,9 +6,9 @@ HorizontalAttitudeTask::HorizontalAttitudeTask(int dim, int dof, bool eqType)
 
 }
 
-int HorizontalAttitudeTask::updateMatrices(Transforms * const transf){
+int HorizontalAttitudeTask::updateMatrices(Infos* const robInfo){
 
-  setPhi(transf->wTv_eigen);
+  setPhi(robInfo->robotState.wTv_eigen);
 
   setActivation();
   setJacobian();

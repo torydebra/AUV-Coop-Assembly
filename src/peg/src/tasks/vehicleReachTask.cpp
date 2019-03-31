@@ -19,14 +19,14 @@ VehicleReachTask::VehicleReachTask(int dimension, bool eqType)
 
 /**
  * @brief VehicleReachTask::updateMatrices overriden of the pure virtual method of Task parent class
- * @param transf struct filled with all transformations needed by the task to compute the matrices
+ * @param robInfo struct filled with all infos needed by the task to compute the matrices
  * @return 0 for correct execution
  */
-int VehicleReachTask::updateMatrices(struct Transforms* const transf){
+int VehicleReachTask::updateMatrices(struct Infos* const robInfo){
 
   setActivation();
-  setJacobian(transf->wTv_eigen);
-  setReference(transf->wTv_eigen, transf->wTgoalVeh_eigen);
+  setJacobian(robInfo->robotState.wTv_eigen);
+  setReference(robInfo->robotState.wTv_eigen, robInfo->transforms.wTgoalVeh_eigen);
   return 0;
 }
 

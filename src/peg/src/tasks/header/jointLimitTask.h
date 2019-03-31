@@ -9,7 +9,7 @@ class JointLimitTask : public Task
 public:
   JointLimitTask(int dimension, int dof, bool eqType);
   ~JointLimitTask();
-  int updateMatrices(struct Transforms* const transf);
+  int updateMatrices(struct Infos* const robInfo);
 private:
   int setActivation(std::vector<double> jState);
   int setJacobian();

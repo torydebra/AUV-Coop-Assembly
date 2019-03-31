@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(peg)
 
+# Is it needed for cmat KAL:: not found??
+add_definitions(-DCMAT_STATIC_BUFFERS -DCMAT_STANDALONE)
+
 ## set list of compile option to later use target_compile_options(my_target INTERFACE ${REPLACED_FLAGS}) in the added files
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Werror -Wextra")
 ## CMAKE_CXX_FLAGS expects a single string (parameters are separated by spaces)
@@ -22,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   tf_conversions
+  kdl_parser
 )
 #package not catkin
 #find_package(
@@ -159,6 +163,8 @@ add_library(Formulas src/support/formulas.cpp)
 add_library(Prints src/support/prints.cpp)
 add_library(Controller src/controller/controller.cpp)
 add_library(RosInterface src/rosInterface/rosInterface.cpp)
+add_library(KdlHelper src/helper/kdlHelper.cpp)
+add_library(JacobianHelper src/helper/jacobianHelper.cpp)
 
 ## ADD library new task here
 
@@ -179,6 +185,7 @@ add_library(HorizontalAttitudeTask src/tasks/horizontalAttitudeTask.cpp)
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/peg_pkg_node.cpp)
 add_executable(Main src/main.cpp)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -201,10 +208,13 @@ target_link_libraries(Main
     RosInterface
     Prints
     Controller
+    KdlHelper
+    JacobianHelper
 )
 
 target_link_libraries(Conversions
     tf_conversions
+    linuxcmat
 )
 
 target_link_libraries(Formulas
@@ -224,7 +234,16 @@ target_link_libraries(Controller
 
 target_link_libraries(RosInterface
     tf
+    Conversions
 )
+target_link_libraries(KdlHelper
+    ${catkin_LIBRARIES}
+)
+
+target_link_libraries(JacobianHelper
+
+)
+
 
 target_link_libraries(LastTask
     Task

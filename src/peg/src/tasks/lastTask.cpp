@@ -11,7 +11,7 @@ LastTask::LastTask(int dim, int dof, bool eqType)
 }
 
 //to not use, implemented only to make this class non virtual (father is virtual)
-int LastTask::updateMatrices(struct Transforms* const transf){
+int LastTask::updateMatrices(struct Infos* const robInfo){
 
   return 0;
 }

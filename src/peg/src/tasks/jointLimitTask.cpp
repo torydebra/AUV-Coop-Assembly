@@ -31,11 +31,11 @@ JointLimitTask::~JointLimitTask(){
   delete []halfPoint;
 }
 
-int JointLimitTask::updateMatrices(struct Transforms* const transf){
+int JointLimitTask::updateMatrices(struct Infos* const robInfo){
 
-  setActivation(transf->jState);
+  setActivation(robInfo->robotState.jState);
   setJacobian();
-  setReference(transf->jState);
+  setReference(robInfo->robotState.jState);
   return 0;
 
 }

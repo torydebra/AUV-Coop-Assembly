@@ -23,11 +23,11 @@ Controller::Controller() {
   tasks.push_back(new JointLimitTask(4,TOT_DOF, ineqType));
   tasks.push_back(new HorizontalAttitudeTask(1, TOT_DOF, ineqType));
 
-  tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
+  //tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, ineqType));
 
   tasks.push_back(new VehicleReachTask(6, TOT_DOF, eqType));
 
-  //tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
+  tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
 
   tasks.push_back(new LastTask(TOT_DOF, TOT_DOF, eqType)); //The "fake task" with all eye and zero matrices, needed as last one for algo
 
@@ -53,14 +53,14 @@ Controller::~Controller(){
 /**
  * @brief Controller::updateTransforms This function calls all the updateMatrices of each task inserted in the
  * costructor.
- * @param transf the struct where all infos needed by all the task are
+ * @param robInfo the struct where all infos needed by all the tasks are
  * @return 0 to correct execution
  * @note usage of overridden pure virtual method updateMatrices
  */
-int Controller::updateTransforms(struct Transforms* const transf){
+int Controller::updateTransforms(struct Infos* const robInfo){
 
   for (int i=0; i<(numTasks-1); i++){ //LastTask has everything fixed
-    tasks[i]->updateMatrices(transf);
+    tasks[i]->updateMatrices(robInfo);
   }
 
   return 0;
@@ -98,7 +98,7 @@ std::vector<double> Controller::execAlgorithm(){
       Controller::inequalityIcat(tasks[i], &qDot_cmat, &Q);
     }
 
-   // Q.PrintMtx("Q"); ///DEBUG
+    //Q.PrintMtx("Q"); ///DEBUG
     //qDot_cmat.PrintMtx("qdot");
   }
 

@@ -9,9 +9,11 @@
 
 #include "../support/header/conversions.h"
 #include "../support/header/defines.h"
-#include "../support/header/transforms.h"
+#include "../helper/header/infos.h"
+#include "../helper/header/jacobianHelper.h"
 
 #include "../controller/header/controller.h"
 #include "../rosInterface/header/rosInterface.h"
+#include "../helper/header/kdlHelper.h"
 
 #endif // MAIN_H
