@@ -6,7 +6,8 @@
     @param topicTwist the name of the topic where twist command must be published
     @param arcg, argv the standard argument of c++ main, they are needed for ros::init
 */
-RosInterface::RosInterface(std::string robotName, std::string topicRoot, int argc, char **argv)
+RosInterface::RosInterface(std::string topicRoot, std::string  robotName,
+                           std::string toolName, int argc, char **argv)
 {
 
   ROS_INFO("[ROS_INTERFACE] Start");
@@ -15,6 +16,7 @@ RosInterface::RosInterface(std::string robotName, std::string topicRoot, int arg
 
   this->robotName = robotName;
   this->topicRoot = topicRoot;
+  this->toolName = toolName;
 
   pubTwist = nh.advertise<geometry_msgs::TwistStamped>((topicRoot + "twist_command_A"),1);
   pubJoint = nh.advertise<sensor_msgs::JointState>((topicRoot + "joint_command_A"),1);
@@ -31,7 +33,11 @@ int RosInterface::init(){
 
   //Wait to transform wTv to be ready (or fail if wait more than 3 sec)
   std::string topic = "/" + robotName;
-  tfListener_wTv.waitForTransform("world", topic, ros::Time(0), ros::Duration(3.0));
+  tfListener.waitForTransform("world", topic, ros::Time(0), ros::Duration(3.0));
+
+  //wait to transform wTtool to be ready
+  std::string topic2 = "/" + toolName;
+  tfListener.waitForTransform("world", topic2, ros::Time(0), ros::Duration(1.0));
 
   //Wait to joint state to be ready (ie : the callback is called at least once)
   ros::Rate rate(100);
@@ -53,7 +59,7 @@ int RosInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
 
   std::string topic = "/" + robotName;
   try {
-    tfListener_wTv.lookupTransform("world", topic, ros::Time(0), wTv_tf);
+    tfListener.lookupTransform("world", topic, ros::Time(0), wTv_tf);
 
   } catch (tf::TransformException &ex) {
     ROS_ERROR("%s",ex.what());
@@ -61,6 +67,28 @@ int RosInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
   }
 
   *wTv_eigen = CONV::transfMatrix_tf2eigen(wTv_tf);
+
+  return 0;
+}
+
+int RosInterface::getwTt(Eigen::Matrix4d* wTt_eigen){
+
+  if(!ros::ok()){
+    return -1;
+  }
+
+  tf::StampedTransform wTt_tf;
+
+  std::string topic = "/" + toolName;
+  try {
+    tfListener.lookupTransform("world", topic, ros::Time(0), wTt_tf);
+
+  } catch (tf::TransformException &ex) {
+    ROS_ERROR("%s",ex.what());
+    ros::Duration(1.0).sleep();
+  }
+
+  *wTt_eigen = CONV::transfMatrix_tf2eigen(wTt_tf);
 
   return 0;
 }

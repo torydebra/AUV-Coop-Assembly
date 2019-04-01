@@ -1,10 +1,11 @@
 #ifndef HORIZONTALATTITUDETASK_H
 #define HORIZONTALATTITUDETASK_H
 
+#include "task.h"
 #include "../../support/header/formulas.h"
 #include "../../support/header/conversions.h"
 
-#include "task.h"
+
 
 
 class HorizontalAttitudeTask : public Task

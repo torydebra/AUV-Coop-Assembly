@@ -11,6 +11,7 @@
 #include "../../tasks/header/endEffectorReachTask.h"
 #include "../../tasks/header/jointLimitTask.h"
 #include "../../tasks/header/horizontalAttitudeTask.h"
+#include "../../tasks/header/fovEEToToolTask.h"
 
 
 /** @brief The Controller class is responsabile of taking matrices and giving them to Tasks classes,

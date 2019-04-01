@@ -1,6 +1,6 @@
 #include "header/main.h"
 
-
+/// TODO calculate tempo in controol loop per vedere se scade il timer
 int main(int argc, char **argv)
 {
 
@@ -59,8 +59,10 @@ int main(int argc, char **argv)
   Controller controller;
 
   ///Ros interface
-  RosInterface rosInterface("girona500_A", "/uwsim/g500_A/", argc, argv);
+  RosInterface rosInterface("/uwsim/g500_A/", "girona500_A", "pipe", argc, argv);
   rosInterface.init();
+
+  rosInterface.getwTt(&(robInfo.transforms.wTt_eigen));
 
 
   int ms = 100;

@@ -13,6 +13,7 @@ struct Transforms {
   Eigen::Matrix4d wTgoalVeh_eigen; //goal for vehicle
   Eigen::Matrix4d wTgoalEE_eigen; //goal for EE (will be projected on veh inside task)
 
+  Eigen::Matrix4d wTt_eigen; //tool in the world
 
 };
 

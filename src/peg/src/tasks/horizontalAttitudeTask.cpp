@@ -2,6 +2,13 @@
 
 HorizontalAttitudeTask::HorizontalAttitudeTask(int dim, int dof, bool eqType)
   : Task(dim, dof, eqType){
+
+  if (dimension != 1){
+    std::cerr << "[HORIZONTALATTITUDETASK] ERROR, this task is intended to be a scalar one, "<<
+                 "you setted "<< dimension << " as dimension\n";
+    return;
+  }
+
   gain = 0.3;
 
 }
@@ -17,6 +24,11 @@ int HorizontalAttitudeTask::updateMatrices(Infos* const robInfo){
   return 0;
 }
 
+/**
+ * @brief HorizontalAttitudeTask::setPhi calculate misalignment versor between k versor of the vehicle and k of the world
+ * @param wTv_eigen requested Transformation from world to vehicle
+ * @note both k versor (world and vehicle) point down (i.e. +1 is below surface, -1 above)
+ */
 void HorizontalAttitudeTask::setPhi(Eigen::Matrix4d wTv_eigen){
 
   Eigen::Vector3d kHat;
