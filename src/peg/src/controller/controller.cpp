@@ -23,7 +23,9 @@ Controller::Controller() {
   tasks.push_back(new JointLimitTask(4,TOT_DOF, ineqType));
   tasks.push_back(new HorizontalAttitudeTask(1, TOT_DOF, ineqType));
 
-  tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, ineqType));
+  tasks.push_back(new FovEEToToolTask(1, TOT_DOF, ineqType));
+
+  //tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
 
   tasks.push_back(new VehicleReachTask(6, TOT_DOF, eqType));
 
@@ -33,6 +35,8 @@ Controller::Controller() {
 
   // store number of task inserted
   numTasks = tasks.size();
+
+  std::cout << "[CONTROLLER] Inserted " << numTasks-1 <<"+1(the null task) tasks\n";
 }
 
 
@@ -82,13 +86,13 @@ std::vector<double> Controller::execAlgorithm(){
   //std::cout << "eereer\n\n\n"; ///DEBUG
   for (int i=0; i<numTasks; i++){
 
-    /// DEBUG WITH MATLAB CODE
-    //std::cout << "JACOBIAN " << i << ": \n";
-    //tasks[i]->getJacobian().PrintMtx();
-   // std::cout<< "\n";
-    //std::cout << "REFERENCE " << i << ": \n";
-    //tasks[i]->getReference().PrintMtx() ;
-   // std::cout << "\n";
+    /// DEBUG
+//    std::cout << "JACOBIAN " << i << ": \n";
+//    tasks[i]->getJacobian().PrintMtx();
+//    std::cout<< "\n";
+//    std::cout << "REFERENCE " << i << ": \n";
+//    tasks[i]->getReference().PrintMtx() ;
+//    std::cout << "\n";
 
     if (tasks[i]->eqType){
       //std::cout<<tasks[i]->gain<<"\n";  ///DEBUG
@@ -106,7 +110,6 @@ std::vector<double> Controller::execAlgorithm(){
   int i = 1;
   for(std::vector<double>::iterator it = qDot_vect.begin(); it != qDot_vect.end(); ++it) {
     *it = qDot_cmat(i);
-    //qDot_cmat.PrintMtx(); /// DEBUG
     i++;
   }
 

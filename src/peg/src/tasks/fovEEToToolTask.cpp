@@ -70,7 +70,7 @@ void FovEEToToolTask::setJacobian(
   Eigen::Vector3d normalVectDist = (a_d - w_kHat_ee) / distNorm;
 
   Eigen::Matrix3d skew_ad = FRM::skewMat(a_d);
-  Eigen::Matrix3d skew_Dist_ee_t__inv = (FRM::skewMat(w__Dist_ee_t)).inverse();
+  Eigen::Matrix3d skew_Dist_ee_t__inv = FRM::pseudoInverse(FRM::skewMat(w__Dist_ee_t));
   Eigen::Matrix3d skew_kHat_ee = FRM::skewMat(w_kHat_ee);
 
   Eigen::Matrix<double, 1, TOT_DOF> J_eigen;
@@ -85,7 +85,7 @@ void FovEEToToolTask::setJacobian(
 
 
 
-/// ACTUALLY, from antonelly book the misalignm is not used, it used the norm of the distance
+/// ACTUALLY, from antonelli book the misalignm is not used, it used the norm of the distance
 /// to be brought to zero
 /**
  * /**

@@ -309,9 +309,7 @@ target_link_libraries(FovEEToToolTask
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
-install(PROGRAMS script/keyboardCommandTwist_A.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-install(PROGRAMS script/keyboardCommandOdom_A.py
+install(PROGRAMS script/keyboardCommand_A.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Mark executables and/or libraries for installation

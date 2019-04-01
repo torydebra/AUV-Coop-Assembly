@@ -38,3 +38,22 @@ Eigen::Vector3d FRM::reducedVersorLemma(Eigen::Vector3d a, Eigen::Vector3d b){
 
 }
 
+Eigen::MatrixXd FRM::pseudoInverse(Eigen::MatrixXd mat, double tolerance){
+
+  Eigen::JacobiSVD<Eigen::MatrixXd> svd(mat, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  Eigen::MatrixXd S_inv(mat.cols(), mat.rows());
+  Eigen::MatrixXd singularValues = svd.singularValues();
+  S_inv = Eigen::MatrixXd::Zero(mat.cols(), mat.rows());
+  for (int i=0; i< singularValues.size(); ++i){
+    if (singularValues(i) > tolerance) {
+      S_inv(i, i) = 1 / singularValues(i);
+
+    } else {
+      S_inv(i, i) = 0;
+    }
+  }
+  return (svd.matrixV() * S_inv * svd.matrixU().transpose());
+
+
+}
+

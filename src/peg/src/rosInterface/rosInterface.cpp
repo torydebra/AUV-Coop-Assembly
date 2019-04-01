@@ -10,7 +10,7 @@ RosInterface::RosInterface(std::string topicRoot, std::string  robotName,
                            std::string toolName, int argc, char **argv)
 {
 
-  ROS_INFO("[ROS_INTERFACE] Start");
+  std::cout << "[ROS_INTERFACE] Start\n";
   ros::init(argc, argv, "rosInterface");
   ros::NodeHandle nh;
 
@@ -37,7 +37,7 @@ int RosInterface::init(){
 
   //wait to transform wTtool to be ready
   std::string topic2 = "/" + toolName;
-  tfListener.waitForTransform("world", topic2, ros::Time(0), ros::Duration(1.0));
+  //tfListener.waitForTransform("world", topic2, ros::Time(0), ros::Duration(1.0));
 
   //Wait to joint state to be ready (ie : the callback is called at least once)
   ros::Rate rate(100);
@@ -45,6 +45,9 @@ int RosInterface::init(){
     ros::spinOnce();
     rate.sleep();
   }
+
+
+  std::cout << "[ROS_INTERFACE] Init done\n";
 
   return 0;
 }
