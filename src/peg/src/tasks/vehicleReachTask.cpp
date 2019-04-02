@@ -4,16 +4,11 @@
  * @brief VehicleReachTask::VehicleReachTask Constructor of specific task simply calls the parent constructor
  * through inizializer list
  * @param dimension dimension of the task (e.g. 1 for scalar task)
- * @param dof degrees of freedom of the robot (4+6 for girona500 with 4DOF arm)
  * @param eqType true or false for equality or inequality task
+ * @param activeLog bool to set logger prints
  */
-VehicleReachTask::VehicleReachTask(int dimension, int dof, bool eqType)
-  : Task(dimension, dof, eqType) {
-  gain = 0.2;
-}
-
-VehicleReachTask::VehicleReachTask(int dimension, bool eqType)
-  : Task(dimension, eqType) {
+VehicleReachTask::VehicleReachTask(int dim, bool eqType)
+  : Task(dim, eqType, "VEHICLE_REACH_GOAL") {
   gain = 0.2;
 }
 
@@ -35,14 +30,17 @@ int VehicleReachTask::setJacobian(Eigen::Matrix4d wTv_eigen){
   Eigen::MatrixXd jacobian_eigen = Eigen::MatrixXd::Zero(dimension, dof);
   Eigen::Matrix3d wRv_eigen = wTv_eigen.topLeftCorner(3,3);
 
-  //matrix([1:6];[1:4]) deve restare zero
-  //matrix([1:3];[5:7]) parte linear
-  jacobian_eigen.block(0,4, 3,3) = wRv_eigen; //block: beginning row, beginning column,  dimensions (rows & columns)
+  //matrix([1:6];[1:4]) joint part must be zero
+  //matrix([1:3];[5:7]) linear part
+  jacobian_eigen.block<3,3>(0,4) = wRv_eigen; //block: <dimensions> & (beginning row, beginning column)
 
-  //matrix([4:6];[8:10]) parte angolare
+  //matrix([4:6];[8:10]) angular
   //according to eigen doc, using these kind of specific function (and not
   //.block) improves performance
   jacobian_eigen.bottomRightCorner(3,3) = wRv_eigen;
+
+  //NOTE: other part of the matrices are already zero becase all jacobians
+  //are inizialized as zero
 
   //to cmat
   //eigen unroll to vector for cmat function

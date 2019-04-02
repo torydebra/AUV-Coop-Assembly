@@ -7,7 +7,7 @@
 class JointLimitTask : public Task
 {
 public:
-  JointLimitTask(int dimension, int dof, bool eqType);
+  JointLimitTask(int dimension, bool eqType);
   ~JointLimitTask();
   int updateMatrices(struct Infos* const robInfo);
 private:

@@ -20,23 +20,34 @@ Controller::Controller() {
   bool eqType = true;
   bool ineqType = false;
 
-  tasks.push_back(new JointLimitTask(4,TOT_DOF, ineqType));
-  tasks.push_back(new HorizontalAttitudeTask(1, TOT_DOF, ineqType));
+  //tasks.push_back(new VehicleNullVelTask(6, ineqType));
+  tasks.push_back(new JointLimitTask(4, ineqType));
+  tasks.push_back(new HorizontalAttitudeTask(1, ineqType));
 
-  tasks.push_back(new FovEEToToolTask(1, TOT_DOF, ineqType));
+  tasks.push_back(new FovEEToToolTask(1, ineqType));
 
-  //tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
+  tasks.push_back(new EndEffectorReachTask(6, eqType));
 
-  tasks.push_back(new VehicleReachTask(6, TOT_DOF, eqType));
+  tasks.push_back(new VehicleReachTask(6, eqType));
 
-  //tasks.push_back(new EndEffectorReachTask(6, TOT_DOF, eqType));
+  //tasks.push_back(new EndEffectorReachTask(6, eqType));
 
-  tasks.push_back(new LastTask(TOT_DOF, TOT_DOF, eqType)); //The "fake task" with all eye and zero matrices, needed as last one for algo
+  tasks.push_back(new LastTask(TOT_DOF, eqType)); //The "fake task" with all eye and zero matrices, needed as last one for algo
 
   // store number of task inserted
   numTasks = tasks.size();
 
-  std::cout << "[CONTROLLER] Inserted " << numTasks-1 <<"+1(the null task) tasks\n";
+  std::cout << "[CONTROLLER] Inserted " << numTasks-1 <<"+1(the null task) tasks" << std::endl;
+
+  /// Log folders
+  if (LOG){
+    pathLog = "logPeg/" + PRT::getCurrentDateFormatted();
+    for (int i =0; i< numTasks; ++i){
+      PRT::createDirectory(pathLog +"/" +tasks[i]->getName());
+    }
+    std::cout << "[CONTROLLER] Created Log Folders in  " << pathLog  << std::endl;
+  }
+
 }
 
 
@@ -65,6 +76,16 @@ int Controller::updateTransforms(struct Infos* const robInfo){
 
   for (int i=0; i<(numTasks-1); i++){ //LastTask has everything fixed
     tasks[i]->updateMatrices(robInfo);
+
+    if (LOG){
+      std::string pathname = pathLog + "/" + tasks[i]->getName();
+      PRT::matrixCmat2file(pathname + "/activation.txt",
+                           tasks[i]->getActivation());
+      PRT::matrixCmat2file(pathname + "/reference.txt",
+                           tasks[i]->getReference());
+
+    }
+
   }
 
   return 0;

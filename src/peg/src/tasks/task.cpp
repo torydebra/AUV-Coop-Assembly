@@ -1,46 +1,20 @@
 #include "header/task.h"
 
 /**
- * @brief Task::Task Constructor called by sons Constructor
- * @param dimension dimension of the task (e.g. 1 for scalar task)
- * @param dof degrees of freedom of the robot (4+6 for girona500 with 4DOF arm)
- * @param eqType true or false for equality or inequality task
- * @note There is no default Constructor (without argument) because at least dimension is necessary.
- */
-Task::Task(int dimension, int dof, bool eqType)
-{
-
-  this->dimension = dimension;
-  this->dof = dof;
-  this->eqType = eqType;
-
-  J = CMAT::Matrix::Zeros(dimension, dof);
-  A = CMAT::Matrix::Zeros(dimension, dimension);
-  reference = CMAT::Matrix::Zeros(dimension,1);
-
-  threshold = THRESHOLD_DEFAULT;
-  lambda = LAMBDA_DEFAULT;
-
-  //for reg pseudoinverse of cmat
-  flag_W = 0;
-  mu_W = 0.0;
-  flag_G = 0;
-  mu_G = 0.0;
-
-}
-
-/**
  * @brief Task::Task Constructor called by sons Constructor. without argument dof, default dof from define.h
  * file is used.
  * @param dimension dimension of the task (e.g. 1 for scalar task)
  * @param eqType true or false for equality or inequality task
+ * @param taskName name of the task (for print purpose)
+ * @param logActive activate log prints to file or not
  * @note There is no default Constructor (without argument) because at least dimension is necessary.
  */
-Task::Task(int dimension, bool eqType)
+Task::Task(int dimension, bool eqType, std::string taskName)
 {
 
   this->dimension = dimension;
   this->dof = TOT_DOF;
+  this->taskName = taskName;
 
   J = CMAT::Matrix::Zeros(dimension, dof);
   A = CMAT::Matrix::Zeros(dimension, dimension);
@@ -55,10 +29,12 @@ Task::Task(int dimension, bool eqType)
   flag_G = 0;
   mu_G = 0.0;
 
+  std::cout << "["<< taskName << "]" << " Created" << std::endl;
 }
 
 Task::~Task(){}
 
+std::string Task::getName(){return this->taskName;}
 CMAT::Matrix Task::getJacobian(){ return this->J;}
 CMAT::Matrix Task::getActivation(){return this->A;}
 CMAT::Matrix Task::getReference(){return this->reference;}
@@ -100,3 +76,17 @@ int Task::getThreshold(){return this->threshold;}
 int Task::getLambda(){return this->lambda;}
 int Task::getDof(){return this->dof;}
 int Task::getDimension(){return this->dimension;}
+
+
+/// log things
+//int Task::writeLogs(){
+//  if (logger == NULL){
+//    return -1;
+//  }
+
+//  logger->writeActivation(A);
+//  logger->writeReference(reference);
+//  return 0;
+//}
+
+

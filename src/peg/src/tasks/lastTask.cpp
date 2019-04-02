@@ -1,7 +1,7 @@
 #include "header/lastTask.h"
 
-LastTask::LastTask(int dim, int dof, bool eqType)
-  : Task(dim, dof, eqType){
+LastTask::LastTask(int dim, bool eqType)
+  : Task(dim, eqType, "LAST_TASK"){
   gain = 1;
 
   J = CMAT::Matrix::Eye(dimension); //note jacobian is square

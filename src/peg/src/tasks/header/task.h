@@ -1,6 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 
+#include <iostream>
 #include <cmat/cmat.h>
 #include <Eigen/Core>
 #include "../../support/header/defines.h"
@@ -21,6 +22,7 @@ private:
 protected:
   int dimension; //dimension of the task (1 for scalar task); (rows)
   int dof; //total dofs of the robot (columns)
+  std::string taskName;
   CMAT::Matrix J; // the Jacobian
   CMAT::Matrix A; //the Activation function
   CMAT::Matrix reference;
@@ -33,8 +35,7 @@ protected:
   int threshold;
   int lambda;
 
-  Task(int dimension, int dof, bool eqType);
-  Task(int dimension, bool eqType);
+  Task(int dimension, bool eqType, std::string taskName);
 
 public:
 
@@ -42,6 +43,8 @@ public:
 
   virtual int updateMatrices(struct Infos* const robInfo) = 0;
 
+ // int writeLogs();
+  std::string getName();
   CMAT::Matrix getJacobian();
   CMAT::Matrix getActivation();
   CMAT::Matrix getReference();

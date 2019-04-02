@@ -1,7 +1,7 @@
 #include "header/manipulabilityTask.h"
 
-ManipulabilityTask::ManipulabilityTask(int dim, int dof, bool eqType)
-  : Task(dim, dof, eqType){
+ManipulabilityTask::ManipulabilityTask(int dim, bool eqType)
+  : Task(dim, eqType, "MANIPULABILITY"){
   gain = 0.2;
 
   mu = 0.0;

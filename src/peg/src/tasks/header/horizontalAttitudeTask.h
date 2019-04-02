@@ -11,7 +11,7 @@
 class HorizontalAttitudeTask : public Task
 {
     public:
-      HorizontalAttitudeTask(int dimension, int dof, bool eqType);
+      HorizontalAttitudeTask(int dimension, bool eqType);
       int updateMatrices(struct Infos* const robInfo);
     private:
       Eigen::Vector3d phi;

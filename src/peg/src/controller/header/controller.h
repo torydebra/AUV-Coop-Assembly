@@ -4,6 +4,8 @@
 #include <cmat/cmat.h>
 
 #include "../../support/header/defines.h"
+#include "../../support/header/prints.h"
+
 #include "../../helper/header/infos.h"
 
 #include "../../tasks/header/lastTask.h"
@@ -12,6 +14,7 @@
 #include "../../tasks/header/jointLimitTask.h"
 #include "../../tasks/header/horizontalAttitudeTask.h"
 #include "../../tasks/header/fovEEToToolTask.h"
+#include "../../tasks/header/vehicleNullVelTask.h"
 
 
 /** @brief The Controller class is responsabile of taking matrices and giving them to Tasks classes,
@@ -36,6 +39,7 @@ public:
   std::vector<double> execAlgorithm();
 
 private:
+  std::string pathLog;
   int equalityIcat(Task* task, CMAT::Matrix* rhop, CMAT::Matrix* Q);
   int inequalityIcat(Task* task, CMAT::Matrix* rhop, CMAT::Matrix* Q) ;
 };

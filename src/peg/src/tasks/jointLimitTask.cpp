@@ -1,8 +1,8 @@
 #include "header/jointLimitTask.h"
 
-JointLimitTask::JointLimitTask(int dim, int dof, bool eqType)
-  : Task(dim, dof, eqType){
-  gain = 0.7;
+JointLimitTask::JointLimitTask(int dim, bool eqType)
+  : Task(dim, eqType, "JOINT_LIMIT"){
+  gain = 0.5;
 
   safeGuardUp = new double[this->dimension];
   safeGuardUp[0] = JLIM1_MAX - 0.2;

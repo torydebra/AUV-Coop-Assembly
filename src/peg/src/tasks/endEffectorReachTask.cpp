@@ -4,12 +4,12 @@
  * @brief EndEffectorReachTask::EndEffectorReachTask Constructor of specific task simply calls the parent constructor
  * through inizializer list
  * @param dimension dimension of the task (e.g. 1 for scalar task)
- * @param dof degrees of freedom of the robot (4+6 for girona500 with 4DOF arm)
  * @param eqType true or false for equality or inequality task
+ * @param activeLog bool to set logger prints
  */
-EndEffectorReachTask::EndEffectorReachTask(int dim, int dof, bool eqType)
-  : Task(dim, dof, eqType){
-  gain = 0.3;
+EndEffectorReachTask::EndEffectorReachTask(int dim, bool eqType)
+  : Task(dim, eqType, "ENDEFFECTOR_REACHING_GOAL"){
+  gain = 0.2;
 }
 
 /**
@@ -21,13 +21,17 @@ int EndEffectorReachTask::updateMatrices(struct Infos* const robInfo){
 
   setActivation();
 
-  J = CONV::matrix_eigen2cmat(robInfo->robotState.w_J_robot);
+  setJacobian(robInfo->robotState.w_J_robot);
 
   setReference(robInfo->transforms.wTgoalEE_eigen,
                robInfo->robotState.wTv_eigen*robInfo->robotState.vTee_eigen);
   //setJacobian(transf->vTjoints, transf->vTee_eigen);
   //setReference(transf->vTee_eigen, transf->wTgoalEE_eigen, transf->wTv_eigen);
   return 0;
+}
+
+void EndEffectorReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
+  J = CONV::matrix_eigen2cmat(w_J_robot);
 }
 
 int EndEffectorReachTask::setActivation(){

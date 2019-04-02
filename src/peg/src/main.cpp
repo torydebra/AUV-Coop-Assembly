@@ -35,10 +35,6 @@ int main(int argc, char **argv)
   /// struct container data to pass among functions
   Infos robInfo;
 
-
-
-
-
   /// KDL parser to after( in the control loop )get jacobian from joint position
   std::string filename = "/home/tori/UWsim/Peg/model/g500ARM5.urdf";
   KDLHelper kdlHelper(filename);
@@ -64,10 +60,12 @@ int main(int argc, char **argv)
 
   rosInterface.getwTt(&(robInfo.transforms.wTt_eigen));
 
-
   int ms = 100;
-  while(ros::ok()){
+  boost::asio::io_service io;
 
+  while(1){
+
+    boost::asio::deadline_timer t(io, boost::posix_time::milliseconds(ms));
     rosInterface.getJointState(&(robInfo.robotState.jState));
     rosInterface.getwTv(&(robInfo.robotState.wTv_eigen));
     //rosInterface.getvTee(&(transf.vTee_eigen));
@@ -97,7 +95,7 @@ int main(int argc, char **argv)
 
     rosInterface.spinOnce(); // actually the spinonce is called here and not in sendQdot
 
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(ms));
+    t.wait(); //wait for the remaning time until period setted (ms)
   }
 
   return 0;

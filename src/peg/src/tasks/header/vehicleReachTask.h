@@ -9,7 +9,6 @@
 class VehicleReachTask : public Task {
 
 public:
-  VehicleReachTask(int dimension, int dof, bool eqType);
   VehicleReachTask(int dimension, bool eqType);
 
   int updateMatrices(struct Infos* const robInfo);

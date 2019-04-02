@@ -1,10 +1,10 @@
 #include "header/horizontalAttitudeTask.h"
 
-HorizontalAttitudeTask::HorizontalAttitudeTask(int dim, int dof, bool eqType)
-  : Task(dim, dof, eqType){
+HorizontalAttitudeTask::HorizontalAttitudeTask(int dim, bool eqType)
+  : Task(dim, eqType, "HORIZONTAL_ATTITUDE"){
 
   if (dimension != 1){
-    std::cerr << "[HORIZONTALATTITUDETASK] ERROR, this task is intended to be a scalar one, "<<
+    std::cerr << "[" << taskName << "] ERROR, this task is intended to be a scalar one, "<<
                  "you setted "<< dimension << " as dimension\n";
     return;
   }

@@ -7,7 +7,7 @@
 class ManipulabilityTask : public Task
 {
 public:
-  ManipulabilityTask(int dimension, int dof, bool eqType);
+  ManipulabilityTask(int dimension, bool eqType);
   //~ManipulabilityTask();
   int updateMatrices(struct Infos* const robInfo);
 private:

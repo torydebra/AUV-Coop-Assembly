@@ -11,11 +11,13 @@
 class EndEffectorReachTask : public Task {
 
 public:
-  EndEffectorReachTask(int dimension, int dof, bool eqType);
+  EndEffectorReachTask(int dimension, bool eqType);
   int updateMatrices(struct Infos* const robInfo);
 private:
   int setActivation();
   int setReference(Eigen::Matrix4d wTgoalEE_eigen, Eigen::Matrix4d wTee_eigen);
+  void setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot);
+
   //int setJacobian(std::vector<Eigen::Matrix4d> vTjoints, Eigen::Matrix4d vTee_eigen);
   //int setReference(
       //Eigen::Matrix4d vTee_eigen, Eigen::Matrix4d vTgoalEE_eigen, Eigen::Matrix4d wTv_eigen);

@@ -12,7 +12,7 @@ add_definitions(-DCMAT_STATIC_BUFFERS -DCMAT_STANDALONE)
 
 #add_compile_options(-Wall -pedantic)
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -171,6 +171,7 @@ add_library(JacobianHelper src/helper/jacobianHelper.cpp)
 add_library(Task src/tasks/task.cpp)
 add_library(LastTask src/tasks/lastTask.cpp)
 add_library(VehicleReachTask src/tasks/vehicleReachTask.cpp)
+add_library(VehicleNullVelTask src/tasks/vehicleNullVelTask.cpp)
 add_library(EEReachTask src/tasks/endEffectorReachTask.cpp)
 add_library(JointLimitsTask src/tasks/jointLimitTask.cpp)
 add_library(HorizontalAttitudeTask src/tasks/horizontalAttitudeTask.cpp)
@@ -224,6 +225,7 @@ target_link_libraries(Formulas
 
 target_link_libraries(Controller
     linuxcmat
+    Prints
     Task
     LastTask
     #put below new task (is it necessary? YES)
@@ -232,6 +234,7 @@ target_link_libraries(Controller
     JointLimitsTask
     HorizontalAttitudeTask
     FovEEToToolTask
+    VehicleNullVelTask
 )
 
 target_link_libraries(RosInterface
@@ -245,7 +248,6 @@ target_link_libraries(KdlHelper
 target_link_libraries(JacobianHelper
 
 )
-
 
 target_link_libraries(LastTask
     Task
@@ -288,6 +290,11 @@ target_link_libraries(FovEEToToolTask
     Task
     linuxcmat
     Formulas
+    Conversions
+)
+target_link_libraries(VehicleNullVelTask
+    Task
+    linuxcmat
     Conversions
 )
 

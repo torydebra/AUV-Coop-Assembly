@@ -1,10 +1,10 @@
 #include "header/fovEEToToolTask.h"
 
-FovEEToToolTask::FovEEToToolTask(int dimension, int dof, bool eqType)
-  : Task(dimension, dof, eqType) {
+FovEEToToolTask::FovEEToToolTask(int dim, bool eqType)
+  : Task(dim, eqType, "FOV_EE_TO_TOOL") {
 
   if (dimension != 1){
-    std::cerr << "[FOVEETOTOOLTASK] ERROR, this task is intended to be a scalar one, "<<
+    std::cerr << "[" << taskName << "] ERROR, this task is intended to be a scalar one, "<<
                  "you setted "<< dimension << " as dimension\n";
     return;
   }

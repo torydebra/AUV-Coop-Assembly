@@ -10,7 +10,7 @@ RosInterface::RosInterface(std::string topicRoot, std::string  robotName,
                            std::string toolName, int argc, char **argv)
 {
 
-  std::cout << "[ROS_INTERFACE] Start\n";
+  std::cout << "[ROS_INTERFACE] Start"<<std::endl;
   ros::init(argc, argv, "rosInterface");
   ros::NodeHandle nh;
 
@@ -47,7 +47,7 @@ int RosInterface::init(){
   }
 
 
-  std::cout << "[ROS_INTERFACE] Init done\n";
+  std::cout << "[ROS_INTERFACE] Init done" << std::endl;
 
   return 0;
 }
