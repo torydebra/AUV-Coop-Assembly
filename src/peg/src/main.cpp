@@ -54,8 +54,8 @@ int main(int argc, char **argv)
 
   ///Controller
   //std::string pathLog = "logPeg/" + PRT::getCurrentDateFormatted();
-  //Controller controller("G500A", &pathLog);
-  Controller controller("G500A");
+  //Controller controller("girona500_A", &pathLog);
+  Controller controller("girona500_A");
 
 
   ///Ros interface
@@ -74,6 +74,7 @@ int main(int argc, char **argv)
 
     rosInterface.getJointState(&(robInfo.robotState.jState));
     rosInterface.getwTv(&(robInfo.robotState.wTv_eigen));
+    rosInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
     //rosInterface.getvTee(&(transf.vTee_eigen));
 
 //    std::vector <Eigen::Matrix4d> vTjoints;

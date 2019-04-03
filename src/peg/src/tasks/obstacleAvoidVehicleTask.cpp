@@ -8,8 +8,8 @@ ObstacleAvoidVehicleTask::ObstacleAvoidVehicleTask(int dim, bool eqType, std::st
                  "you setted "<< dimension << " as dimension\n";
     return;
   }
-  gain = 0.5;
-  safe_dist = 0.5; //in meters
+  gain = 0.6;
+  safe_dist = 0.8; //in meters
 
 }
 
@@ -19,10 +19,24 @@ int ObstacleAvoidVehicleTask::updateMatrices(struct Infos* const robInfo){
   Eigen::Vector3d w_dist = robInfo->exchangedInfo.otherRobPos -
       robInfo->robotState.wTv_eigen.topRightCorner<3,1>();
 
+  // if norm is too little we cant provide a ref because will tend to infinite.
+  // However, if norm is so little the robot are already compenetrating so gain safe dist
+  // and veh_dim are too little
+  if (w_dist.norm() < 0.00001) {
+    std::cout << "[" << robotName << "][" << taskName << "] ERROR: Norm too little,"
+              << "not computing things" << std::endl;
+    return -1;
+  }
 
   setActivation(w_dist);
+  A.PrintMtx("A");
+
   setJacobian(robInfo->robotState.wTv_eigen, w_dist);
+  J.PrintMtx("J");
+
   setReference(w_dist);
+  reference.PrintMtx("REF");
+
 
   return 0;
 }
@@ -41,11 +55,14 @@ void ObstacleAvoidVehicleTask::setJacobian(Eigen::Matrix4d wTv, Eigen::Vector3d 
 
   //linear part
   Eigen::Vector3d w_dist_normal = w_dist / w_dist.norm();
+
   jacobian_eigen.block<1,3>(0,4) =
-      - w_dist_normal.transpose() * wTv.topLeftCorner<3,3>();
+       -w_dist_normal.transpose() * wTv.topLeftCorner<3,3>();
 
   //angular part vehicle zero
 
+
+  J = CONV::matrix_eigen2cmat(jacobian_eigen);
 
 }
 

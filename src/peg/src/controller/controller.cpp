@@ -21,13 +21,14 @@ Controller::Controller(std::string robotName, std::string* pathLog) {
 
   //tasks.push_back(new VehicleNullVelTask(6, ineqType));
   tasks.push_back(new JointLimitTask(4, ineqType, robotName));
+  tasks.push_back(new ObstacleAvoidVehicleTask(1, ineqType, robotName));
   tasks.push_back(new HorizontalAttitudeTask(1, ineqType, robotName));
 
-  tasks.push_back(new FovEEToToolTask(1, ineqType, robotName));
+  //tasks.push_back(new FovEEToToolTask(1, ineqType, robotName));
 
-  tasks.push_back(new EndEffectorReachTask(6, eqType, robotName));
+  //tasks.push_back(new EndEffectorReachTask(6, eqType, robotName));
 
-  tasks.push_back(new VehicleReachTask(6, eqType, robotName));
+  //tasks.push_back(new VehicleReachTask(6, eqType, robotName));
 
   //tasks.push_back(new EndEffectorReachTask(6, eqType, robotName));
 
