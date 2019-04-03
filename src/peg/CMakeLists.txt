@@ -178,6 +178,7 @@ add_library(HorizontalAttitudeTask src/tasks/horizontalAttitudeTask.cpp)
 add_library(FovEEToToolTask src/tasks/fovEEToToolTask.cpp)
 add_library(VehicleConstrVelTask src/tasks/vehicleConstrainVelTask.cpp)
 add_library(ObstacleAvoidVehicleTask src/tasks/obstacleAvoidVehicleTask.cpp)
+add_library(ObstacleAvoidEETask src/tasks/obstacleAvoidEETask.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -239,6 +240,7 @@ target_link_libraries(Controller
     VehicleNullVelTask
     VehicleConstrVelTask
     ObstacleAvoidVehicleTask
+    ObstacleAvoidEETask
 )
 
 target_link_libraries(RosInterface
@@ -308,6 +310,12 @@ target_link_libraries(VehicleConstrVelTask
 )
 
 target_link_libraries(ObstacleAvoidVehicleTask
+    Task
+    linuxcmat
+    Conversions
+)
+
+target_link_libraries(ObstacleAvoidEETask
     Task
     linuxcmat
     Conversions

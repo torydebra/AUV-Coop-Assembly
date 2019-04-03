@@ -17,6 +17,7 @@
 #include "../../tasks/header/vehicleNullVelTask.h"
 #include "../../tasks/header/vehicleConstrainVelTask.h"
 #include "../../tasks/header/obstacleAvoidVehicleTask.h"
+#include "../../tasks/header/obstacleAvoidEETask.h"
 
 
 

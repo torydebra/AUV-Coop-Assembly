@@ -15,9 +15,9 @@ public:
   int updateMatrices(struct Infos* const robInfo);
 
 private:
-  void setActivation(Eigen::Vector3d w_dist);
-  void setJacobian(Eigen::Matrix4d wTv, Eigen::Vector3d w_dist);
-  void setReference(Eigen::Vector3d w_dist);
+  void setActivation(double w_distNorm);
+  void setJacobian(Eigen::Matrix4d wTv, Eigen::Vector3d w_dist_normal);
+  void setReference(double w_distNorm);
   double safe_dist; //safe distance added to make the robot not touch
 };
 

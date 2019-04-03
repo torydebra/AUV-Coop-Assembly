@@ -34,6 +34,10 @@
 //longest dimension of the vehicle (for avoid crash between two robot)
 #define VEH_DIM 1.5 //meters, according to datasheet of real robo, check if in the simul is the same
 
+// usato per ee avoid obstacle (avoid seafloor)
+//TODO usare il laser di profondità invece?
+#define SEAFLOOR_DEPTH 10 //i.e. position along z axis of the "object" terrain in the xml scene
+
 //log
 #define LOG 1 //0-1 logging (printing matrix on files) not activated or activated
 
