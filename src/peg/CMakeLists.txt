@@ -176,6 +176,7 @@ add_library(EEReachTask src/tasks/endEffectorReachTask.cpp)
 add_library(JointLimitsTask src/tasks/jointLimitTask.cpp)
 add_library(HorizontalAttitudeTask src/tasks/horizontalAttitudeTask.cpp)
 add_library(FovEEToToolTask src/tasks/fovEEToToolTask.cpp)
+add_library(VehicleConstrVelTask src/tasks/vehicleConstrainVelTask.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -235,6 +236,7 @@ target_link_libraries(Controller
     HorizontalAttitudeTask
     FovEEToToolTask
     VehicleNullVelTask
+    VehicleConstrVelTask
 )
 
 target_link_libraries(RosInterface
@@ -293,6 +295,11 @@ target_link_libraries(FovEEToToolTask
     Conversions
 )
 target_link_libraries(VehicleNullVelTask
+    Task
+    linuxcmat
+    Conversions
+)
+target_link_libraries(VehicleConstrVelTask
     Task
     linuxcmat
     Conversions

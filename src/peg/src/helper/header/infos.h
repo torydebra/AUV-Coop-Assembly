@@ -33,7 +33,8 @@ struct RobotState {
   //std::vector<Eigen::Matrix4d> vTjoints; // vehicle to each joint
   //Eigen::Matrix4d vTee_eigen; //vehicle to endEffector
 
-  /// Sensors state
+  /// vehicle and joint and Sensors state
+  std::vector<double> vehicleVel;
   std::vector<double> jState; //joint state (rad)
 
   /// Jacobians

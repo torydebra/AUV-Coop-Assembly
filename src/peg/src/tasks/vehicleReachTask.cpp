@@ -27,7 +27,7 @@ int VehicleReachTask::updateMatrices(struct Infos* const robInfo){
 
 int VehicleReachTask::setJacobian(Eigen::Matrix4d wTv_eigen){
 
-  Eigen::MatrixXd jacobian_eigen = Eigen::MatrixXd::Zero(dimension, dof);
+  Eigen::Matrix<double, 6, TOT_DOF> jacobian_eigen = Eigen::Matrix<double, 6, TOT_DOF>::Zero();
   Eigen::Matrix3d wRv_eigen = wTv_eigen.topLeftCorner(3,3);
 
   //matrix([1:6];[1:4]) joint part must be zero
@@ -38,9 +38,6 @@ int VehicleReachTask::setJacobian(Eigen::Matrix4d wTv_eigen){
   //according to eigen doc, using these kind of specific function (and not
   //.block) improves performance
   jacobian_eigen.bottomRightCorner(3,3) = wRv_eigen;
-
-  //NOTE: other part of the matrices are already zero becase all jacobians
-  //are inizialized as zero
 
   //to cmat
   //eigen unroll to vector for cmat function

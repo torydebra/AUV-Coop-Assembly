@@ -15,6 +15,8 @@
 #include "../../tasks/header/horizontalAttitudeTask.h"
 #include "../../tasks/header/fovEEToToolTask.h"
 #include "../../tasks/header/vehicleNullVelTask.h"
+#include "../../tasks/header/vehicleConstrainVelTask.h"
+
 
 
 /** @brief The Controller class is responsabile of taking matrices and giving them to Tasks classes,

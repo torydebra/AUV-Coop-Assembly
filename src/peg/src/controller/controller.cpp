@@ -13,8 +13,6 @@
  */
 Controller::Controller() {
 
-  //tasks = new Task*[NUM_TASKS]; //not necessary with tasks std::vector
-
   /// PUT HERE NEW TASKS. FOR THIS CLASS, ONLY MODIFICATIONS HERE ARE NECESSARY
   // note: order of priority at the moment is here
   bool eqType = true;
