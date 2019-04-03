@@ -18,9 +18,6 @@
 // default one, another can be choosen when construct the task object
 #define LAMBDA_DEFAULT 0.0001
 
-#define EQUALITY 0
-#define INEQUALITY 1
-
 ///Joint limits (in rad) (slew shoulder elbow jawrotate)
 /// find in the urdf file of the robot
 #define JLIM1_MIN -PI_TORI/2
@@ -34,6 +31,8 @@
 #define JLIM4_MIN -PI_TORI
 #define JLIM4_MAX PI_TORI
 
+//longest dimension of the vehicle (for avoid crash between two robot)
+#define VEH_DIM 1.5 //meters, according to datasheet of real robo, check if in the simul is the same
 
 //log
 #define LOG 1 //0-1 logging (printing matrix on files) not activated or activated

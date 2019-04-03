@@ -6,7 +6,9 @@
 #include <vector>
 
 /**
- * @brief The Transforms struct infos necessary to the mission, but not related directly to robot (e.g. position of a goal)
+ * @brief The Transforms struct
+ * VARIABLE AND CONSTANT infos necessary to the mission, but not related directly to robot
+ * (e.g. position of a goal, control point in the world (tool point))
  */
 struct Transforms {
 
@@ -18,7 +20,8 @@ struct Transforms {
 };
 
 /**
- * @brief The RobotState struct VARIABLE info about the robot (e.g. position of vehicle respect world)
+ * @brief The RobotState struct
+ * VARIABLE info about the robot (e.g. position of vehicle respect world)
  */
 struct RobotState {
 
@@ -50,7 +53,8 @@ struct RobotState {
 };
 
 /**
- * @brief The RobotStruct struct CONSTANT info about the robot (e.g. fixed frame for vehicle to sensors)
+ * @brief The RobotStruct struct
+ * CONSTANT info about the robot (e.g. fixed frame for vehicle to sensors)
  */
 struct RobotStruct {
 
@@ -59,10 +63,25 @@ struct RobotStruct {
 
 };
 
+/**
+ * @brief The ExchangedInfo struct
+ * VARIABLE infos about thing not physically internally in the robot
+ * (e.g position of other robot)
+ * @warning It is very important to keep this info as small as possible, because
+ * exchanging infos underwater is slow and difficult: only strictful needed info here
+ * (e.g. a 3d vector instead of whole trasf matrix if only the pos is needed)
+ */
+struct ExchangedInfo {
+  //position in the world of the other twin robot. for now used only for obstacledistancetask
+  //(where the obstacle is the other vehicle)
+  Eigen::Vector3d otherRobPos;
+};
+
 struct Infos {
   RobotStruct robotStruct;
   RobotState robotState;
   Transforms transforms;
+  ExchangedInfo exchangedInfo;
 };
 
 #endif // INFOS_H

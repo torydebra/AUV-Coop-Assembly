@@ -17,10 +17,12 @@ class RosInterface
 {
 public:
   RosInterface(std::string topicRoot, std::string robotName,
+               std::string otherRobotName,
                std::string toolName, int argc, char **argv);
   int init();
   int getwTv(Eigen::Matrix4d* wTv_eigen);
   int getwTt(Eigen::Matrix4d* wTt_eigen);
+  int getOtherRobPos(Eigen::Vector3d* pos);
 //  int getvTee(Eigen::Matrix4d* vTee_eigen);
 //  int getvTjoints(std::vector<Eigen::Matrix4d>* vTjoints);
   int getJointState(std::vector<double>* jState);
@@ -30,6 +32,7 @@ public:
 
 private:
   std::string robotName; //for tf listener (girona500_A,B)
+  std::string otherRobotName; //for tf listener (girona500_B,A)
   std::string topicRoot; //for publishing qDot and subscribing to sensors ("/uwsim/g500_A/")
   std::string toolName; //name of the tool in the scene.xml
   tf::TransformListener tfListener;

@@ -16,6 +16,8 @@
 #include "../../tasks/header/fovEEToToolTask.h"
 #include "../../tasks/header/vehicleNullVelTask.h"
 #include "../../tasks/header/vehicleConstrainVelTask.h"
+#include "../../tasks/header/obstacleAvoidVehicleTask.h"
+
 
 
 

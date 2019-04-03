@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 
 
   ///Ros interface
-  RosInterface rosInterface("/uwsim/g500_A/", "girona500_A", "pipe", argc, argv);
+  RosInterface rosInterface("/uwsim/g500_A/", "girona500_A", "girona500_B", "pipe", argc, argv);
   rosInterface.init();
 
   rosInterface.getwTt(&(robInfo.transforms.wTt_eigen));

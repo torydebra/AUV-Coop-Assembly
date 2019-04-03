@@ -4,7 +4,7 @@ FovEEToToolTask::FovEEToToolTask(int dim, bool eqType, std::string robotName)
   : Task(dim, eqType, robotName, "FOV_EE_TO_TOOL") {
 
   if (dimension != 1){
-    std::cerr << "[" << taskName << "] ERROR, this task is intended to be a scalar one, "<<
+    std::cerr << "[" << robotName << "]" << taskName << "] ERROR, this task is intended to be a scalar one, "<<
                  "you setted "<< dimension << " as dimension\n";
     return;
   }

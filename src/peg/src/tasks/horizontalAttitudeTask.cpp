@@ -4,7 +4,7 @@ HorizontalAttitudeTask::HorizontalAttitudeTask(int dim, bool eqType, std::string
   : Task(dim, eqType, robotName, "HORIZONTAL_ATTITUDE"){
 
   if (dimension != 1){
-    std::cerr << "[" << taskName << "] ERROR, this task is intended to be a scalar one, "<<
+    std::cerr << "[" << robotName << "][" << taskName << "] ERROR, this task is intended to be a scalar one, "<<
                  "you setted "<< dimension << " as dimension\n";
     return;
   }
