@@ -7,8 +7,8 @@
  * @param eqType true or false for equality or inequality task
  * @param activeLog bool to set logger prints
  */
-EndEffectorReachTask::EndEffectorReachTask(int dim, bool eqType)
-  : Task(dim, eqType, "ENDEFFECTOR_REACHING_GOAL"){
+EndEffectorReachTask::EndEffectorReachTask(int dim, bool eqType, std::string robotName)
+  : Task(dim, eqType, robotName, "ENDEFFECTOR_REACHING_GOAL"){
   gain = 0.2;
 }
 

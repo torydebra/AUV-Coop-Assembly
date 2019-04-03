@@ -7,8 +7,8 @@
  * @param eqType true or false for equality or inequality task
  * @param activeLog bool to set logger prints
  */
-VehicleReachTask::VehicleReachTask(int dim, bool eqType)
-  : Task(dim, eqType, "VEHICLE_REACH_GOAL") {
+VehicleReachTask::VehicleReachTask(int dim, bool eqType, std::string robotName)
+  : Task(dim, eqType, robotName, "VEHICLE_REACH_GOAL") {
   gain = 0.2;
 }
 

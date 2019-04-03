@@ -12,7 +12,7 @@
 class VehicleNullVelTask : public Task
 {
 public:
-  VehicleNullVelTask(int dimension, bool eqType);
+  VehicleNullVelTask(int dimension, bool eqType, std::string robotName);
 
   int updateMatrices(struct Infos* const robInfo);
 

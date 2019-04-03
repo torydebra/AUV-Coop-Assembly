@@ -33,7 +33,7 @@ public:
   std::vector<Task*> tasks;
   int numTasks;
 
-  Controller();
+  Controller(std::string robotName, std::string* pathLog = NULL);
   ~Controller();
 
 
@@ -42,6 +42,7 @@ public:
 
 private:
   std::string pathLog;
+  std::string robotName; //to differentiate robots in log folders and printsconsole
   int equalityIcat(Task* task, CMAT::Matrix* rhop, CMAT::Matrix* Q);
   int inequalityIcat(Task* task, CMAT::Matrix* rhop, CMAT::Matrix* Q) ;
 };

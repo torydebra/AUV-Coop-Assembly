@@ -9,7 +9,7 @@
 class VehicleReachTask : public Task {
 
 public:
-  VehicleReachTask(int dimension, bool eqType);
+  VehicleReachTask(int dimension, bool eqType, std::string robotName);
 
   int updateMatrices(struct Infos* const robInfo);
 

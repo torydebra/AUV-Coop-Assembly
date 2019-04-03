@@ -9,11 +9,13 @@
  * @param logActive activate log prints to file or not
  * @note There is no default Constructor (without argument) because at least dimension is necessary.
  */
-Task::Task(int dimension, bool eqType, std::string taskName)
+Task::Task(int dimension, bool eqType,
+           std::string robotName, std::string taskName)
 {
 
   this->dimension = dimension;
   this->dof = TOT_DOF;
+  this->robotName = robotName;
   this->taskName = taskName;
 
   J = CMAT::Matrix::Zeros(dimension, dof);
@@ -29,7 +31,7 @@ Task::Task(int dimension, bool eqType, std::string taskName)
   flag_G = 0;
   mu_G = 0.0;
 
-  std::cout << "["<< taskName << "]" << " Created" << std::endl;
+  std::cout << "[" << robotName  <<"]["<< taskName << "]" << " Created" << std::endl;
 }
 
 Task::~Task(){}

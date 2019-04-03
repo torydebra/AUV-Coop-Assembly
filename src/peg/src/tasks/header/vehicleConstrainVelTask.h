@@ -15,7 +15,7 @@
 class VehicleConstrainVelTask : public Task
 {
 public:
-  VehicleConstrainVelTask(int dimension, bool eqType);
+  VehicleConstrainVelTask(int dimension, bool eqType, std::string robotName);
   int updateMatrices(struct Infos* const robInfo);
 
 private:

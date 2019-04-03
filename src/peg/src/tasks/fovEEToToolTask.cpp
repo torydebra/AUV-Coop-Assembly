@@ -1,7 +1,7 @@
 #include "header/fovEEToToolTask.h"
 
-FovEEToToolTask::FovEEToToolTask(int dim, bool eqType)
-  : Task(dim, eqType, "FOV_EE_TO_TOOL") {
+FovEEToToolTask::FovEEToToolTask(int dim, bool eqType, std::string robotName)
+  : Task(dim, eqType, robotName, "FOV_EE_TO_TOOL") {
 
   if (dimension != 1){
     std::cerr << "[" << taskName << "] ERROR, this task is intended to be a scalar one, "<<

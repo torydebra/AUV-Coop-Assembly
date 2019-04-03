@@ -1,7 +1,7 @@
 #include "header/horizontalAttitudeTask.h"
 
-HorizontalAttitudeTask::HorizontalAttitudeTask(int dim, bool eqType)
-  : Task(dim, eqType, "HORIZONTAL_ATTITUDE"){
+HorizontalAttitudeTask::HorizontalAttitudeTask(int dim, bool eqType, std::string robotName)
+  : Task(dim, eqType, robotName, "HORIZONTAL_ATTITUDE"){
 
   if (dimension != 1){
     std::cerr << "[" << taskName << "] ERROR, this task is intended to be a scalar one, "<<

@@ -9,7 +9,7 @@
 class LastTask : public Task {
 
 public:
-  LastTask(int dimension, bool eqType);
+  LastTask(int dimension, bool eqType, std::string robotName);
 private: //to not use, so putted private
   int updateMatrices(struct Infos* const robInfo);
 };

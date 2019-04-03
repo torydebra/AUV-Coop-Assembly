@@ -1,4 +1,5 @@
 #include "header/main.h"
+#include <chrono>
 
 /// TODO calculate tempo in controol loop per vedere se scade il timer
 int main(int argc, char **argv)
@@ -52,7 +53,10 @@ int main(int argc, char **argv)
   robInfo.transforms.wTgoalEE_eigen = wTgoalEE_eigen;
 
   ///Controller
-  Controller controller;
+  //std::string pathLog = "logPeg/" + PRT::getCurrentDateFormatted();
+  //Controller controller("G500A", &pathLog);
+  Controller controller("G500A");
+
 
   ///Ros interface
   RosInterface rosInterface("/uwsim/g500_A/", "girona500_A", "pipe", argc, argv);
@@ -62,10 +66,12 @@ int main(int argc, char **argv)
 
   int ms = 100;
   boost::asio::io_service io;
-
   while(1){
+//    auto start = std::chrono::steady_clock::now();
 
-    boost::asio::deadline_timer t(io, boost::posix_time::milliseconds(ms));
+    // this must be inside loop
+    boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
+
     rosInterface.getJointState(&(robInfo.robotState.jState));
     rosInterface.getwTv(&(robInfo.robotState.wTv_eigen));
     //rosInterface.getvTee(&(transf.vTee_eigen));
@@ -95,7 +101,13 @@ int main(int argc, char **argv)
 
     rosInterface.spinOnce(); // actually the spinonce is called here and not in sendQdot
 
-    t.wait(); //wait for the remaning time until period setted (ms)
+    //    auto end = std::chrono::steady_clock::now();
+    //    auto diff = end - start;
+    //    std::cout << std::chrono::duration<double, std::milli> (diff).count()
+    //        << " ms" << std::endl;
+
+
+    loopRater.wait(); //wait for the remaning time until period setted (ms)
   }
 
   return 0;

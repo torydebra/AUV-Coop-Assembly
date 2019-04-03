@@ -23,6 +23,7 @@ protected:
   int dimension; //dimension of the task (1 for scalar task); (rows)
   int dof; //total dofs of the robot (columns)
   std::string taskName;
+  std::string robotName;
   CMAT::Matrix J; // the Jacobian
   CMAT::Matrix A; //the Activation function
   CMAT::Matrix reference;
@@ -35,7 +36,8 @@ protected:
   int threshold;
   int lambda;
 
-  Task(int dimension, bool eqType, std::string taskName);
+  Task(int dimension, bool eqType,
+       std::string robotName, std::string taskName);
 
 public:
 

@@ -11,7 +11,7 @@
 class EndEffectorReachTask : public Task {
 
 public:
-  EndEffectorReachTask(int dimension, bool eqType);
+  EndEffectorReachTask(int dimension, bool eqType, std::string robotName);
   int updateMatrices(struct Infos* const robInfo);
 private:
   int setActivation();

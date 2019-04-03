@@ -9,7 +9,7 @@
 class FovEEToToolTask : public Task
 {
 public:
-  FovEEToToolTask(int dimension, bool eqType);
+  FovEEToToolTask(int dimension, bool eqType, std::string robotName);
   int updateMatrices(struct Infos* const robInfo);
 private:
   void setActivation();

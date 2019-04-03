@@ -11,39 +11,40 @@
  * priority order would be slower.
  *
  */
-Controller::Controller() {
+Controller::Controller(std::string robotName, std::string* pathLog) {
 
+  this->robotName = robotName;
   /// PUT HERE NEW TASKS. FOR THIS CLASS, ONLY MODIFICATIONS HERE ARE NECESSARY
   // note: order of priority at the moment is here
   bool eqType = true;
   bool ineqType = false;
 
   //tasks.push_back(new VehicleNullVelTask(6, ineqType));
-  tasks.push_back(new JointLimitTask(4, ineqType));
-  tasks.push_back(new HorizontalAttitudeTask(1, ineqType));
+  tasks.push_back(new JointLimitTask(4, ineqType, robotName));
+  tasks.push_back(new HorizontalAttitudeTask(1, ineqType, robotName));
 
-  tasks.push_back(new FovEEToToolTask(1, ineqType));
+  tasks.push_back(new FovEEToToolTask(1, ineqType, robotName));
 
-  tasks.push_back(new EndEffectorReachTask(6, eqType));
+  tasks.push_back(new EndEffectorReachTask(6, eqType, robotName));
 
-  tasks.push_back(new VehicleReachTask(6, eqType));
+  tasks.push_back(new VehicleReachTask(6, eqType, robotName));
 
-  //tasks.push_back(new EndEffectorReachTask(6, eqType));
+  //tasks.push_back(new EndEffectorReachTask(6, eqType, robotName));
 
-  tasks.push_back(new LastTask(TOT_DOF, eqType)); //The "fake task" with all eye and zero matrices, needed as last one for algo
+  tasks.push_back(new LastTask(TOT_DOF, eqType, robotName)); //The "fake task" with all eye and zero matrices, needed as last one for algo
 
   // store number of task inserted
   numTasks = tasks.size();
 
-  std::cout << "[CONTROLLER] Inserted " << numTasks-1 <<"+1(the null task) tasks" << std::endl;
+  std::cout << "[" << robotName<< "][CONTROLLER] Inserted " << numTasks-1 <<"+1(the null task) tasks" << std::endl;
 
   /// Log folders
-  if (LOG){
-    pathLog = "logPeg/" + PRT::getCurrentDateFormatted();
+  if (LOG && pathLog != NULL){
+    this->pathLog = *pathLog + "/"+ robotName ;
     for (int i =0; i< numTasks; ++i){
-      PRT::createDirectory(pathLog +"/" +tasks[i]->getName());
+      PRT::createDirectory(this->pathLog +"/" +tasks[i]->getName());
     }
-    std::cout << "[CONTROLLER] Created Log Folders in  " << pathLog  << std::endl;
+    std::cout << "[" << robotName<< "][CONTROLLER] Created Log Folders in  " << pathLog  << std::endl;
   }
 
 }

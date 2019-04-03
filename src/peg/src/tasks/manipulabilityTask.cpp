@@ -1,7 +1,7 @@
 #include "header/manipulabilityTask.h"
 
-ManipulabilityTask::ManipulabilityTask(int dim, bool eqType)
-  : Task(dim, eqType, "MANIPULABILITY"){
+ManipulabilityTask::ManipulabilityTask(int dim, bool eqType, std::string robotName)
+  : Task(dim, eqType, robotName, "MANIPULABILITY"){
   gain = 0.2;
 
   mu = 0.0;

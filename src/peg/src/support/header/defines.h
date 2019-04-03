@@ -36,6 +36,6 @@
 
 
 //log
-#define LOG 0 //0-1 logging (printing matrix on files) not activated or activated
+#define LOG 1 //0-1 logging (printing matrix on files) not activated or activated
 
 #endif // DEFINES_H

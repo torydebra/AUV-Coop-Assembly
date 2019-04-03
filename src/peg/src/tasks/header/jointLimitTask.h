@@ -7,7 +7,7 @@
 class JointLimitTask : public Task
 {
 public:
-  JointLimitTask(int dimension, bool eqType);
+  JointLimitTask(int dimension, bool eqType, std::string robotName);
   ~JointLimitTask();
   int updateMatrices(struct Infos* const robInfo);
 private:

@@ -1,7 +1,7 @@
 #include "header/jointLimitTask.h"
 
-JointLimitTask::JointLimitTask(int dim, bool eqType)
-  : Task(dim, eqType, "JOINT_LIMIT"){
+JointLimitTask::JointLimitTask(int dim, bool eqType, std::string robotName)
+  : Task(dim, eqType, robotName, "JOINT_LIMIT"){
   gain = 0.5;
 
   safeGuardUp = new double[this->dimension];

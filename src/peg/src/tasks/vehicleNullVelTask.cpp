@@ -1,7 +1,7 @@
 #include "header/vehicleNullVelTask.h"
 
-VehicleNullVelTask::VehicleNullVelTask(int dim, bool eqType)
-  : Task(dim, eqType, "VEHICLE_NULL_VEL") {
+VehicleNullVelTask::VehicleNullVelTask(int dim, bool eqType, std::string robotName)
+  : Task(dim, eqType, robotName, "VEHICLE_NULL_VEL") {
   gain = 0; //non reactive task
 }
 

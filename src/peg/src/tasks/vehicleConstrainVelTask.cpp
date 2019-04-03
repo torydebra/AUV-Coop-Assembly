@@ -1,7 +1,7 @@
 #include "header/vehicleConstrainVelTask.h"
 
-VehicleConstrainVelTask::VehicleConstrainVelTask(int dim, bool eqType)
-  : Task(dim, eqType, "VEHICLE_CONSTRAIN_VEL") {
+VehicleConstrainVelTask::VehicleConstrainVelTask(int dim, bool eqType, std::string robotName)
+  : Task(dim, eqType, robotName, "VEHICLE_CONSTRAIN_VEL") {
   gain = 1; //non reactive task
 
 }
