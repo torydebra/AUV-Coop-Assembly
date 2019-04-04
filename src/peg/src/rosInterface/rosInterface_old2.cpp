@@ -2,40 +2,28 @@
 
 /** @brief RosInterface Constructor
 
-      @param arcg, argv the standard argument of c++ main, they are needed for ros::init
-    @param ar the name of the robot (found in .xml file of the scene)
+    @param robotName the name of the robot (found in .xml file of the scene)
     @param topicTwist the name of the topic where twist command must be published
-
+    @param arcg, argv the standard argument of c++ main, they are needed for ros::init
 */
-/**
- * @brief RosInterface::RosInterface Constructor
- * @param argc the standard argument of c++ main needed for ros::init
- * @param argv the standard argument of c++ main needed for ros::init and for know robot names:
- * argv[1]=robotName, argv[2] = otherRobotName
- * @param toolName name of the peg in the xml file of the scene
- */
-RosInterface::RosInterface(int argc, char **argv, std::string toolName)
+RosInterface::RosInterface(std::string topicRoot, std::string  robotName,
+                           std::string otherRobotName, std::string toolName,
+                           int argc, char **argv)
 {
-
-  if (argc <3){
-    std::cout << "[ROS_INTERFACE] Please insert the two robots name"<< std::endl;
-    return;
-  }
-
-  this->robotName = argv[1];
-  this->otherRobotName = argv[2];
-  this->topicRoot = "/uwsim/" + robotName + "/";
-  this->toolName = toolName;
 
   std::cout << "[" << robotName <<"][ROS_INTERFACE] Start"<<std::endl;
   ros::init(argc, argv, "rosInterface_" + robotName);
   ros::NodeHandle nh;
 
+  this->robotName = robotName;
+  this->otherRobotName = otherRobotName;
+  this->topicRoot = topicRoot;
+  this->toolName = toolName;
 
-  pubTwist = nh.advertise<geometry_msgs::TwistStamped>((topicRoot + "twist_command"),1);
-  pubJoint = nh.advertise<sensor_msgs::JointState>((topicRoot + "joint_command"),1);
+  pubTwist = nh.advertise<geometry_msgs::TwistStamped>((topicRoot + "twist_command_A"),1);
+  pubJoint = nh.advertise<sensor_msgs::JointState>((topicRoot + "joint_command_A"),1);
 
-  subJointState = nh.subscribe(topicRoot+"joint_state", 1, &RosInterface::subJointStateCallback, this);
+  subJointState = nh.subscribe(topicRoot+"joint_state_A", 1, &RosInterface::subJointStateCallback, this);
 }
 
 
@@ -45,21 +33,17 @@ int RosInterface::init(){
     return -1;
   }
 
-
   //Wait to transform wTv to be ready (or fail if wait more than 3 sec)
   std::string topic = "/" + robotName;
   tfListener.waitForTransform("world", topic, ros::Time(0), ros::Duration(3.0));
-
 
   //wait to transform wTtool to be ready
   std::string topic2 = "/" + toolName;
   tfListener.waitForTransform("world", topic2, ros::Time(0), ros::Duration(1.0));
 
-
   //wait to transform wTv of the other robot to be ready
   std::string topic3 = "/" + otherRobotName;
   tfListener.waitForTransform("world", topic3, ros::Time(0), ros::Duration(3.0));
-
 
   //Wait to joint state to be ready (ie : the callback is called at least once)
   ros::Rate rate(100);

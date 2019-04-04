@@ -61,7 +61,7 @@
 
   <camera>
     <freeMotion> 1 </freeMotion>
-    <objectToTrack>girona500_A/base_link</objectToTrack>
+    <objectToTrack>g500_A/base_link</objectToTrack>
     <fov> 60 </fov>
     <aspectRatio> 1.33 </aspectRatio>
     <near> 1 </near>
@@ -79,8 +79,8 @@
   </camera>
 
  <vehicle>
-	<name>girona500_A</name>
-    <file>data/models/g500ARM5.urdf</file>
+	<name>g500_A</name>
+    <file>data/scenes/g500ARM5.urdf</file>
     <jointValues>
       <joint> 0 </joint>
       <joint> M_PI_4</joint>
@@ -309,7 +309,7 @@
 
 
   <vehicle>
-    <name>girona500_B</name>
+    <name>g500_B</name>
     <file>data/models/g500ARM5.urdf</file>
     <jointValues>
       <joint> 0 </joint>
@@ -537,7 +537,7 @@
       </offsetr>
     </ForceSensor>
   </vehicle>
-
+  
 
   <object>
     <name> terrain </name>
@@ -558,13 +558,14 @@
     </physics>
   </object>
 
+
   <object>
     <name> pipe </name>
     <file> objects/pipecreo.obj </file>
     <position>
       <x> 0</x>
       <y> 0 </y>
-      <z> 8</z>
+      <z> 9.2</z>
     </position>
     <orientation>
       <r>0</r>
@@ -582,50 +583,25 @@
     </physics>
   </object>
 
-<!--
-  <object>
-    <name> blackbox2 </name>
-    <file> objects/blackbox_uib_trimesh.osg  </file>
-    <position>
-      <x> 0</x>
-      <y>  0</y>
-      <z> 1.7 </z>
-    </position>
-    <orientation>
-      <r>0</r>
-      <p>3.1415</p>
-      <y>0</y>
-    </orientation>
-    <physics>
-      <mass> 15 </mass>
-      <inertia>
-        <x> 0</x>
-        <y> 0 </y>
-        <z> 0 </z>
-      </inertia>
-      <collisionShapeType> box </collisionShapeType>
-    </physics>
-  </object>
--->
 
   <rosInterfaces>
   
     <ROSOdomToPAT>
-      <topic> /uwsim/g500_A/odom_command_A </topic>
-      <vehicleName> girona500_A </vehicleName>
+      <topic> /uwsim/g500_A/odom_command </topic>
+      <vehicleName> g500_A </vehicleName>
     </ROSOdomToPAT>
     <ROSOdomToPAT>
-      <topic> /uwsim/g500_B/odom_command_B </topic>
-      <vehicleName> girona500_B </vehicleName>
+      <topic> /uwsim/g500_B/odom_command </topic>
+      <vehicleName> g500_B </vehicleName>
     </ROSOdomToPAT>
     
     <PATToROSOdom>
-      <topic> /uwsim/g500_A/odom_state_A </topic>
-      <vehicleName> girona500_A </vehicleName>
+      <topic> /uwsim/g500_A/odom_state </topic>
+      <vehicleName> g500_A </vehicleName>
     </PATToROSOdom>
     <PATToROSOdom>
-      <topic> /uwsim/g500_B/odom_state_B </topic>
-      <vehicleName> girona500_B </vehicleName>
+      <topic> /uwsim/g500_B/odom_state </topic>
+      <vehicleName> g500_B </vehicleName>
     </PATToROSOdom>
     
     <WorldToROSTF>
@@ -635,131 +611,131 @@
     </WorldToROSTF>
 
     <ArmToROSJointState>
-			<topic> /uwsim/g500_A/joint_state_A</topic>
-			<vehicleName> girona500_A </vehicleName>
+			<topic> /uwsim/g500_A/joint_state</topic>
+			<vehicleName> g500_A </vehicleName>
     </ArmToROSJointState>
     <ArmToROSJointState>
-			<topic> /uwsim/g500_B/joint_state_B</topic>
-			<vehicleName> girona500_B </vehicleName>
+			<topic> /uwsim/g500_B/joint_state</topic>
+			<vehicleName> g500_B </vehicleName>
     </ArmToROSJointState>
 
     <ROSJointStateToArm>
-			<topic> /uwsim/g500_A/joint_command_A</topic>
-			<vehicleName> girona500_A </vehicleName>
+			<topic> /uwsim/g500_A/joint_command</topic>
+			<vehicleName> g500_A </vehicleName>
     </ROSJointStateToArm>
     <ROSJointStateToArm>
-			<topic> /uwsim/g500_B/joint_command_B</topic>
-			<vehicleName> girona500_B </vehicleName>
+			<topic> /uwsim/g500_B/joint_command</topic>
+			<vehicleName> g500_B </vehicleName>
     </ROSJointStateToArm>
 
     <VirtualCameraToROSImage>
       <cameraName>bowtech1_A</cameraName>
-      <imageTopic> /uwsim/g500_A/camera1_A </imageTopic>
-      <infoTopic> /uwsim/g500_A/camera1_info_A </infoTopic>
+      <imageTopic> /uwsim/g500_A/camera1 </imageTopic>
+      <infoTopic> /uwsim/g500_A/camera1_info </infoTopic>
     </VirtualCameraToROSImage>
     <VirtualCameraToROSImage>
       <cameraName>bowtech1_B</cameraName>
-      <imageTopic> /uwsim/g500_B/camera1_B </imageTopic>
-      <infoTopic> /uwsim/g500_B/camera1_info_B </infoTopic>
+      <imageTopic> /uwsim/g500_B/camera1 </imageTopic>
+      <infoTopic> /uwsim/g500_B/camera1_info </infoTopic>
     </VirtualCameraToROSImage>
 
     <ROSTwistToPAT>
-      <topic> /uwsim/g500_A/twist_command_A</topic>
-      <vehicleName> girona500_A</vehicleName>
+      <topic> /uwsim/g500_A/twist_command</topic>
+      <vehicleName> g500_A</vehicleName>
     </ROSTwistToPAT>
     <ROSTwistToPAT>
-      <topic> /uwsim/g500_B/twist_command_B</topic>
-      <vehicleName> girona500_B</vehicleName>
+      <topic> /uwsim/g500_B/twist_command</topic>
+      <vehicleName> g500_B</vehicleName>
     </ROSTwistToPAT>
 
     <RangeSensorToROSRange>
       <name>sonar_A</name>
-      <topic> /uwsim/g500_A/range_A </topic>
+      <topic> /uwsim/g500_A/range </topic>
       <rate>10</rate>
     </RangeSensorToROSRange>
     <RangeSensorToROSRange>
       <name>sonar_B</name>
-      <topic> /uwsim/g500_B/range_B </topic>
+      <topic> /uwsim/g500_B/range </topic>
       <rate>10</rate>
     </RangeSensorToROSRange>
 
     <ROSPoseToPAT>
-      <topic> /uwsim/g500_A/pose_command_A</topic>
-      <vehicleName> girona500_A </vehicleName>
+      <topic> /uwsim/g500_A/pose_command</topic>
+      <vehicleName> g500_A </vehicleName>
     </ROSPoseToPAT>
     <ROSPoseToPAT>
-      <topic> /uwsim/g500_B/pose_command_B</topic>
-      <vehicleName> girona500_B </vehicleName>
+      <topic> /uwsim/g500_B/pose_command</topic>
+      <vehicleName> g500_B </vehicleName>
     </ROSPoseToPAT>
 
     <ImuToROSImu>
       <name>imu_A</name>
-      <topic>/uwsim/g500_A/imu_A</topic>
+      <topic>/uwsim/g500_A/imu</topic>
       <rate>20</rate>
     </ImuToROSImu>
     <ImuToROSImu>
       <name>imu_B</name>
-      <topic>/uwsim/g500_B/imu_B</topic>
+      <topic>/uwsim/g500_B/imu</topic>
       <rate>20</rate>
     </ImuToROSImu>
 
 <!--
     <PressureSensorToROS>
       <name>pressureSensor_A</name>
-      <topic>/uwsim/g500_A/pressure_A</topic>
+      <topic>/uwsim/g500_A/pressure</topic>
       <rate>5</rate>
     </PressureSensorToROS>
     <PressureSensorToROS>
       <name>pressureSensor_B</name>
-      <topic>/uwsim/g500_B/pressure_B</topic>
+      <topic>/uwsim/g500_B/pressure</topic>
       <rate>5</rate>
     </PressureSensorToROS>
 -->
 
 <!--     <GPSSensorToROS>
       <name>GPSSensor_A</name>
-      <topic>/uwsim/g500_A/gps_A</topic>
+      <topic>/uwsim/g500_A/gps</topic>
       <rate>1</rate>
     </GPSSensorToROS>
     <GPSSensorToROS>
       <name>GPSSensor_B</name>
-      <topic>/uwsim/g500_B/gps_B</topic>
+      <topic>/uwsim/g500_B/gps</topic>
       <rate>1</rate>
     </GPSSensorToROS> -->
 
 <!--
     <DVLSensorToROS>
       <name>DVLSensor_A</name>
-      <topic>/uwsim/g500_A/dvl_A</topic>
+      <topic>/uwsim/g500_A/dvl</topic>
       <rate>5</rate>
     </DVLSensorToROS>
     <DVLSensorToROS>
       <name>DVLSensor_B</name>
-      <topic>/uwsim/g500_B/dvl_B</topic>
+      <topic>/uwsim/g500_B/dvl</topic>
       <rate>5</rate>
     </DVLSensorToROS>
 -->
 
 <!--    <RangeImageSensorToROSImage>
       <cameraName>rangeImage_A</cameraName>
-      <imageTopic> /uwsim/g500_A/rangecamera_A </imageTopic>
-      <infoTopic> /uwsim/g500_A/rangecamera_info_A </infoTopic>
+      <imageTopic> /uwsim/g500_A/rangecamera </imageTopic>
+      <infoTopic> /uwsim/g500_A/rangecamera_info </infoTopic>
     </RangeImageSensorToROSImage>
     <RangeImageSensorToROSImage>
       <cameraName>rangeImage_B</cameraName>
-      <imageTopic> /uwsim/g500_B/rangecamera_B </imageTopic>
-      <infoTopic> /uwsim/g500_B/rangecamera_info_B </infoTopic>
+      <imageTopic> /uwsim/g500_B/rangecamera </imageTopic>
+      <infoTopic> /uwsim/g500_B/rangecamera_info </infoTopic>
     </RangeImageSensorToROSImage>
 -->
 
 <!--
     <multibeamSensorToLaserScan>
       <name>multibeam_A</name>
-      <topic>/uwsim/g500_A/multibeam_A</topic>
+      <topic>/uwsim/g500_A/multibeam</topic>
     </multibeamSensorToLaserScan>
     <multibeamSensorToLaserScan>
       <name>multibeam_B</name>
-      <topic>/uwsim/g500_B/multibeam_B</topic>
+      <topic>/uwsim/g500_B/multibeam</topic>
     </multibeamSensorToLaserScan>
 -->
 
@@ -767,51 +743,51 @@
     <SimulatedDeviceROS>
       <echoROS>
         <name>g500_echo1_A</name>
-        <topic>/uwsim/g500_A/echo1_A</topic>
+        <topic>/uwsim/g500_A/echo1</topic>
         <rate>1</rate>
       </echoROS>
     </SimulatedDeviceROS>
     <SimulatedDeviceROS>
       <echoROS>
         <name>g500_echo1_B</name>
-        <topic>/uwsim/g500_B/echo1_B</topic>
+        <topic>/uwsim/g500_B/echo1</topic>
         <rate>1</rate>
       </echoROS>
     </SimulatedDeviceROS>
 -->
 
     <contactSensorToROS>
-      <name>girona500_A</name>
-      <topic>/uwsim/g500_A/contactSensor_A</topic>
+      <name>g500_A</name>
+      <topic>/uwsim/g500_A/contactSensor</topic>
       <rate> 100 </rate>
     </contactSensorToROS>
     <contactSensorToROS>
-      <name>girona500_B</name>
-      <topic>/uwsim/g500_B/contactSensor_B</topic>
+      <name>g500_B</name>
+      <topic>/uwsim/g500_B/contactSensor</topic>
       <rate> 100 </rate>
     </contactSensorToROS>
 
 <!--
     <echoROS>
       <name>g500_echo2_A</name>
-      <topic>/uwsim/g500_A/echo2_A</topic>
+      <topic>/uwsim/g500_A/echo2</topic>
       <rate>1</rate>
     </echoROS>
     <echoROS>
       <name>g500_echo2_B</name>
-      <topic>/uwsim/g500/echo2_B</topic>
+      <topic>/uwsim/g500_B/echo2</topic>
       <rate>1</rate>
     </echoROS>
 -->
 
     <ForceSensorROS>
       <name>ForceSensor_A</name>
-      <topic>/uwsim/g500_A/ForceSensor_A</topic>
+      <topic>/uwsim/g500_A/ForceSensor</topic>
       <rate>100</rate>
     </ForceSensorROS>
     <ForceSensorROS>
       <name>ForceSensor_B</name>
-      <topic>/uwsim/g500_B/ForceSensor_B</topic>
+      <topic>/uwsim/g500_B/ForceSensor</topic>
       <rate>100</rate>
     </ForceSensorROS>
 

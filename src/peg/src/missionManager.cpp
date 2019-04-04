@@ -1,12 +1,27 @@
-#include "header/main.h"
+#include "header/missionManager.h"
 #include <chrono>
 
-/// TODO calculate tempo in controol loop per vedere se scade il timer
+/**
+ * @brief missionManager
+ * @param argc number of input (minimum 3)
+ * @param argv:
+ * argv[1] robotName
+ * argv[2] otherRobotName
+ * argv[3] (optional) path for logging files (folders will be created if not exist)
+ * @return
+ * @note keep eye on execution time of control loop to check if it cant
+ * do computations in the interval of frequency given
+ */
+
 int main(int argc, char **argv)
 {
-
-  ROS_INFO("[MAIN] Start");
-  ros::init(argc, argv, "main"); //necessary for real ros node rosinterface
+  if (argc < 3){
+    std::cout << "[MISSION_MANAGER] Please insert the two robots name"<< std::endl;
+    return -1;
+  }
+  std::string robotName = argv[1];
+  ros::init(argc, argv, robotName + "MissionManager");
+  std::cout << "[" << robotName << "][MISSION_MANAGER] Start" << std::endl;
 
   //// MISSION MANAGER
   /// GOAL VEHICLE
@@ -53,13 +68,18 @@ int main(int argc, char **argv)
   robInfo.transforms.wTgoalEE_eigen = wTgoalEE_eigen;
 
   ///Controller
-  //std::string pathLog = "logPeg/" + PRT::getCurrentDateFormatted();
-  //Controller controller("girona500_A", &pathLog);
-  Controller controller("girona500_A");
-
+  std::string* pathLog;
+  if (LOG && (argc > 3)){
+    //if flag log setted to 1 and path log is given
+    *pathLog = argv[3];
+  } else {
+    pathLog = NULL;
+  }
+  Controller controller(robotName, pathLog);
 
   ///Ros interface
-  RosInterface rosInterface("/uwsim/g500_A/", "girona500_A", "girona500_B", "pipe", argc, argv);
+  RosInterface rosInterface(argc, argv, "pipe");
+
   rosInterface.init();
 
   rosInterface.getwTt(&(robInfo.transforms.wTt_eigen));
@@ -67,7 +87,7 @@ int main(int argc, char **argv)
   int ms = 100;
   boost::asio::io_service io;
   while(1){
-//    auto start = std::chrono::steady_clock::now();
+    auto start = std::chrono::steady_clock::now();
 
     // this must be inside loop
     boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
@@ -102,10 +122,10 @@ int main(int argc, char **argv)
 
     rosInterface.spinOnce(); // actually the spinonce is called here and not in sendQdot
 
-    //    auto end = std::chrono::steady_clock::now();
-    //    auto diff = end - start;
-    //    std::cout << std::chrono::duration<double, std::milli> (diff).count()
-    //        << " ms" << std::endl;
+        auto end = std::chrono::steady_clock::now();
+        auto diff = end - start;
+        std::cout << std::chrono::duration<double, std::milli> (diff).count()
+            << " ms" << std::endl;
 
 
     loopRater.wait(); //wait for the remaning time until period setted (ms)

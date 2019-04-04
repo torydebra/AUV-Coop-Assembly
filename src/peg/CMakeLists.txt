@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(peg)
 
-# Is it needed for cmat KAL:: not found??
+#to exclude two non existent header from cmat.h
 add_definitions(-DCMAT_STATIC_BUFFERS -DCMAT_STANDALONE)
 
 ## set list of compile option to later use target_compile_options(my_target INTERFACE ${REPLACED_FLAGS}) in the added files
@@ -41,8 +41,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
 
-#to exclude two non existent header from cmat.h
-add_definitions(-DCMAT_STATIC_BUFFERS -DCMAT_STANDALONE)
+
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -189,7 +188,8 @@ add_library(ObstacleAvoidEETask src/tasks/obstacleAvoidEETask.cpp)
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/peg_pkg_node.cpp)
-add_executable(Main src/main.cpp)
+add_executable(MissionManagerA src/missionManager.cpp)
+add_executable(MissionManagerB src/missionManager.cpp)
 
 
 ## Rename C++ executable without prefix
@@ -208,7 +208,16 @@ add_executable(Main src/main.cpp)
 # )
 
 
-target_link_libraries(Main
+target_link_libraries(MissionManagerB
+    ${catkin_LIBRARIES}
+    RosInterface
+    Prints
+    Controller
+    KdlHelper
+    JacobianHelper
+)
+
+target_link_libraries(MissionManagerA
     ${catkin_LIBRARIES}
     RosInterface
     Prints

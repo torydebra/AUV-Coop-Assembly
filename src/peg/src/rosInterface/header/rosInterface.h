@@ -16,9 +16,7 @@
 class RosInterface
 {
 public:
-  RosInterface(std::string topicRoot, std::string robotName,
-               std::string otherRobotName,
-               std::string toolName, int argc, char **argv);
+  RosInterface(int argc, char **argv, std::string toolName);
   int init();
   int getwTv(Eigen::Matrix4d* wTv_eigen);
   int getwTt(Eigen::Matrix4d* wTt_eigen);

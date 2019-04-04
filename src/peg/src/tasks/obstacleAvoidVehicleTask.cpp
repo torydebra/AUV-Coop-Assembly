@@ -8,8 +8,8 @@ ObstacleAvoidVehicleTask::ObstacleAvoidVehicleTask(int dim, bool eqType, std::st
                  "you setted "<< dimension << " as dimension\n";
     return;
   }
-  gain = 0.6;
-  safe_dist = 0.8; //in meters
+  gain = 0.7;
+  safe_dist = 0.75; //in meters
 
 }
 
@@ -30,15 +30,17 @@ int ObstacleAvoidVehicleTask::updateMatrices(struct Infos* const robInfo){
     w_distNorm = 0.001;
   }
 
+  //std::cout << w_distNorm << " DIST NORMA\n";
+
   setActivation(w_distNorm);
-  A.PrintMtx("A");
+  //A.PrintMtx("A");
 
   Eigen::Vector3d w_dist_normal = w_dist / w_distNorm;
   setJacobian(robInfo->robotState.wTv_eigen, w_dist_normal);
-  J.PrintMtx("J");
+  //J.PrintMtx("J");
 
   setReference(w_distNorm);
-  reference.PrintMtx("REF");
+  //reference.PrintMtx("REF");
 
 
   return 0;
@@ -75,7 +77,7 @@ void ObstacleAvoidVehicleTask::setReference(double w_distNorm){
   //if the frame is in the middle, distance minim is two times the half of lenght
   //(plus the safe dist)
   //(1): we know this is a scalar task
-  this->reference(1) = gain * (VEH_DIM + safe_dist) - w_distNorm;
+  this->reference(1) = gain * ((VEH_DIM + safe_dist) - w_distNorm);
 
 }
 

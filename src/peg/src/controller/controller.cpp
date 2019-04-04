@@ -1,9 +1,10 @@
 #include "header/controller.h"
 
 /**
- * @brief Controller::Controller Default constructor
+ * @brief Controller::Controller
  * It creates the tasks (with new) and add them to the list of task
- *
+ * @param
+ * @param
  *
  * @note   note: std::vector is nicer because to change the order of priority or to leave for the moment
  * a task we can simply comment the row.
@@ -20,19 +21,19 @@ Controller::Controller(std::string robotName, std::string* pathLog) {
   bool ineqType = false;
 
   //tasks.push_back(new VehicleNullVelTask(6, ineqType));
-  //tasks.push_back(new JointLimitTask(4, ineqType, robotName));
-  tasks.push_back(new ObstacleAvoidEETask(1, ineqType, robotName));
-  //tasks.push_back(new ObstacleAvoidVehicleTask(1, ineqType, robotName));
 
-  //tasks.push_back(new HorizontalAttitudeTask(1, ineqType, robotName));
+  tasks.push_back(new JointLimitTask(4, ineqType, robotName));
+  tasks.push_back(new HorizontalAttitudeTask(1, ineqType, robotName));
+
+  tasks.push_back(new ObstacleAvoidEETask(1, ineqType, robotName));
+  tasks.push_back(new ObstacleAvoidVehicleTask(1, ineqType, robotName));
+
 
   //tasks.push_back(new FovEEToToolTask(1, ineqType, robotName));
 
   //tasks.push_back(new EndEffectorReachTask(6, eqType, robotName));
 
   //tasks.push_back(new VehicleReachTask(6, eqType, robotName));
-
-  //tasks.push_back(new EndEffectorReachTask(6, eqType, robotName));
 
   tasks.push_back(new LastTask(TOT_DOF, eqType, robotName)); //The "fake task" with all eye and zero matrices, needed as last one for algo
 
@@ -126,7 +127,7 @@ std::vector<double> Controller::execAlgorithm(){
     }
 
     //Q.PrintMtx("Q"); ///DEBUG
-    qDot_cmat.PrintMtx("qdot");
+    //qDot_cmat.PrintMtx("qdot");
   }
 
   std::vector<double> qDot_vect(TOT_DOF);

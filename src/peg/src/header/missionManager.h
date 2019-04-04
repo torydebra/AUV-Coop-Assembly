@@ -1,12 +1,13 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef MISSIONMANAGER_H
+#define MISSIONMANAGER_H
 
-#include <ros/ros.h>
+#include <iostream>
+#include <string>
 
 #include <Eigen/Core>
+#include <ros/ros.h>
 //#include <boost/chrono.hpp>
 //#include <boost/thread/thread.hpp>
-#include <iostream>
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -22,4 +23,4 @@
 #include "../controller/header/controller.h"
 #include "../rosInterface/header/rosInterface.h"
 
-#endif // MAIN_H
+#endif // MISSIONMANAGER_H
