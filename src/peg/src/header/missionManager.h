@@ -23,4 +23,19 @@
 #include "../controller/header/controller.h"
 #include "../rosInterface/header/rosInterface.h"
 
+
+#include "../tasks/header/lastTask.h"
+#include "../tasks/header/vehicleReachTask.h"
+#include "../tasks/header/endEffectorReachTask.h"
+#include "../tasks/header/jointLimitTask.h"
+#include "../tasks/header/horizontalAttitudeTask.h"
+#include "../tasks/header/fovEEToToolTask.h"
+#include "../tasks/header/vehicleNullVelTask.h"
+#include "../tasks/header/vehicleConstrainVelTask.h"
+#include "../tasks/header/obstacleAvoidVehicleTask.h"
+#include "../tasks/header/obstacleAvoidEETask.h"
+
+int main(int, char**);
+void setTaskListInit(std::vector<Task*> *tasks, std::string robotName);
+
 #endif // MISSIONMANAGER_H

@@ -215,6 +215,17 @@ target_link_libraries(MissionManagerB
     Controller
     KdlHelper
     JacobianHelper
+    #put below new task (is it necessary? YES)
+    LastTask
+    VehicleReachTask
+    EEReachTask
+    JointLimitsTask
+    HorizontalAttitudeTask
+    FovEEToToolTask
+    VehicleNullVelTask
+    VehicleConstrVelTask
+    ObstacleAvoidVehicleTask
+    ObstacleAvoidEETask
 )
 
 target_link_libraries(MissionManagerA
@@ -224,6 +235,17 @@ target_link_libraries(MissionManagerA
     Controller
     KdlHelper
     JacobianHelper
+    #put below new task (is it necessary? YES)
+    LastTask
+    VehicleReachTask
+    EEReachTask
+    JointLimitsTask
+    HorizontalAttitudeTask
+    FovEEToToolTask
+    VehicleNullVelTask
+    VehicleConstrVelTask
+    ObstacleAvoidVehicleTask
+    ObstacleAvoidEETask
 )
 
 target_link_libraries(Conversions
@@ -239,17 +261,6 @@ target_link_libraries(Controller
     linuxcmat
     Prints
     Task
-    LastTask
-    #put below new task (is it necessary? YES)
-    VehicleReachTask
-    EEReachTask
-    JointLimitsTask
-    HorizontalAttitudeTask
-    FovEEToToolTask
-    VehicleNullVelTask
-    VehicleConstrVelTask
-    ObstacleAvoidVehicleTask
-    ObstacleAvoidEETask
 )
 
 target_link_libraries(RosInterface

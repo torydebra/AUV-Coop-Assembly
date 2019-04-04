@@ -64,6 +64,8 @@ int RosInterface::init(){
   //Wait to joint state to be ready (ie : the callback is called at least once)
   ros::Rate rate(100);
   while (jState_priv.size()==0){
+    std::cout << "[" << robotName <<"][ROS_INTERFACE] Waiting for Jstate..."
+              <<std::endl;
     ros::spinOnce();
     rate.sleep();
   }

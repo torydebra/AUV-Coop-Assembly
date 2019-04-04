@@ -1,72 +1,28 @@
 #include "header/controller.h"
 
 /**
- * @brief Controller::Controller
- * It creates the tasks (with new) and add them to the list of task
- * @param
- * @param
- *
- * @note   note: std::vector is nicer because to change the order of priority or to leave for the moment
- * a task we can simply comment the row.
- * instead, with tasks as Task**, we need to fill the list with task[0], ...task[i] ... and changing
- * priority order would be slower.
- *
+ * @brief Controller::Controller constructor
+ * @param name of the robot (for printing things)
  */
-Controller::Controller(std::string robotName, std::string* pathLog) {
-
+Controller::Controller(std::string robotName) {
   this->robotName = robotName;
-  /// PUT HERE NEW TASKS. FOR THIS CLASS, ONLY MODIFICATIONS HERE ARE NECESSARY
-  // note: order of priority at the moment is here
-  bool eqType = true;
-  bool ineqType = false;
+}
 
-  //tasks.push_back(new VehicleNullVelTask(6, ineqType));
-
-  tasks.push_back(new JointLimitTask(4, ineqType, robotName));
-  tasks.push_back(new HorizontalAttitudeTask(1, ineqType, robotName));
-
-  tasks.push_back(new ObstacleAvoidEETask(1, ineqType, robotName));
-  tasks.push_back(new ObstacleAvoidVehicleTask(1, ineqType, robotName));
-
-
-  //tasks.push_back(new FovEEToToolTask(1, ineqType, robotName));
-
-  //tasks.push_back(new EndEffectorReachTask(6, eqType, robotName));
-
-  //tasks.push_back(new VehicleReachTask(6, eqType, robotName));
-
-  tasks.push_back(new LastTask(TOT_DOF, eqType, robotName)); //The "fake task" with all eye and zero matrices, needed as last one for algo
-
+/**
+ * @brief Controller::setTaskList store the list of task that the controller must
+ * consider.
+ * @param tasks std::vector<Task*> list of tasks
+ * @return 0 correct execution
+ * @note only the vector of pointers is copied. Each specialized xxxTask is not copied, so we don't waste space
+ */
+int Controller::setTaskList(std::vector<Task*> tasks){
+  this->tasks = tasks;
   // store number of task inserted
   numTasks = tasks.size();
-
-  std::cout << "[" << robotName<< "][CONTROLLER] Inserted " << numTasks-1 <<"+1(the null task) tasks" << std::endl;
-
-  /// Log folders
-  if (LOG && pathLog != NULL){
-    this->pathLog = *pathLog + "/"+ robotName ;
-    for (int i =0; i< numTasks; ++i){
-      PRT::createDirectory(this->pathLog +"/" +tasks[i]->getName());
-    }
-    std::cout << "[" << robotName<< "][CONTROLLER] Created Log Folders in  " << pathLog  << std::endl;
-  }
-
+  std::cout << "[" << robotName<< "][CONTROLLER] Inserted " <<
+               numTasks-1 <<"+1(the null task) tasks" << std::endl;
 }
 
-
-///   TO NOT MODIFY BELOW TO ADD NEW TASK
-
-/** @brief Controller::~Controller Default destructor
- * @note It is important to delete singularly all object pointed by the vector tasks. simply tasks.clear()
- * deletes the pointer but not the object Task pointed
-*/
-Controller::~Controller(){
-  for (std::vector< Task* >::iterator it = tasks.begin() ; it != tasks.end(); ++it)
-    {
-      delete (*it);
-    }
-    tasks.clear();
-}
 
 /**
  * @brief Controller::updateTransforms This function calls all the updateMatrices of each task inserted in the
@@ -79,18 +35,7 @@ int Controller::updateTransforms(struct Infos* const robInfo){
 
   for (int i=0; i<(numTasks-1); i++){ //LastTask has everything fixed
     tasks[i]->updateMatrices(robInfo);
-
-    if (LOG){
-      std::string pathname = pathLog + "/" + tasks[i]->getName();
-      PRT::matrixCmat2file(pathname + "/activation.txt",
-                           tasks[i]->getActivation());
-      PRT::matrixCmat2file(pathname + "/reference.txt",
-                           tasks[i]->getReference());
-
-    }
-
   }
-
   return 0;
 }
 
@@ -110,14 +55,6 @@ std::vector<double> Controller::execAlgorithm(){
   //std::cout << "eereer\n\n\n"; ///DEBUG
   for (int i=0; i<numTasks; i++){
 
-    /// DEBUG
-//    std::cout << "JACOBIAN " << i << ": \n";
-//    tasks[i]->getJacobian().PrintMtx();
-//    std::cout<< "\n";
-//    std::cout << "REFERENCE " << i << ": \n";
-//    tasks[i]->getReference().PrintMtx() ;
-//    std::cout << "\n";
-
     if (tasks[i]->eqType){
       //std::cout<<tasks[i]->gain<<"\n";  ///DEBUG
       Controller::equalityIcat(tasks[i], &qDot_cmat, &Q);
@@ -126,10 +63,9 @@ std::vector<double> Controller::execAlgorithm(){
       Controller::inequalityIcat(tasks[i], &qDot_cmat, &Q);
     }
 
-    //Q.PrintMtx("Q"); ///DEBUG
-    //qDot_cmat.PrintMtx("qdot");
   }
 
+  //TODO metterlo nel CONV
   std::vector<double> qDot_vect(TOT_DOF);
   int i = 1;
   for(std::vector<double>::iterator it = qDot_vect.begin(); it != qDot_vect.end(); ++it) {

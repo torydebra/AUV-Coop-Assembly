@@ -10,8 +10,8 @@ from std_srvs.srv import Empty
 
 #topic to command
 # Twist better than odometry TODO ask why
-twist_topic="/uwsim/g500_A/twist_command_A"
-joint_topic="/uwsim/g500_A/joint_command_A"
+twist_topic="/uwsim/g500_A/twist_command"
+joint_topic="/uwsim/g500_A/joint_command"
 #base velocity for the teleoperation (0.5 m/s) / (0.5rad/s)
 baseVelocity=0.8
 baseJoint=0.1
