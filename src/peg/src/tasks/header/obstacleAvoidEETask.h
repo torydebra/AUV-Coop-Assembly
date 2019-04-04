@@ -19,7 +19,7 @@ public:
 
 private:
   void setActivation(double w_dist);
-  void setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot, double w_dist);
+  void setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot);
   void setReference(double w_dist);
   double safe_dist; //safe distance from the obstacle
 };

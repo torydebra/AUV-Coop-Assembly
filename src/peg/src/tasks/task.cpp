@@ -15,6 +15,7 @@ Task::Task(int dimension, bool eqType,
 
   this->dimension = dimension;
   this->dof = TOT_DOF;
+  this->eqType = eqType;
   this->robotName = robotName;
   this->taskName = taskName;
 

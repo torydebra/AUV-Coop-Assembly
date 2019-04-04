@@ -32,7 +32,7 @@ int ObstacleAvoidEETask::updateMatrices(struct Infos* const robInfo){
   setActivation(w_dist);
   A.PrintMtx("A");
 
-  setJacobian(robInfo->robotState.w_J_robot, w_dist);
+  setJacobian(robInfo->robotState.w_J_robot);
   J.PrintMtx("J");
 
   setReference(w_dist);
@@ -48,13 +48,13 @@ void ObstacleAvoidEETask::setActivation(double w_dist){
 
 }
 
-void ObstacleAvoidEETask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot, double w_dist){
+void ObstacleAvoidEETask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
 
   Eigen::MatrixXd jacobian_eigen(dimension, TOT_DOF);
   jacobian_eigen = Eigen::MatrixXd::Zero(dimension, TOT_DOF);
 
   Eigen::Vector3d zComponent;
-  zComponent << 0, 0, w_dist;
+  zComponent << 0, 0, 1;
 
   //top rows are the linear part of jacobian
   jacobian_eigen = - zComponent.transpose() * w_J_robot.topRows(3);

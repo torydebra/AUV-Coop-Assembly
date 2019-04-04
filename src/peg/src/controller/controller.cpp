@@ -20,9 +20,11 @@ Controller::Controller(std::string robotName, std::string* pathLog) {
   bool ineqType = false;
 
   //tasks.push_back(new VehicleNullVelTask(6, ineqType));
-  tasks.push_back(new JointLimitTask(4, ineqType, robotName));
-  tasks.push_back(new ObstacleAvoidVehicleTask(1, ineqType, robotName));
-  tasks.push_back(new HorizontalAttitudeTask(1, ineqType, robotName));
+  //tasks.push_back(new JointLimitTask(4, ineqType, robotName));
+  tasks.push_back(new ObstacleAvoidEETask(1, ineqType, robotName));
+  //tasks.push_back(new ObstacleAvoidVehicleTask(1, ineqType, robotName));
+
+  //tasks.push_back(new HorizontalAttitudeTask(1, ineqType, robotName));
 
   //tasks.push_back(new FovEEToToolTask(1, ineqType, robotName));
 
@@ -124,7 +126,7 @@ std::vector<double> Controller::execAlgorithm(){
     }
 
     //Q.PrintMtx("Q"); ///DEBUG
-    //qDot_cmat.PrintMtx("qdot");
+    qDot_cmat.PrintMtx("qdot");
   }
 
   std::vector<double> qDot_vect(TOT_DOF);

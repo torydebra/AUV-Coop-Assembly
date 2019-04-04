@@ -36,7 +36,7 @@
 
 // usato per ee avoid obstacle (avoid seafloor)
 //TODO usare il laser di profondità invece?
-#define SEAFLOOR_DEPTH 10 //i.e. position along z axis of the "object" terrain in the xml scene
+#define SEAFLOOR_DEPTH 9 //i.e. "object" terrain position plus high (considering z axis of world pointing down
 
 //log
 #define LOG 1 //0-1 logging (printing matrix on files) not activated or activated
