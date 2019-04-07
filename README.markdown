@@ -1,7 +1,12 @@
 # MASTER THESIS In Development
+
+### UWSim screenshot 
+![UWsim Screenshot](images/uwsim.png "UWsim")  
+
+### Code Scheme (at the moment)
 ![Code Scheme](images/CodeScheme.png "Code Scheme")
 
-![UWsim Screenshot](images/uwsim.png "UWsim")
+
 
 
 
