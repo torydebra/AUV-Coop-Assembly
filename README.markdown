@@ -1,6 +1,11 @@
-# MASTER THESIS in development
+# MASTER THESIS In Development
+![Code Scheme](images/CodeScheme.png "Code Scheme")
 
 
+
+
+
+##### TODO
 eigen not found soluz
 dovuto al fatto che eigen è dentro la cartella eigen3
 root@Aspire-E15:/usr/include# ln -s /usr/include/eigen3/Eigen Eigen
@@ -40,4 +45,5 @@ Libraries:
 Usata anche per riempire le jacobiane nelle classi task (più comoda di cmat).
 Nota a TASKS e (main) ma non è un problema perchè è indipendente da ros, (installabile anche senza ros)
 controllore non la usa perchè usa solo cmat
+
 
