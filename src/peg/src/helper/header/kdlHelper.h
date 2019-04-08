@@ -15,18 +15,23 @@
 class KDLHelper
 {
 public:
-  KDLHelper(std::string filename);
+  KDLHelper(std::string filename, std::string link0_name, std::string endEffector_name);
   ~KDLHelper();
-  int setSolvers(std::string link0, std::string endEffector);
+  int setEESolvers();
+  int setToolSolvers(Eigen::Matrix4d eeTtool_eigen);
   int getFixedFrame(std::string frameOrigin, std::string frameTarget, Eigen::Matrix4d *xTx_eigen);
   int getEEpose(std::vector<double> jointPos, Eigen::Matrix4d *eePose_eigen);
-  int getJacobian(std::vector<double> jointPos, Eigen::Matrix<double, 6, ARM_DOF> *jacobian);
+  int getJacobianEE(std::vector<double> jointPos, Eigen::Matrix<double, 6, ARM_DOF> *jacobianEE_eigen);
+  int getJacobianTool(std::vector<double> jointPos, Eigen::Matrix<double, 6, ARM_DOF> *jacobianTool_eigen);
   int getNJoints();
 
 private:
   int nJoints;
+  std::string link0_name;
+  std::string endEffector_name;
   KDL::Tree tree;
-  KDL::ChainJntToJacSolver* jacob_solver;
+  KDL::ChainJntToJacSolver* jacobEE_solver;
+  KDL::ChainJntToJacSolver* jacobTool_solver;
   //TODO capire diff tra recursive e non
   KDL::ChainFkSolverPos_recursive* eePose_solver;
 };

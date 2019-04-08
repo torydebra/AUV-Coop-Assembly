@@ -14,6 +14,7 @@ struct Transforms {
 
   Eigen::Matrix4d wTgoalVeh_eigen; //goal for vehicle
   Eigen::Matrix4d wTgoalEE_eigen; //goal for EE (will be projected on veh inside task)
+  Eigen::Matrix4d wTgoalTool_eigen; //goal for tool (tool frame is in the center of pipe)
 
   Eigen::Matrix4d wTt_eigen; //tool in the world
 
@@ -42,11 +43,22 @@ struct RobotState {
 
   /// Jacobians
 
-  Eigen::Matrix<double, 6, ARM_DOF> link0_J_man; //geometric jacobian of the arm projected on link 0
+  //geometric jacobian of the arm projected on link 0 with end effector as last frame
+ // (ie: ee is the controlled one)
+  Eigen::Matrix<double, 6, ARM_DOF> link0_Jee_man;
+
+  //geometric jacobian of the arm projected on link 0 with tool as last frame
+ // (ie: tool is the controlled one)
+  Eigen::Matrix<double, 6, ARM_DOF> link0_Jtool_man;
 
   //geometric jacobian of the whole robot projected on the world
+  //with end effector as last frame (ie: ee is the controlled one)
   //(J=[J_pos ; J_or] from Antonelly book
-  Eigen::Matrix<double, 6, TOT_DOF> w_J_robot;
+  Eigen::Matrix<double, 6, TOT_DOF> w_Jee_robot;
+  //geometric jacobian of the whole robot projected on the world
+  //with tool as last frame (ie: tool is the controlled one)
+  //(J=[J_pos ; J_or] from Antonelly book
+  Eigen::Matrix<double, 6, TOT_DOF> w_Jtool_robot;
 
 
 

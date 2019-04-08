@@ -32,7 +32,7 @@ Eigen::Matrix3d CONV::rotMatrix_cmat2eigen(CMAT::RotMatrix mat_cmat){
 Eigen::Matrix4d CONV::transfMatrix_cmat2eigen(CMAT::TransfMatrix mat_cmat){
 
   Eigen::Matrix4d mat_eigen = Eigen::Matrix4d::Identity();
-  mat_eigen.topLeftCorner(3,3) = CONV::rotMatrix_cmat2eigen(mat_cmat.GetRotMatrix());
+  mat_eigen.topLeftCorner<3,3>() = CONV::rotMatrix_cmat2eigen(mat_cmat.GetRotMatrix());
   CMAT::Vect3 trasl = mat_cmat.GetTrasl();
   mat_eigen(0,3) = trasl(1);
   mat_eigen(1,3) = trasl(2);
@@ -66,7 +66,7 @@ Eigen::Matrix4d CONV::transfMatrix_tf2eigen(tf::Transform mat_tf){
   //rotational part
   Eigen::Matrix3d rot_eigen;
   tf::matrixTFToEigen(mat_tf.getBasis(), rot_eigen);
-  mat_eigen.topLeftCorner(3,3) = rot_eigen;
+  mat_eigen.topLeftCorner<3,3>() = rot_eigen;
 
   //trans part
   mat_eigen(0,3) = mat_tf.getOrigin().getX();
@@ -95,7 +95,7 @@ Eigen::Matrix4d CONV::transfMatrix_kdl2eigen(KDL::Frame mat_kdl){
 
   // with << operand we have to indicate elements row by row. kdl store matrix rowMajor so
   // we can do this
-  mat_eigen.topLeftCorner(3,3) << mat_kdl.M.data[0], mat_kdl.M.data[1], mat_kdl.M.data[2],
+  mat_eigen.topLeftCorner<3,3>() << mat_kdl.M.data[0], mat_kdl.M.data[1], mat_kdl.M.data[2],
                                   mat_kdl.M.data[3], mat_kdl.M.data[4], mat_kdl.M.data[5],
                                   mat_kdl.M.data[6], mat_kdl.M.data[7], mat_kdl.M.data[8];
 
@@ -117,6 +117,40 @@ Eigen::Matrix4d CONV::transfMatrix_kdl2eigen(KDL::Frame mat_kdl){
 Eigen::MatrixXd CONV::jacobian_kdl2eigen(KDL::Jacobian mat_kdl){
   Eigen::MatrixXd mat_eigen = mat_kdl.data;
   return mat_eigen;
+}
+
+/**
+ * @brief CONV::transfMatrix_eigen2kdl
+ * @param mat_eigen transf matrix to convert
+ * @return mat_kdl transf matrix converted
+ * @warning WARNING: KDL is row major. Eigen and cmat column major.
+ */
+KDL::Frame CONV::transfMatrix_eigen2kdl(Eigen::Matrix4d mat_eigen){
+
+  KDL::Frame mat_kdl; //default construct create identity
+
+  //REMEMBER: kdl is ROW MAJOR, EIGEN is COLUMN MAJOR
+  Eigen::Matrix3d rot_eigen = mat_eigen.topLeftCorner<3,3>();
+
+  mat_kdl.M.data[0] = rot_eigen(0,0);
+  mat_kdl.M.data[1] = rot_eigen(0,1);
+  mat_kdl.M.data[2] = rot_eigen(0,2);
+  //kdl second row
+  mat_kdl.M.data[3] = rot_eigen(1,0);
+  mat_kdl.M.data[4] = rot_eigen(1,1);
+  mat_kdl.M.data[5] = rot_eigen(1,2);
+  //kdl third row
+  mat_kdl.M.data[6] = rot_eigen(2,0);
+  mat_kdl.M.data[7] = rot_eigen(2,1);
+  mat_kdl.M.data[8] = rot_eigen(2,2);
+
+  //trasl part
+  mat_kdl.p.x(mat_eigen(0,3));
+  mat_kdl.p.y(mat_eigen(1,3));
+  mat_kdl.p.z(mat_eigen(2,3));
+
+  return mat_kdl;
+
 }
 
 

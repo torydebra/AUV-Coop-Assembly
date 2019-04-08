@@ -3,13 +3,19 @@
 /**
  * @brief EndEffectorReachTask::EndEffectorReachTask Constructor of specific task simply calls the parent constructor
  * through inizializer list
- * @param dimension dimension of the task (e.g. 1 for scalar task)
+ * @param dim dimension of the task (e.g. 1 for scalar task)
  * @param eqType true or false for equality or inequality task
- * @param activeLog bool to set logger prints
+ * @param robotName name of robot to prints info
+ * @param pt enum to decide which point control:
+ *    if ee: the control point is the end effector
+ *    if tool: the control point is the tool (so it is the tool frame which will reach the goal)
  */
-EndEffectorReachTask::EndEffectorReachTask(int dim, bool eqType, std::string robotName)
+EndEffectorReachTask::EndEffectorReachTask(int dim, bool eqType, std::string robotName, ControlPoint pt)
   : Task(dim, eqType, robotName, "ENDEFFECTOR_REACHING_GOAL"){
   gain = 0.2;
+  this->controlPoint = pt;
+  std::cout << "[" << taskName << "] Controlling Point: " << controlPoint << std::endl;
+
 }
 
 /**
@@ -21,10 +27,20 @@ int EndEffectorReachTask::updateMatrices(struct Infos* const robInfo){
 
   setActivation();
 
-  setJacobian(robInfo->robotState.w_J_robot);
 
-  setReference(robInfo->transforms.wTgoalEE_eigen,
+  if (controlPoint == tool){
+    setJacobian(robInfo->robotState.w_Jee_robot);
+    setReference(robInfo->transforms.wTgoalTool_eigen,
+               robInfo->transforms.wTt_eigen);
+  } else if (controlPoint == ee) {
+    setJacobian(robInfo->robotState.w_Jtool_robot);
+    setReference(robInfo->transforms.wTgoalEE_eigen,
                robInfo->robotState.wTv_eigen*robInfo->robotState.vTee_eigen);
+  } else {
+    std::cerr << "[" << taskName << "] Not know ControlPoint of value " << controlPoint << std::endl;
+    return -1;
+  }
+
   //setJacobian(transf->vTjoints, transf->vTee_eigen);
   //setReference(transf->vTee_eigen, transf->wTgoalEE_eigen, transf->wTv_eigen);
   return 0;
@@ -44,13 +60,20 @@ int EndEffectorReachTask::setActivation(){
 
 }
 
-int EndEffectorReachTask::setReference(Eigen::Matrix4d wTgoalEE_eigen, Eigen::Matrix4d wTee_eigen){
 
-  CMAT::TransfMatrix wTgoalEE_cmat = CONV::matrix_eigen2cmat(wTgoalEE_eigen);
-  CMAT::TransfMatrix wTee_cmat = CONV::matrix_eigen2cmat(wTee_eigen);
+/**
+ * @brief EndEffectorReachTask::setReference
+ * @param wTgoalxxx_eigen
+ * @param wTxxx_eigen
+ * @note xxx because control point can be EndEffector or tool point
+ */
+void EndEffectorReachTask::setReference(Eigen::Matrix4d wTgoalxxx_eigen, Eigen::Matrix4d wTxxx_eigen){
+
+  CMAT::TransfMatrix wTgoalxxx_cmat = CONV::matrix_eigen2cmat(wTgoalxxx_eigen);
+  CMAT::TransfMatrix wTxxx_cmat = CONV::matrix_eigen2cmat(wTxxx_eigen);
 
   //vTgoalEE_cmat.PrintMtx("vTgoalEE"); ///DEBUG: GIUSTA
-  CMAT::Vect6 errorSwapped = CMAT::CartError(wTgoalEE_cmat, wTee_cmat);//ang;lin
+  CMAT::Vect6 errorSwapped = CMAT::CartError(wTgoalxxx_cmat, wTxxx_cmat);//ang;lin
   // ang and lin must be swapped because in qDot and jacob linear part is before
   CMAT::Vect6 error;
   error.SetFirstVect3(errorSwapped.GetSecondVect3());

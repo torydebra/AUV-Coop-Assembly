@@ -38,6 +38,21 @@ Eigen::Vector3d FRM::reducedVersorLemma(Eigen::Vector3d a, Eigen::Vector3d b){
 
 }
 
+Eigen::Matrix4d FRM::invertTransf(Eigen::Matrix4d mat){
+
+  Eigen::Matrix4d inv = Eigen::Matrix4d::Identity();
+
+  // inverse of rot part is the transpose
+  Eigen::Matrix3d rot_t = mat.topLeftCorner<3,3>().transpose();
+  inv.topLeftCorner<3,3>() = rot_t;
+
+  inv.topRightCorner<3,1>() = - rot_t * mat.topRightCorner<3,1>();
+
+  return inv;
+
+
+}
+
 Eigen::MatrixXd FRM::pseudoInverse(Eigen::MatrixXd mat, double tolerance){
 
   Eigen::JacobiSVD<Eigen::MatrixXd> svd(mat, Eigen::ComputeThinU | Eigen::ComputeThinV);

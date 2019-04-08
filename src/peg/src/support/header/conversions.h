@@ -36,6 +36,9 @@ namespace CONV{
     Eigen::Matrix4d transfMatrix_kdl2eigen(KDL::Frame mat_kdl);
     Eigen::MatrixXd jacobian_kdl2eigen(KDL::Jacobian mat_kdl);
 
+    //Eigen to KDL
+    KDL::Frame transfMatrix_eigen2kdl(Eigen::Matrix4d mat_eigen);
+
 }
 
 #endif // CONVERSIONS_H

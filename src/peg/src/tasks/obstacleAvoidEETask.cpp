@@ -32,7 +32,7 @@ int ObstacleAvoidEETask::updateMatrices(struct Infos* const robInfo){
   setActivation(w_dist);
   //A.PrintMtx("A");
 
-  setJacobian(robInfo->robotState.w_J_robot);
+  setJacobian(robInfo->robotState.w_Jee_robot);
   //J.PrintMtx("J");
 
   setReference(w_dist);

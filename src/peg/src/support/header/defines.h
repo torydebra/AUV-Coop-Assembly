@@ -38,6 +38,9 @@
 //TODO usare il laser di profondità invece?
 #define SEAFLOOR_DEPTH 9 //i.e. "object" terrain position plus high (considering z axis of world pointing down
 
+// decide the control point (end effector or tool) that is the one which will reach the goal
+enum ControlPoint {ee, tool};
+
 //log
 #define LOG 1 //0-1 logging (printing matrix on files) not activated or activated
 

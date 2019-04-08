@@ -1,11 +1,11 @@
-/// TODO divide parseURDF and CreateChain... so parse urdf is used only once
-
 #include "header/kdlHelper.h"
 /**
  * @brief KDLHelper::KDLHelper
  * @param filename path and name of the urdf file of the robot (arm + vehicle is ok)
+ * @param link0_name name in the urdf file of the frame of the joint 0 (actually, name of <link></link>)
+ * @param endEffector_name name in the urdf file of the frame of the end effector (actually, name of <link></link>)
  */
-KDLHelper::KDLHelper(std::string filename)
+KDLHelper::KDLHelper(std::string filename, std::string link0_name, std::string endEffector_name)
 {
 
   TiXmlDocument file_xml(filename);
@@ -24,29 +24,34 @@ KDLHelper::KDLHelper(std::string filename)
   }
 
   nJoints = 0;
+  this->link0_name = link0_name;
+  this->endEffector_name = endEffector_name;
 
 }
 
 KDLHelper::~KDLHelper(){
 
   delete eePose_solver;
-  delete jacob_solver;
+  delete jacobEE_solver;
+  delete jacobTool_solver;
 }
 
 
 
 /**
- * @brief KDLHelper::setSolvers Initialize the kinematic solvers (jacob and pose) for the arm
- * @param link0 name in the urdf file of the frame of the joint 0 (actually, name of <link></link>)
- * @param endEffector name in the urdf file of the frame of the end effector (actually, name of <link></link>)
+ * @brief KDLHelper::setEESolvers Initialize the kinematic solvers (jacob and pose)
+ * for the arm End Effector
  * @return 0 for correct execution
- * @note DH (denavit hartenberg) convention is used. So, link 0 is the base of the arm (FIXED respect to the vehicle)
+ * @note DH (denavit hartenberg) convention is used.
+ * So, link 0 is the base of the arm (FIXED respect to the vehicle)
+ * @note it is ok do the same tree.getChain in this and other function
+ * because these setxxxSolvers are called only once to associate the solver to the kin chain
  */
-int KDLHelper::setSolvers(std::string link0, std::string endEffector){
+int KDLHelper::setEESolvers(){
 
   //generate the chain from link0 to final (end effector)
   KDL::Chain kinChain;
-  tree.getChain(link0, endEffector, kinChain);
+  tree.getChain(link0_name, endEffector_name, kinChain);
 
   nJoints = kinChain.getNrOfJoints();
   if (nJoints != ARM_DOF){
@@ -56,13 +61,43 @@ int KDLHelper::setSolvers(std::string link0, std::string endEffector){
     return -1;
   }
 
-  std::cout << "[KDL_HELPER] found " << nJoints << " joints from " << link0 << " to " << endEffector << "\n";
+  std::cout << "[KDL_HELPER] found " << nJoints << " joints from " << link0_name
+            << " to " << endEffector_name << "\n";
 
   eePose_solver = new KDL::ChainFkSolverPos_recursive(kinChain);
-  jacob_solver = new KDL::ChainJntToJacSolver(kinChain);
+  jacobEE_solver = new KDL::ChainJntToJacSolver(kinChain);
+
 
   return 0;
 }
+
+/**
+ * @brief KDLHelper::setToolSolvers
+ * @return 0 correct execution
+ * @note it is ok do the same tree.getChain in this and other function
+ * because these setxxxSolvers are called only once to associate the solver to the kin chain
+ */
+int KDLHelper::setToolSolvers(Eigen::Matrix4d eeTtool_eigen){
+
+  KDL::Chain kinChain;
+  tree.getChain(link0_name, endEffector_name, kinChain);
+  // now kinChain is a chain for only the arm
+
+
+  // now we add a fake joint to add to kinChain a segment which is for the tool
+  //(that is fixed respect to the ee)
+  KDL::Frame eeTtool_kdl = CONV::transfMatrix_eigen2kdl(eeTtool_eigen);
+
+  kinChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::None), eeTtool_kdl));
+
+  //even if we add a segment, the number of joint of kin chain remain 4. Probably because we add a fixed joint.
+  //however, this is good.
+
+  /// kinChain until tool now
+  jacobTool_solver = new KDL::ChainJntToJacSolver(kinChain);
+
+}
+
 
 int KDLHelper::getEEpose(std::vector<double> jointPos, Eigen::Matrix4d *eePose_eigen){
 
@@ -79,7 +114,13 @@ int KDLHelper::getEEpose(std::vector<double> jointPos, Eigen::Matrix4d *eePose_e
 
 }
 
-int KDLHelper::getJacobian(std::vector<double> jointPos, Eigen::Matrix<double, 6, ARM_DOF> *jacobian_eigen){
+/**
+ * @brief KDLHelper::getJacobianEE respect base frame of arm (link0)
+ * @param jointPos
+ * @param jacobianEE_eigen
+ * @return
+ */
+int KDLHelper::getJacobianEE(std::vector<double> jointPos, Eigen::Matrix<double, 6, ARM_DOF> *jacobianEE_eigen){
 
   KDL::JntArray jointPositions = KDL::JntArray(nJoints);
 
@@ -89,20 +130,41 @@ int KDLHelper::getJacobian(std::vector<double> jointPos, Eigen::Matrix<double, 6
 
   KDL::Jacobian jacobian_kdl;
   jacobian_kdl.resize(nJoints);
-  jacob_solver->JntToJac(jointPositions, jacobian_kdl);
+  jacobEE_solver->JntToJac(jointPositions, jacobian_kdl);
 
-  *jacobian_eigen = CONV::jacobian_kdl2eigen(jacobian_kdl);
+  *jacobianEE_eigen = CONV::jacobian_kdl2eigen(jacobian_kdl);
 
   return 0;
 }
 
-int KDLHelper::getNJoints(){
-  return nJoints;
+/**
+* @brief KDLHelper::getJacobianTool respect base frame of arm (link0)
+* @param jointPos
+* @param jacobianTool_eigen
+* @return
+*/
+int KDLHelper::getJacobianTool(std::vector<double> jointPos, Eigen::Matrix<double, 6, ARM_DOF> *jacobianTool_eigen){
+
+  KDL::JntArray jointPositions = KDL::JntArray(nJoints);
+
+  for(unsigned int i=0; i<nJoints; i++){
+    jointPositions(i)=jointPos[i];
+  }
+
+  KDL::Jacobian jacobian_kdl;
+  jacobian_kdl.resize(nJoints); //ASK +1 ?? o il fixed non è considerato joint?
+  jacobTool_solver->JntToJac(jointPositions, jacobian_kdl);
+
+  *jacobianTool_eigen = CONV::jacobian_kdl2eigen(jacobian_kdl);
+
+  return 0;
 }
 
+
 /**
- * @brief KDLHelper::getFixedFrame get relative position of things that NOT change
- * their relative position (e.g. vehicle and a sensor fixed on the vehicle )
+ * @brief KDLHelper::getFixedFrame get relative position of things inside the urdf file
+ * of the robot that NOT change their relative position
+ * (e.g. vehicle and a sensor fixed on the vehicle )
  * @param frameOrigin
  * @param frameTarget
  * @param *xTx_eigen FIXED transformation between origin and target, passed by reference
@@ -139,4 +201,4 @@ int KDLHelper::getFixedFrame(std::string frameOrigin, std::string frameTarget, E
 }
 
 
-
+int KDLHelper::getNJoints(){return nJoints;}

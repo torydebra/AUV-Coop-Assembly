@@ -1,11 +1,27 @@
 #include "header/jacobianHelper.h"
 
 
-//TODO: store internally matrix and vector that remain fixed? (eg posiz of link respect to vehicle)
-int computeWholeJacobian(struct Infos *robInfo){
+//TODO: store internally matrix and vector that remain fixed? (eg posiz of link0 respect to vehicle)
+
+/**
+ * @brief computeWholeJacobian
+ * @param robInfo (in & out) info to calculate jacobian and store it (passed by reference)
+ * @param pt enum to decide the control point (ee, tool)
+ * @return 0 correct execution
+ */
+int computeWholeJacobian(struct Infos *robInfo, ControlPoint pt){
 
   //arm jacobian projected on link0
-  Eigen::Matrix<double, 6, ARM_DOF> link0_J_man = robInfo->robotState.link0_J_man;
+  Eigen::Matrix<double, 6, ARM_DOF> link0_J_man;
+  if (pt == ee){
+    link0_J_man = robInfo->robotState.link0_Jee_man;
+
+  } else if (pt == tool){
+    link0_J_man = robInfo->robotState.link0_Jtool_man;
+
+  } else {
+    return -1;
+  }
 
   //positional and orientational part of arm jacobian PROJECTED ON WORLD
   Eigen::Matrix <double, 3, ARM_DOF> w_J_man_pos;
@@ -47,10 +63,18 @@ int computeWholeJacobian(struct Infos *robInfo){
   w_J_or.rightCols<3>() = wRv; //relative to angular vel
 
   /// Store in struct
-  robInfo->robotState.w_J_robot.topRows<3>() = w_J_pos;
-  robInfo->robotState.w_J_robot.bottomRows<3>() = w_J_or;
+  if (pt == ee){
+    robInfo->robotState.w_Jee_robot.topRows<3>() = w_J_pos;
+    robInfo->robotState.w_Jee_robot.bottomRows<3>() = w_J_or;
+
+  } else if (pt == tool){
+    robInfo->robotState.w_Jtool_robot.topRows<3>() = w_J_pos;
+    robInfo->robotState.w_Jtool_robot.bottomRows<3>() = w_J_or;
+
+  } else {
+    return -1;
+  }
+
 
   return 0;
-
-
 }

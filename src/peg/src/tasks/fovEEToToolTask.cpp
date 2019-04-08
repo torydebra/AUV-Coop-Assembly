@@ -40,7 +40,7 @@ int FovEEToToolTask::updateMatrices(struct Infos* const robInfo){
 
   setReference();
   setActivation();
-  setJacobian(robInfo->robotState.w_J_robot);
+  setJacobian(robInfo->robotState.w_Jee_robot);
 
   return 0;
 }
