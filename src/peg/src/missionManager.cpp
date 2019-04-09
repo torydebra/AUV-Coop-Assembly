@@ -1,6 +1,8 @@
 #include "header/missionManager.h"
 #include <chrono>
 
+
+
 /**
  * @brief missionManager
  * @param argc number of input (minimum 3)
@@ -20,8 +22,33 @@ int main(int argc, char **argv)
     return -1;
   }
   std::string robotName = argv[1];
-  ros::init(argc, argv, robotName + "MissionManager");
+  std::string otherRobotName = argv[2];
+  std::string pathLog;
+  if (LOG && (argc > 3)){   //if flag log setted to 1 and path log is given
+    pathLog = argv[3];
+  }
+  start_glob = false;
+
+
+  /// ROS NODE
+  ros::init(argc, argv, robotName + "_MissionManager");
   std::cout << "[" << robotName << "][MISSION_MANAGER] Start" << std::endl;
+  ros::NodeHandle nh;
+  //pub to let coord that is ready (e.g. to see if both missManager A & B started)
+  // ASK towrite in doc  _missionManager" topic are for mission manager topic...
+  //withotu missman (only robname) are topic of rosInterface
+  std::string topicReady = "/uwsim/" + robotName+"_MissionManager"  + "/ready";
+  ros::Publisher readyPub = nh.advertise<std_msgs::Bool>(topicReady, 1);
+
+  //sub to know if other robot is ready
+  //even if we can read directly the topic of the other robot,
+  // for consistency ALL infos received from extern (ie subscribed topic)
+  // are given by coordinator.
+  // for make each miss manager comunicate with its own robot, there is
+  // the ros interface
+  std::string topicStart = "/uwsim/Coord/StartStopBoth";
+  ros::Subscriber startSub = nh.subscribe(topicStart, 1, startSubCallback);
+
 
 
   /// GOAL VEHICLE
@@ -49,14 +76,11 @@ int main(int argc, char **argv)
 
   /// GOAL TOOL
   double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
-  //REMEBER than tool have z axix upwards (rob and world have downward z)
+  // (rob and world have downward z)
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
   //rot part
-  //wTgoalTool_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
-  //roll 180 degrees
-  wTgoalTool_eigen.topLeftCorner(3,3) << 1, 0, 0,
-                                         0, -1, 0,
-                                         0, 0, -1;
+  wTgoalTool_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
+
   //trasl part
   wTgoalTool_eigen(0, 3) = goalLinearVectTool[0];
   wTgoalTool_eigen(1, 3) = goalLinearVectTool[1];
@@ -71,10 +95,8 @@ int main(int argc, char **argv)
   robInfo.transforms.wTgoalTool_eigen = wTgoalTool_eigen;
 
 
-
-
   ///Ros interface
-  RosInterface rosInterface(argc, argv, "pipe");
+  RosInterface rosInterface(nh, robotName, otherRobotName, "pipe");
   rosInterface.init();
 
 
@@ -95,6 +117,7 @@ int main(int argc, char **argv)
   rosInterface.getwTv(&(robInfo.robotState.wTv_eigen));
   rosInterface.getwTt(&(robInfo.transforms.wTt_eigen));
   rosInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
+
   //get ee pose RESPECT LINK 0
   kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
   // useful have vTee: even if it is redunant, everyone use it a lot
@@ -123,11 +146,10 @@ int main(int argc, char **argv)
   controller.setTaskList(tasks);
 
 
-  /// Log folders
-  std::string pathLog;
-  //if flag log setted to 1 and path log is given
-  if (LOG && (argc > 3)){
-    pathLog = argv[3];
+  /// Log folders TO DO AFTER EVERY SETTASKLIST?
+  /// //TODO ulteriore subfolder per la mission
+
+  if (pathLog.size() > 0){
     for (int i =0; i< tasks.size(); ++i){
       PRT::createDirectory(pathLog +"/" +tasks[i]->getName());
     }
@@ -136,6 +158,19 @@ int main(int argc, char **argv)
               << pathLog  << std::endl;
   }
 
+  //wait coordinator to start
+  std_msgs::Bool ready;
+  ready.data = true;
+  double msinit = 100;
+  boost::asio::io_service ioinit;
+  while(!start_glob){
+    boost::asio::deadline_timer loopRater(ioinit, boost::posix_time::milliseconds(msinit));
+    readyPub.publish(ready);
+    std::cout << "[" << robotName<< "][MISSION_MANAGER] Wating for "<<
+                 "Coordinator to say I can start...\n";
+    ros::spinOnce();
+    loopRater.wait();
+  }
 
 
   int ms = 100;
@@ -168,10 +203,8 @@ int main(int argc, char **argv)
     controller.updateTransforms(&robInfo);
     std::vector<double> qDot = controller.execAlgorithm();
 
-
     ///Send command to vehicle
     rosInterface.sendQDot(qDot);
-    rosInterface.spinOnce(); // actually the spinonce is called here and not in sendQdot
 
 
     ///Log things
@@ -182,20 +215,32 @@ int main(int argc, char **argv)
                              tasks[i]->getActivation());
         PRT::matrixCmat2file(pathname + "/reference.txt",
                              tasks[i]->getReference());
+
       }
-
       //other logs... maybe qDot?
-
     }
 
-    /// Timer
-//        auto end = std::chrono::steady_clock::now();
-//        auto diff = end - start;
-//        std::cout << std::chrono::duration<double, std::milli> (diff).count()
-//            << " ms" << std::endl;
+    ///PRINT
+//    for(int i=0; i<tasks.size(); i++){
+//      /// DEBUG
+//      std::cout << "Activation " << tasks[i]->getName() << ": \n";
+//      tasks[i]->getActivation().PrintMtx() ;
+//      std::cout << "\n";
+////      std::cout << "JACOBIAN " << tasks[i]->getName() << ": \n";
+////      tasks[i]->getJacobian().PrintMtx();
+////      std::cout<< "\n";
+//      std::cout << "REFERENCE " << tasks[i]->getName() << ": \n";
+//      tasks[i]->getReference().PrintMtx() ;
+//      std::cout << "\n";
+//    }
 
-    loopRater.wait(); //wait for the remaning time until period setted (ms)
+
+    ros::spinOnce();
+    loopRater.wait();
   }
+
+
+
 
   //TODO
   //destroy();
@@ -220,11 +265,11 @@ void setTaskListInit(std::vector<Task*> *tasks, std::string robotName){
 
   //tasks->push_back(new VehicleNullVelTask(6, ineqType));
 
-  tasks->push_back(new JointLimitTask(4, ineqType, robotName));
+  //tasks->push_back(new JointLimitTask(4, ineqType, robotName));
   tasks->push_back(new HorizontalAttitudeTask(1, ineqType, robotName));
 
-  tasks->push_back(new ObstacleAvoidEETask(1, ineqType, robotName));
-  tasks->push_back(new ObstacleAvoidVehicleTask(1, ineqType, robotName));
+  //tasks->push_back(new ObstacleAvoidEETask(1, ineqType, robotName));
+  //tasks->push_back(new ObstacleAvoidVehicleTask(1, ineqType, robotName));
 
 
   //tasks->push_back(new FovEEToToolTask(1, ineqType, robotName));
@@ -237,6 +282,10 @@ void setTaskListInit(std::vector<Task*> *tasks, std::string robotName){
   tasks->push_back(new LastTask(TOT_DOF, eqType, robotName));
 }
 
+
+void startSubCallback(const std_msgs::Bool::ConstPtr& start){
+  start_glob = start->data;
+}
 
 //TODO LA DESTROY
 /** @brief

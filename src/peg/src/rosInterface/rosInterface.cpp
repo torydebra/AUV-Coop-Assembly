@@ -14,23 +14,15 @@
  * argv[1]=robotName, argv[2] = otherRobotName
  * @param toolName name of the peg in the xml file of the scene
  */
-RosInterface::RosInterface(int argc, char **argv, std::string toolName)
+RosInterface::RosInterface(ros::NodeHandle nh, std::string robotName, std::string otherRobotName, std::string toolName)
 {
 
-  if (argc <3){
-    std::cout << "[ROS_INTERFACE] Please insert the two robots name"<< std::endl;
-    return;
-  }
-
-  this->robotName = argv[1];
-  this->otherRobotName = argv[2];
+  this->robotName = robotName;
+  this->otherRobotName = otherRobotName;
   this->topicRoot = "/uwsim/" + robotName + "/";
   this->toolName = toolName;
 
   std::cout << "[" << robotName <<"][ROS_INTERFACE] Start"<<std::endl;
-  ros::init(argc, argv, "rosInterface_" + robotName);
-  ros::NodeHandle nh;
-
 
   pubTwist = nh.advertise<geometry_msgs::TwistStamped>((topicRoot + "twist_command"),1);
   pubJoint = nh.advertise<sensor_msgs::JointState>((topicRoot + "joint_command"),1);
@@ -195,6 +187,6 @@ int RosInterface::sendQDot(std::vector<double> qDot){
 
 }
 
-void RosInterface::spinOnce(){
-  ros::spinOnce();
-}
+//void RosInterface::spinOnce(){
+//  ros::spinOnce();
+//}

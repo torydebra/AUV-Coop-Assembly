@@ -8,7 +8,7 @@ VehicleConstrainVelTask::VehicleConstrainVelTask(int dim, bool eqType, std::stri
 
 
 /**
- * @brief VehicleNull::updateMatrices overriden of the pure virtual method of Task parent class
+ * @brief VehicleConstrainVelTask::updateMatrices overriden of the pure virtual method of Task parent class
  * @param robInfo struct filled with all infos needed by the task to compute the matrices
  * @return 0 for correct execution
  */
@@ -21,7 +21,7 @@ int VehicleConstrainVelTask::updateMatrices(struct Infos* const robInfo){
 }
 
 /**
- * @brief VehicleNullVelTask::setJacobian simple identity for vehicle part
+ * @brief VehicleConstrainVelTask::setJacobian simple identity for vehicle part
  * @param wTv_eigen transformation from world to vehicle
  * @return 0 for correct exec
  */
@@ -39,7 +39,7 @@ void VehicleConstrainVelTask::setActivation(){
   this->A.SetDiag(vectDiag);
 }
 /**
- * @brief VehicleNullVelTask::setReference
+ * @brief VehicleConstrainVelTask::setReference
  * @param actualVel actual mesaured (in someway) velocities [lin; ang] of the vehicle
  * @note this task is a non reactive one: the reference are the actual velocities of
  * the vehicle, so the velocities produces by this task constrain the second list of

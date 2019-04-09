@@ -63,6 +63,10 @@ std::vector<double> Controller::execAlgorithm(){
       Controller::inequalityIcat(tasks[i], &qDot_cmat, &Q);
     }
 
+    ////DEBUG
+    std::cout << "qdot after " << tasks[i]->getName() << ": \n";
+    qDot_cmat.PrintMtx();
+    std::cout << "\n";
   }
 
   //TODO metterlo nel CONV

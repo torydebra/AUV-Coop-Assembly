@@ -72,13 +72,12 @@ void EndEffectorReachTask::setReference(Eigen::Matrix4d wTgoalxxx_eigen, Eigen::
   CMAT::TransfMatrix wTgoalxxx_cmat = CONV::matrix_eigen2cmat(wTgoalxxx_eigen);
   CMAT::TransfMatrix wTxxx_cmat = CONV::matrix_eigen2cmat(wTxxx_eigen);
 
-  //vTgoalEE_cmat.PrintMtx("vTgoalEE"); ///DEBUG: GIUSTA
   CMAT::Vect6 errorSwapped = CMAT::CartError(wTgoalxxx_cmat, wTxxx_cmat);//ang;lin
   // ang and lin must be swapped because in qDot and jacob linear part is before
   CMAT::Vect6 error;
   error.SetFirstVect3(errorSwapped.GetSecondVect3());
   error.SetSecondVect3(errorSwapped.GetFirstVect3());
-  //error.PrintMtx("error"); ///DEBUG: GIUSTOOO
+
   this->reference = this->gain * (error); //lin; ang
 
 

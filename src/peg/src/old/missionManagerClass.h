@@ -1,12 +1,11 @@
-#ifndef MISSIONMANAGERold_H
-#define MISSIONMANAGERold_H
+#ifndef MISSIONMANAGER_H
+#define MISSIONMANAGER_H
 
 #include <iostream>
 #include <string>
 
 #include <Eigen/Core>
 #include <ros/ros.h>
-#include <std_msgs/Bool.h>
 //#include <boost/chrono.hpp>
 //#include <boost/thread/thread.hpp>
 #include <boost/asio.hpp>
@@ -36,10 +35,39 @@
 #include "../tasks/header/obstacleAvoidVehicleTask.h"
 #include "../tasks/header/obstacleAvoidEETask.h"
 
-bool start_glob;
 int main(int, char**);
-void setTaskListInit(std::vector<Task*> *tasks, std::string robotName);
-void startSubCallback(const std_msgs::Bool::ConstPtr& start);
+
+class MissionManager
+{
+public:
+  MissionManager(int argc, char **argv);
+  int execute();
+
+private:
+  std::string robotName;
+  Infos robInfo;
+  RosInterface rosInterface;
+  KDLHelper kdlHelper;
+  Controller controller;
+  std::vector<Task*> tasks;
+  std::string pathLog;
+
+  ///execute() function
+  void setGoals();
+  void initRosInterface();
+  void initKdlHelper();
+  void setInitialState();
+  void setKdl4Tool();
+  void initController();
+  void controlLoop(boost::asio::io_service io, double ms);
+
+  ///Subfunctions
+  void setTaskListInit();
+  void clearTaskList();
+  void createLogFolders();
+};
+
+
 
 
 #endif // MISSIONMANAGER_H

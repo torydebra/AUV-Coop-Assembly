@@ -190,6 +190,7 @@ add_library(ObstacleAvoidEETask src/tasks/obstacleAvoidEETask.cpp)
 # add_executable(${PROJECT_NAME}_node src/peg_pkg_node.cpp)
 add_executable(MissionManagerA src/missionManager.cpp)
 add_executable(MissionManagerB src/missionManager.cpp)
+add_executable(Coordinator src/coordinator.cpp)
 
 
 ## Rename C++ executable without prefix
@@ -207,8 +208,11 @@ add_executable(MissionManagerB src/missionManager.cpp)
 #   ${catkin_LIBRARIES}
 # )
 
+target_link_libraries(Coordinator
+    ${catkin_LIBRARIES}
+)
 
-target_link_libraries(MissionManagerB
+target_link_libraries(MissionManagerA
     ${catkin_LIBRARIES}
     RosInterface
     Prints
@@ -228,7 +232,7 @@ target_link_libraries(MissionManagerB
     ObstacleAvoidEETask
 )
 
-target_link_libraries(MissionManagerA
+target_link_libraries(MissionManagerB
     ${catkin_LIBRARIES}
     RosInterface
     Prints
@@ -360,6 +364,8 @@ target_link_libraries(ObstacleAvoidEETask
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 install(PROGRAMS script/keyboardCommand_A.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(PROGRAMS script/keyboardCommand_B.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Mark executables and/or libraries for installation

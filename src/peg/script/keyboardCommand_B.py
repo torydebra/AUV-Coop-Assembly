@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+#!/usr/bin/env python
 
 from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import JointState
@@ -10,8 +13,8 @@ from std_srvs.srv import Empty
 
 #topic to command
 # Twist better than odometry TODO ask why
-twist_topic="/uwsim/g500_A/twist_command"
-joint_topic="/uwsim/g500_A/joint_command"
+twist_topic="/uwsim/g500_B/twist_command"
+joint_topic="/uwsim/g500_B/joint_command"
 #base velocity for the teleoperation
 baseVelocity=0.8
 baseJoint=0.1
@@ -28,7 +31,7 @@ fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
 ##create the publishers
 pubTwist = rospy.Publisher(twist_topic, TwistStamped,queue_size=1)
 pubJoint = rospy.Publisher(joint_topic, JointState,queue_size=1)
-rospy.init_node('keyboardCommand_A')
+rospy.init_node('keyboardCommand_B')
 
 #The try is necessary for the console input!
 try:
@@ -67,35 +70,35 @@ try:
                 msgTwist.twist.angular.x = baseVelocity
             #JointsCommands
             elif c == 't':
-            	msgJoint.name.append("Slew")
-            	msgJoint.velocity.append(baseJoint)
+                msgJoint.name.append("Slew")
+                msgJoint.velocity.append(baseJoint)
             elif c == 'z':
-            	msgJoint.name.append("Shoulder")
-            	msgJoint.velocity.append(baseJoint)
+                msgJoint.name.append("Shoulder")
+                msgJoint.velocity.append(baseJoint)
             elif c == 'u':
-            	msgJoint.name.append("Elbow")
-            	msgJoint.velocity.append(baseJoint)
+                msgJoint.name.append("Elbow")
+                msgJoint.velocity.append(baseJoint)
             elif c == 'i':
-            	msgJoint.name.append("JawRotate")
-            	msgJoint.velocity.append(baseJoint)
+                msgJoint.name.append("JawRotate")
+                msgJoint.velocity.append(baseJoint)
             elif c == 'o':
-            	msgJoint.name.append("JawOpening")
-            	msgJoint.velocity.append(baseJoint)
+                msgJoint.name.append("JawOpening")
+                msgJoint.velocity.append(baseJoint)
             elif c == 'g':
-            	msgJoint.name.append("Slew")
-            	msgJoint.velocity.append(-baseJoint)
+                msgJoint.name.append("Slew")
+                msgJoint.velocity.append(-baseJoint)
             elif c == 'h':
-            	msgJoint.name.append("Shoulder")
-            	msgJoint.velocity.append(-baseJoint)
+                msgJoint.name.append("Shoulder")
+                msgJoint.velocity.append(-baseJoint)
             elif c == 'j':
-            	msgJoint.name.append("Elbow")
-            	msgJoint.velocity.append(-baseJoint)
+                msgJoint.name.append("Elbow")
+                msgJoint.velocity.append(-baseJoint)
             elif c == 'k':
-            	msgJoint.name.append("JawRotate")
-            	msgJoint.velocity.append(-baseJoint)
+                msgJoint.name.append("JawRotate")
+                msgJoint.velocity.append(-baseJoint)
             elif c == 'l':
-            	msgJoint.name.append("JawOpening")
-            	msgJoint.velocity.append(-baseJoint)
+                msgJoint.name.append("JawOpening")
+                msgJoint.velocity.append(-baseJoint)
             #Increase Velocity send command
             elif c == 'y':
                 baseVelocity+=0.1;
