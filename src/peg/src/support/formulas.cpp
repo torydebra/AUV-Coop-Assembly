@@ -72,3 +72,38 @@ Eigen::MatrixXd FRM::pseudoInverse(Eigen::MatrixXd mat, double tolerance){
 
 }
 
+/**
+ * @brief FRM::saturateVector
+ * Look all component of the input vector;
+ *   if the absoule value of one (or more) component is above the threshold,
+ *     scale all components considering the biggest (in abs value) component.
+ *  otherwise, return vector unchanged
+ * @param vector to saturate
+ * @param threshold Maximum absoulte value that we want for each component
+ * @return the saturated vector
+ */
+Eigen::VectorXd FRM::saturateVector(Eigen::VectorXd vector, double threshold){
+
+  if (threshold <0.0){
+    std::cerr << "FRM::saturateVector: ERROR: the threshold must be positive";
+    return vector;
+  }
+  Eigen::VectorXd out = vector;
+
+  //take abs value
+  for (int i =0; i< vector.rows(); i++){
+    if (vector(i) < 0.0){
+      vector(i) *= -1;
+    }
+  }
+
+  double maxCoeff = vector.maxCoeff();
+  if ( maxCoeff > threshold){ //if so, scale vector
+
+    out = out/maxCoeff*threshold;
+
+  }
+
+  return out;
+}
+
