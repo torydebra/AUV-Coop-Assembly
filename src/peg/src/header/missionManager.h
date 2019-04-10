@@ -35,6 +35,10 @@
 #include "../tasks/header/vehicleConstrainVelTask.h"
 #include "../tasks/header/obstacleAvoidVehicleTask.h"
 #include "../tasks/header/obstacleAvoidEETask.h"
+#include "../tasks/header/pipeReachTask.h"
+#include "../tasks/header/armShapeTask.h"
+
+
 
 bool start_glob;
 int main(int, char**);

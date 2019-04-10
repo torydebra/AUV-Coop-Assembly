@@ -82,10 +82,10 @@ Eigen::MatrixXd FRM::pseudoInverse(Eigen::MatrixXd mat, double tolerance){
  * @param threshold Maximum absoulte value that we want for each component
  * @return the saturated vector
  */
-Eigen::VectorXd FRM::saturateVector(Eigen::VectorXd vector, double threshold){
+Eigen::VectorXd FRM::saturateVectorEigen(Eigen::VectorXd vector, double threshold){
 
   if (threshold <0.0){
-    std::cerr << "FRM::saturateVector: ERROR: the threshold must be positive";
+    std::cerr << "FRM::saturateVectorEigen: ERROR: the threshold must be positive";
     return vector;
   }
   Eigen::VectorXd out = vector;
@@ -106,4 +106,48 @@ Eigen::VectorXd FRM::saturateVector(Eigen::VectorXd vector, double threshold){
 
   return out;
 }
+
+CMAT::Matrix FRM::saturateCmat(CMAT::Matrix mat, double threshold){
+  if (threshold <0.0){
+    std::cerr << "FRM::saturateCmat: ERROR: the threshold must be positive";
+    return mat;
+  }
+
+  CMAT::Matrix out = mat;
+
+  //take abs value & get max
+  double maxCoeff = 0.0;
+  for (int i=1; i<= mat.GetNumColumns(); i++){
+    for (int j=1; j<= mat.GetNumRows(); j++){
+      if (mat(j,i) < 0.0){
+        mat(j,i) *= -1;
+      }
+      if (mat(j,i) > maxCoeff){
+        maxCoeff = mat(j,i);
+      }
+    }
+  }
+
+  if ( maxCoeff > threshold){ //if so, scale vector
+    out = out/maxCoeff*threshold;
+  }
+
+  return out;
+}
+
+double FRM::saturateScalar(double scalar, double threshold){
+
+  if (threshold <0.0){
+    std::cerr << "FRM::saturateScalar: ERROR: the threshold must be positive";
+    return scalar;
+  }
+
+  if (scalar > threshold){
+    scalar = threshold;
+  }
+
+  return scalar;
+
+}
+
 

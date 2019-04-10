@@ -5,6 +5,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <math.h>
+#include <cmat/cmat.h>
 #include <vector>
 
 namespace FRM {
@@ -22,8 +23,8 @@ Eigen::Vector3d reducedVersorLemma(Eigen::Vector3d a, Eigen::Vector3d b);
 Eigen::Matrix4d invertTransf(Eigen::Matrix4d mat);
 Eigen::MatrixXd pseudoInverse(Eigen::MatrixXd mat, double tolerance = 0.0001);
 
-Eigen::VectorXd saturateVector(Eigen::VectorXd vector, double threshold);
-
+Eigen::VectorXd saturateVectorEigen(Eigen::VectorXd vector, double threshold);
+CMAT::Matrix saturateCmat(CMAT::Matrix mat, double threshold);
+double saturateScalar(double scalar, double threshold);
 }
-
 #endif // FORMULAS_H

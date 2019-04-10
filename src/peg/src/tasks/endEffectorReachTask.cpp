@@ -27,13 +27,12 @@ int EndEffectorReachTask::updateMatrices(struct Infos* const robInfo){
 
   setActivation();
 
-
   if (controlPoint == tool){
-    setJacobian(robInfo->robotState.w_Jee_robot);
+    setJacobian(robInfo->robotState.w_Jtool_robot);
     setReference(robInfo->transforms.wTgoalTool_eigen,
                robInfo->transforms.wTt_eigen);
   } else if (controlPoint == ee) {
-    setJacobian(robInfo->robotState.w_Jtool_robot);
+    setJacobian(robInfo->robotState.w_Jee_robot);
     setReference(robInfo->transforms.wTgoalEE_eigen,
                robInfo->robotState.wTv_eigen*robInfo->robotState.vTee_eigen);
   } else {
@@ -47,7 +46,14 @@ int EndEffectorReachTask::updateMatrices(struct Infos* const robInfo){
 }
 
 void EndEffectorReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
+
+  if (controlPoint == tool){ //ASK
+    w_J_robot.row(3) << 0, 0,0,0,0,0,0,0,0,0;
+
+  }
+
   J = CONV::matrix_eigen2cmat(w_J_robot);
+
 }
 
 int EndEffectorReachTask::setActivation(){
@@ -78,9 +84,13 @@ void EndEffectorReachTask::setReference(Eigen::Matrix4d wTgoalxxx_eigen, Eigen::
   error.SetFirstVect3(errorSwapped.GetSecondVect3());
   error.SetSecondVect3(errorSwapped.GetFirstVect3());
 
-  this->reference = this->gain * (error); //lin; ang
+  error = this->gain * error;
 
+  //saturate
+  error.SetFirstVect3(FRM::saturateCmat(error.GetFirstVect3(), 0.5)); //linear
+  error.SetSecondVect3(FRM::saturateCmat(error.GetSecondVect3(), 0.2)); //angular
 
+  this->reference = error; //lin; ang
 }
 
 //int EndEffectorReachTask::setReference(

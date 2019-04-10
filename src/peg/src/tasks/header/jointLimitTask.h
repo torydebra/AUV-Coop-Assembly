@@ -1,7 +1,6 @@
 #ifndef JOINTLIMITTASK_H
 #define JOINTLIMITTASK_H
 
-#include <Eigen/Core>
 #include "task.h"
 
 class JointLimitTask : public Task

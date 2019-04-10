@@ -26,6 +26,7 @@ int main(int argc, char **argv)
   std::string pathLog;
   if (LOG && (argc > 3)){   //if flag log setted to 1 and path log is given
     pathLog = argv[3];
+    pathLog += "/" + robotName;
   }
   start_glob = false;
 
@@ -153,6 +154,10 @@ int main(int argc, char **argv)
     for (int i =0; i< tasks.size(); ++i){
       PRT::createDirectory(pathLog +"/" +tasks[i]->getName());
     }
+    PRT::createDirectory(pathLog + "/pipeError");
+
+
+
     std::cout << "[" << robotName
               << "][MISSION_MANAGER] Created Log Folders in  "
               << pathLog  << std::endl;
@@ -216,23 +221,23 @@ int main(int argc, char **argv)
         PRT::matrixCmat2file(pathname + "/reference.txt",
                              tasks[i]->getReference());
 
-      }
+      }      
       //other logs... maybe qDot?
     }
 
     ///PRINT
-//    for(int i=0; i<tasks.size(); i++){
-//      /// DEBUG
-//      std::cout << "Activation " << tasks[i]->getName() << ": \n";
-//      tasks[i]->getActivation().PrintMtx() ;
-//      std::cout << "\n";
-////      std::cout << "JACOBIAN " << tasks[i]->getName() << ": \n";
-////      tasks[i]->getJacobian().PrintMtx();
-////      std::cout<< "\n";
-//      std::cout << "REFERENCE " << tasks[i]->getName() << ": \n";
-//      tasks[i]->getReference().PrintMtx() ;
-//      std::cout << "\n";
-//    }
+    for(int i=3; i<tasks.size(); i++){
+      /// DEBUG
+      std::cout << "Activation " << tasks[i]->getName() << ": \n";
+      tasks[i]->getActivation().PrintMtx() ;
+      std::cout << "\n";
+//      std::cout << "JACOBIAN " << tasks[i]->getName() << ": \n";
+//      tasks[i]->getJacobian().PrintMtx();
+//      std::cout<< "\n";
+      std::cout << "REFERENCE " << tasks[i]->getName() << ": \n";
+      tasks[i]->getReference().PrintMtx() ;
+      std::cout << "\n";
+    }
 
 
     ros::spinOnce();
@@ -265,19 +270,19 @@ void setTaskListInit(std::vector<Task*> *tasks, std::string robotName){
 
   //tasks->push_back(new VehicleNullVelTask(6, ineqType));
 
-  //tasks->push_back(new JointLimitTask(4, ineqType, robotName));
+  tasks->push_back(new JointLimitTask(4, ineqType, robotName));
   tasks->push_back(new HorizontalAttitudeTask(1, ineqType, robotName));
 
   //tasks->push_back(new ObstacleAvoidEETask(1, ineqType, robotName));
   //tasks->push_back(new ObstacleAvoidVehicleTask(1, ineqType, robotName));
 
-
   //tasks->push_back(new FovEEToToolTask(1, ineqType, robotName));
 
-  tasks->push_back(new EndEffectorReachTask(6, eqType, robotName, tool));
-
+  //tasks->push_back(new EndEffectorReachTask(6, eqType, robotName, tool));
+  tasks->push_back(new PipeReachTask(5, eqType, robotName));
   //tasks->push_back(new VehicleReachTask(6, eqType, robotName));
 
+  //tasks->push_back(new ArmShapeTask(4, eqType, robotName));
   //The "fake task" with all eye and zero matrices, needed as last one for algo
   tasks->push_back(new LastTask(TOT_DOF, eqType, robotName));
 }

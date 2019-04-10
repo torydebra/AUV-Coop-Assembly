@@ -43,10 +43,10 @@ int PRT::matrixCmat2file(std::string pathName, CMAT::Matrix mat){
   std::ofstream file;
   file.open(pathName, std::ios_base::app);
 
-  for (int j=1; j<=mat.GetNumColumns(); ++j){
+  for (int j=1; j<=mat.GetNumRows(); ++j){
 
-    for (int i = 1; i<=mat.GetNumRows(); ++i){
-      file << mat(i,j) << " ";
+    for (int i = 1; i<=mat.GetNumColumns(); ++i){
+      file << mat(j,i) << " ";
     }
     file << std::endl;
   }

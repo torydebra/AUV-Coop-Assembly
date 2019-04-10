@@ -178,6 +178,9 @@ add_library(FovEEToToolTask src/tasks/fovEEToToolTask.cpp)
 add_library(VehicleConstrVelTask src/tasks/vehicleConstrainVelTask.cpp)
 add_library(ObstacleAvoidVehicleTask src/tasks/obstacleAvoidVehicleTask.cpp)
 add_library(ObstacleAvoidEETask src/tasks/obstacleAvoidEETask.cpp)
+add_library(PipeReachTask src/tasks/pipeReachTask.cpp)
+add_library(ArmShapeTask src/tasks/armShapeTask.cpp)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -230,6 +233,8 @@ target_link_libraries(MissionManagerA
     VehicleConstrVelTask
     ObstacleAvoidVehicleTask
     ObstacleAvoidEETask
+    PipeReachTask
+    ArmShapeTask
 )
 
 target_link_libraries(MissionManagerB
@@ -250,6 +255,8 @@ target_link_libraries(MissionManagerB
     VehicleConstrVelTask
     ObstacleAvoidVehicleTask
     ObstacleAvoidEETask
+    PipeReachTask
+    ArmShapeTask
 )
 
 target_link_libraries(Conversions
@@ -259,6 +266,7 @@ target_link_libraries(Conversions
 
 target_link_libraries(Formulas
     m #it is math.h for atan2
+    linuxcmat
 )
 
 target_link_libraries(Controller
@@ -343,6 +351,18 @@ target_link_libraries(ObstacleAvoidEETask
     Task
     linuxcmat
     Conversions
+)
+
+target_link_libraries(PipeReachTask
+    Task
+    linuxcmat
+    Conversions
+    Formulas
+)
+
+target_link_libraries(ArmShapeTask
+    Task
+    linuxcmat
 )
 
 # to add compiler flags (-Wall -pedantic)
