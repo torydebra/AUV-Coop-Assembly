@@ -51,6 +51,12 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
   CMAT::Vect3 vect3_lin;
   CMAT::Matrix vect2_ang(2,1);
 
+  error(1)= errorSwapped(4);
+  error(2)= errorSwapped(5);
+  error(3)= errorSwapped(6);
+  error(4)= errorSwapped(2);
+  error(5)= errorSwapped(3);
+
   vect3_lin = (this->gain * errorSwapped.GetSecondVect3());
   vect2_ang(1) = this->gain * errorSwapped(2);
   vect2_ang(2) = this->gain * errorSwapped(3);

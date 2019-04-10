@@ -27,6 +27,7 @@ protected:
   CMAT::Matrix J; // the Jacobian
   CMAT::Matrix A; //the Activation function
   CMAT::Matrix reference;
+  CMAT::Matrix error; //that is the reference without gain and saturation, useful for plotting result
 
   int flag_W;
   double mu_W;
@@ -50,6 +51,7 @@ public:
   CMAT::Matrix getJacobian();
   CMAT::Matrix getActivation();
   CMAT::Matrix getReference();
+  CMAT::Matrix getError();
 
   //note why &:
   // value passed to cmar regPseudoinv that must be lvalue because:

@@ -83,6 +83,7 @@ void EndEffectorReachTask::setReference(Eigen::Matrix4d wTgoalxxx_eigen, Eigen::
   CMAT::Vect6 error;
   error.SetFirstVect3(errorSwapped.GetSecondVect3());
   error.SetSecondVect3(errorSwapped.GetFirstVect3());
+  this->error = error;
 
   error = this->gain * error;
 

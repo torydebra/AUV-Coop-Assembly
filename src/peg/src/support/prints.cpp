@@ -55,6 +55,23 @@ int PRT::matrixCmat2file(std::string pathName, CMAT::Matrix mat){
   file.close();
 }
 
+int PRT::vectorStd2file(std::string pathqDot, std::vector<double> qDot){
+
+  std::ofstream file;
+  file.open(pathqDot, std::ios_base::app);
+
+  for(int i=0; i<qDot.size(); i++){
+    file << qDot.at(i) << " ";
+  }
+  file << std::endl;
+
+
+  file.close();
+
+
+}
+
+
 std::string PRT::getCurrentDateFormatted() {
     std::time_t t = std::time(NULL);
     char mbstr[20];

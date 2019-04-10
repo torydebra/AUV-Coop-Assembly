@@ -20,9 +20,9 @@ for k = 1:numel(temp2)
 end
 out = cellfun(@cell2mat, out, 'UniformOutput', 0);
 
-matrix = zeros( size(out{1},1),  size(out{1},2),  length(out)-1);
+matrix = zeros(size(out{1},1), size(out{1},1, leng)
 for i = 1:(length(out)-1) 
-    matrix(:,:,i) = out{i};
+    matrix(:,:,i) = out{i}
 end
 
     

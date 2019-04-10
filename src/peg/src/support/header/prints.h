@@ -18,6 +18,7 @@ namespace PRT{
   // for logging things
   int createDirectory(std::string pathDirectory);
   int matrixCmat2file(std::string pathName, CMAT::Matrix);
+  int vectorStd2file(std::string pathqDot, std::vector<double> qDot);
   std::string getCurrentDateFormatted();
 
 

@@ -220,24 +220,28 @@ int main(int argc, char **argv)
                              tasks[i]->getActivation());
         PRT::matrixCmat2file(pathname + "/reference.txt",
                              tasks[i]->getReference());
+        PRT::matrixCmat2file(pathname + "/error.txt",
+                             tasks[i]->getError());
 
-      }      
-      //other logs... maybe qDot?
+      }
+      //for the moment, qDot are exactly how vehicle and arm are moving
+      std::string pathqDot = pathLog + "/qDot";
+      PRT::vectorStd2file(pathqDot, qDot);
     }
 
-    ///PRINT
-    for(int i=3; i<tasks.size(); i++){
-      /// DEBUG
-      std::cout << "Activation " << tasks[i]->getName() << ": \n";
-      tasks[i]->getActivation().PrintMtx() ;
-      std::cout << "\n";
-//      std::cout << "JACOBIAN " << tasks[i]->getName() << ": \n";
-//      tasks[i]->getJacobian().PrintMtx();
-//      std::cout<< "\n";
-      std::cout << "REFERENCE " << tasks[i]->getName() << ": \n";
-      tasks[i]->getReference().PrintMtx() ;
-      std::cout << "\n";
-    }
+//    ///PRINT
+//    for(int i=3; i<tasks.size(); i++){
+//      /// DEBUG
+//      std::cout << "Activation " << tasks[i]->getName() << ": \n";
+//      tasks[i]->getActivation().PrintMtx() ;
+//      std::cout << "\n";
+////      std::cout << "JACOBIAN " << tasks[i]->getName() << ": \n";
+////      tasks[i]->getJacobian().PrintMtx();
+////      std::cout<< "\n";
+//      std::cout << "REFERENCE " << tasks[i]->getName() << ": \n";
+//      tasks[i]->getReference().PrintMtx() ;
+//      std::cout << "\n";
+//    }
 
 
     ros::spinOnce();

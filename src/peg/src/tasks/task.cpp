@@ -22,6 +22,7 @@ Task::Task(int dimension, bool eqType,
   J = CMAT::Matrix::Zeros(dimension, dof);
   A = CMAT::Matrix::Zeros(dimension, dimension);
   reference = CMAT::Matrix::Zeros(dimension,1);
+  error = CMAT::Matrix::Zeros(dimension,1);
 
   threshold = THRESHOLD_DEFAULT;
   lambda = LAMBDA_DEFAULT;
@@ -41,6 +42,8 @@ std::string Task::getName(){return this->taskName;}
 CMAT::Matrix Task::getJacobian(){ return this->J;}
 CMAT::Matrix Task::getActivation(){return this->A;}
 CMAT::Matrix Task::getReference(){return this->reference;}
+CMAT::Matrix Task::getError(){return this->error;}
+
 
 /**
  * @brief Task::getFlag_W Various getter methods

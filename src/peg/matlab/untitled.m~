@@ -1,0 +1,9 @@
+
+%% plot refs (vector n*1)
+ref = importMatrices('~/logPeg/g500_B/PIPE_REACHING_GOAL/reference.txt');
+
+nRow = length(ref{1});
+nStep = length(ref);
+
+%mill
+msControlLoop

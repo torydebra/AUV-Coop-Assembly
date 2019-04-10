@@ -1,4 +1,0 @@
-
-contents = fileread('results.txt');  %read whole file at once
-contents = strsplit(contents, 'Particle');  %split into cell array at particle
-particles = cellfun(@(c) sscanf(c, '%f', [3 Inf])', contents(2:end), 'UniformOutput', false); %scan each section into a 3xN matrix
