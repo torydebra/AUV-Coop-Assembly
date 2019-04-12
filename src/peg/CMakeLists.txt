@@ -23,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  message_generation
   tf
   tf_conversions
   kdl_parser
@@ -68,11 +69,10 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+    FILES
+    toCoord_msg.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -89,10 +89,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -132,6 +132,7 @@ catkin_package(
      std_msgs
      std_srvs
      topic_tools
+     message_runtime
      tf
      tf_conversions
    DEPENDS
@@ -161,7 +162,10 @@ add_library(Conversions src/support/conversions.cpp)
 add_library(Formulas src/support/formulas.cpp)
 add_library(Prints src/support/prints.cpp)
 add_library(Controller src/controller/controller.cpp)
-add_library(RosInterface src/rosInterface/rosInterface.cpp)
+add_library(RobotInterface src/rosInterfaces/robotInterface.cpp)
+add_library(CoordInterfaceMissMan src/rosInterfaces/coordInterfaceMissMan.cpp)
+add_library(CoordInterfaceCoord src/rosInterfaces/coordInterfaceCoord.cpp)
+
 add_library(KdlHelper src/helper/kdlHelper.cpp)
 add_library(JacobianHelper src/helper/jacobianHelper.cpp)
 
@@ -186,6 +190,8 @@ add_library(ArmShapeTask src/tasks/armShapeTask.cpp)
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(CoordInterfaceMissMan peg_generate_messages_cpp)
+add_dependencies(CoordInterfaceCoord peg_generate_messages_cpp)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -213,11 +219,13 @@ add_executable(Coordinator src/coordinator.cpp)
 
 target_link_libraries(Coordinator
     ${catkin_LIBRARIES}
+    CoordInterfaceCoord
 )
 
 target_link_libraries(MissionManagerA
     ${catkin_LIBRARIES}
-    RosInterface
+    RobotInterface
+    CoordInterfaceMissMan
     Prints
     Controller
     KdlHelper
@@ -239,7 +247,8 @@ target_link_libraries(MissionManagerA
 
 target_link_libraries(MissionManagerB
     ${catkin_LIBRARIES}
-    RosInterface
+    RobotInterface
+    CoordInterfaceMissMan
     Prints
     Controller
     KdlHelper
@@ -275,10 +284,18 @@ target_link_libraries(Controller
     Task
 )
 
-target_link_libraries(RosInterface
+target_link_libraries(RobotInterface
     tf
     Conversions
 )
+target_link_libraries(CoordInterfaceMissMan
+    Formulas
+    Conversions
+)
+
+target_link_libraries(CoordInterfaceCoord
+)
+
 target_link_libraries(KdlHelper
     ${catkin_LIBRARIES}
 )
@@ -296,7 +313,7 @@ target_link_libraries(LastTask
 #target_compile_options(Main INTERFACE ${REPLACED_FLAGS})
 #target_compile_options(Conversions INTERFACE ${REPLACED_FLAGS})
 #target_compile_options(Controller INTERFACE ${REPLACED_FLAGS})
-#target_compile_options(RosInterface INTERFACE ${REPLACED_FLAGS})
+#target_compile_options(robotInterface INTERFACE ${REPLACED_FLAGS})
 #target_compile_options(LastTask INTERFACE ${REPLACED_FLAGS})
 
 ### ADD lik libraries for new task here

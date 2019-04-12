@@ -79,7 +79,7 @@ void EndEffectorReachTask::setReference(Eigen::Matrix4d wTgoalxxx_eigen, Eigen::
   CMAT::TransfMatrix wTxxx_cmat = CONV::matrix_eigen2cmat(wTxxx_eigen);
 
   CMAT::Vect6 errorSwapped = CMAT::CartError(wTgoalxxx_cmat, wTxxx_cmat);//ang;lin
-  // ang and lin must be swapped because in qDot and jacob linear part is before
+  // ang and lin must be swapped because in yDot and jacob linear part is before
   CMAT::Vect6 error;
   error.SetFirstVect3(errorSwapped.GetSecondVect3());
   error.SetSecondVect3(errorSwapped.GetFirstVect3());
@@ -104,7 +104,7 @@ void EndEffectorReachTask::setReference(Eigen::Matrix4d wTgoalxxx_eigen, Eigen::
 //  CMAT::TransfMatrix vTgoalEE_cmat = wTv_cmat.Inverse() * wTgoalEE_cmat;
 //  //vTgoalEE_cmat.PrintMtx("vTgoalEE"); ///DEBUG: GIUSTA
 //  CMAT::Vect6 errorSwapped = CMAT::CartError(vTgoalEE_cmat, vTee_cmat);//ang;lin
-//  // ang and lin must be swapped because in qDot and jacob linear part is before
+//  // ang and lin must be swapped because in yDot and jacob linear part is before
 //  CMAT::Vect6 error;
 //  error.SetFirstVect3(errorSwapped.GetSecondVect3());
 //  error.SetSecondVect3(errorSwapped.GetFirstVect3());

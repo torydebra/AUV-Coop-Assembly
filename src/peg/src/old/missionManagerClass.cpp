@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 
 
 //Q.PrintMtx("Q"); ///DEBUG
-//qDot_cmat.PrintMtx("qdot");
+//yDot_cmat.PrintMtx("yDot");
 
 
 
@@ -68,7 +68,7 @@ MissionManager::~MissionManager(){clearTaskList();}
 int MissionManager::execute(){
 
   setGoals();
-  initRosInterface();
+  initrobotInterface();
   initKdlHelper();
   setInitialState();
 
@@ -141,10 +141,10 @@ void MissionManager::setGoals(){
 
 }
 
-void MissionManager::initRosInterface(){
+void MissionManager::initrobotInterface(){
   ///Ros interface
-  rosInterface(argc, argv, "pipe");
-  rosInterface.init();
+  robotInterface(argc, argv, "pipe");
+  robotInterface.init();
 }
 
 void MissionManager::initKdlHelper(){
@@ -164,10 +164,10 @@ void MissionManager::initKdlHelper(){
 
 void MissionManager::setInitialState(){
   /// Set initial state (todo, same as in control loop, make a function?)
-  rosInterface.getJointState(&(robInfo.robotState.jState));
-  rosInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-  rosInterface.getwTt(&(robInfo.transforms.wTt_eigen));
-  rosInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
+  robotInterface.getJointState(&(robInfo.robotState.jState));
+  robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
+  robotInterface.getwTt(&(robInfo.transforms.wTt_eigen));
+  robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
   //get ee pose RESPECT LINK 0
   kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
   // useful have vTee: even if it is redunant, everyone use it a lot
@@ -201,10 +201,10 @@ void MissionManager::ControlLoop(boost::asio::io_service io, double ms){
   boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
 
   /// Update state
-  rosInterface.getJointState(&(robInfo.robotState.jState));
-  rosInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-  rosInterface.getwTt(&(robInfo.transforms.wTt_eigen));
-  rosInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
+  robotInterface.getJointState(&(robInfo.robotState.jState));
+  robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
+  robotInterface.getwTt(&(robInfo.transforms.wTt_eigen));
+  robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
 
   //get ee pose RESPECT LINK 0
   kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
@@ -220,12 +220,12 @@ void MissionManager::ControlLoop(boost::asio::io_service io, double ms){
 
   /// Pass state to controller which deal with tpik
   controller.updateTransforms(&robInfo);
-  std::vector<double> qDot = controller.execAlgorithm();
+  std::vector<double> yDot = controller.execAlgorithm();
 
 
   ///Send command to vehicle
-  rosInterface.sendQDot(qDot);
-  rosInterface.spinOnce(); // actually the spinonce is called here and not in sendQdot
+  robotInterface.sendyDot(yDot);
+  robotInterface.spinOnce(); // actually the spinonce is called here and not in sendyDot
 
   /// Timer
 //        auto end = std::chrono::steady_clock::now();

@@ -46,7 +46,7 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
   CMAT::TransfMatrix wTtool_cmat = CONV::matrix_eigen2cmat(wTtool_eigen);
 
   CMAT::Vect6 errorSwapped = CMAT::CartError(wTgoaltool_cmat, wTtool_cmat);//ang;lin
-  // ang and lin must be swapped because in qDot and jacob linear part is before
+  // ang and lin must be swapped because in yDot and jacob linear part is before
 
   CMAT::Vect3 vect3_lin;
   CMAT::Matrix vect2_ang(2,1);

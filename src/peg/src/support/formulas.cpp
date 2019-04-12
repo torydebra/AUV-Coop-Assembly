@@ -55,7 +55,7 @@ Eigen::Matrix4d FRM::invertTransf(Eigen::Matrix4d mat){
 
 Eigen::MatrixXd FRM::pseudoInverse(Eigen::MatrixXd mat, double tolerance){
 
-  Eigen::JacobiSVD<Eigen::MatrixXd> svd(mat, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  Eigen::JacobiSVD<Eigen::MatrixXd> svd(mat, Eigen::ComputeFullU | Eigen::ComputeFullV);
   Eigen::MatrixXd S_inv(mat.cols(), mat.rows());
   Eigen::MatrixXd singularValues = svd.singularValues();
   S_inv = Eigen::MatrixXd::Zero(mat.cols(), mat.rows());
@@ -67,9 +67,8 @@ Eigen::MatrixXd FRM::pseudoInverse(Eigen::MatrixXd mat, double tolerance){
       S_inv(i, i) = 0;
     }
   }
+
   return (svd.matrixV() * S_inv * svd.matrixU().transpose());
-
-
 }
 
 /**

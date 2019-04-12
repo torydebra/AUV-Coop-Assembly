@@ -5,7 +5,7 @@
 int main(int argc, char **argv)
 {
 
-  ros::init(argc, argv, "main"); //necessary for real ros node rosinterface
+  ros::init(argc, argv, "main"); //necessary for real ros node robotInterface
   std::cout << "[girona500_A][MISSION_MANAGER] Start" << std::endl;
 
   //// MISSION MANAGER
@@ -59,10 +59,10 @@ int main(int argc, char **argv)
 
 
   ///Ros interface
-  RosInterface rosInterface("/uwsim/g500_A/", "girona500_A", "girona500_B", "pipe", argc, argv);
-  rosInterface.init();
+  RobotInterface robotInterface("/uwsim/g500_A/", "girona500_A", "girona500_B", "pipe", argc, argv);
+  robotInterface.init();
 
-  rosInterface.getwTt(&(robInfo.transforms.wTt_eigen));
+  robotInterface.getwTt(&(robInfo.transforms.wTt_eigen));
 
   int ms = 100;
   boost::asio::io_service io;
@@ -72,13 +72,13 @@ int main(int argc, char **argv)
     // this must be inside loop
     boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
 
-    rosInterface.getJointState(&(robInfo.robotState.jState));
-    rosInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-    rosInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
-    //rosInterface.getvTee(&(transf.vTee_eigen));
+    robotInterface.getJointState(&(robInfo.robotState.jState));
+    robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
+    robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
+    //robotInterface.getvTee(&(transf.vTee_eigen));
 
 //    std::vector <Eigen::Matrix4d> vTjoints;
-//    rosInterface.getvTjoints(&vTjoints);
+//    robotInterface.getvTjoints(&vTjoints);
 //    transf.vTjoints = vTjoints;
 
     //get ee pose RESPECT LINK 0
@@ -96,11 +96,11 @@ int main(int argc, char **argv)
 
     controller.updateTransforms(&robInfo);
 
-    std::vector<double> qDot = controller.execAlgorithm();
+    std::vector<double> yDot = controller.execAlgorithm();
 
-    rosInterface.sendQDot(qDot);
+    robotInterface.sendyDot(yDot);
 
-    rosInterface.spinOnce(); // actually the spinonce is called here and not in sendQdot
+    robotInterface.spinOnce(); // actually the spinonce is called here and not in sendyDot
 
     //    auto end = std::chrono::steady_clock::now();
     //    auto diff = end - start;

@@ -55,13 +55,13 @@ int PRT::matrixCmat2file(std::string pathName, CMAT::Matrix mat){
   file.close();
 }
 
-int PRT::vectorStd2file(std::string pathqDot, std::vector<double> qDot){
+int PRT::vectorStd2file(std::string pathyDot, std::vector<double> yDot){
 
   std::ofstream file;
-  file.open(pathqDot, std::ios_base::app);
+  file.open(pathyDot, std::ios_base::app);
 
-  for(int i=0; i<qDot.size(); i++){
-    file << qDot.at(i) << " ";
+  for(int i=0; i<yDot.size(); i++){
+    file << yDot.at(i) << std::endl;
   }
   file << std::endl;
 

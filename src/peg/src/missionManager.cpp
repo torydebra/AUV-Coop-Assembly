@@ -37,7 +37,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   //pub to let coord that is ready (e.g. to see if both missManager A & B started)
   // ASK towrite in doc  _missionManager" topic are for mission manager topic...
-  //withotu missman (only robname) are topic of rosInterface
+  //withotu missman (only robname) are topic of robotInterface
   std::string topicReady = "/uwsim/" + robotName+"_MissionManager"  + "/ready";
   ros::Publisher readyPub = nh.advertise<std_msgs::Bool>(topicReady, 1);
 
@@ -96,9 +96,10 @@ int main(int argc, char **argv)
   robInfo.transforms.wTgoalTool_eigen = wTgoalTool_eigen;
 
 
-  ///Ros interface
-  RosInterface rosInterface(nh, robotName, otherRobotName, "pipe");
-  rosInterface.init();
+  ///Ros interfaces
+  RobotInterface robotInterface(nh, robotName, otherRobotName, "pipe");
+  robotInterface.init();
+  CoordInterfaceMissMan coordInterface(nh, robotName);
 
 
   /// KDL parser to after( in the control loop )get jacobian from joint position
@@ -114,10 +115,10 @@ int main(int argc, char **argv)
 
 
   /// Set initial state (todo, same as in control loop, make a function?)
-  rosInterface.getJointState(&(robInfo.robotState.jState));
-  rosInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-  rosInterface.getwTt(&(robInfo.transforms.wTt_eigen));
-  rosInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
+  robotInterface.getJointState(&(robInfo.robotState.jState));
+  robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
+  robotInterface.getwTt(&(robInfo.transforms.wTt_eigen));
+  robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
 
   //get ee pose RESPECT LINK 0
   kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
@@ -154,16 +155,13 @@ int main(int argc, char **argv)
     for (int i =0; i< tasks.size(); ++i){
       PRT::createDirectory(pathLog +"/" +tasks[i]->getName());
     }
-    PRT::createDirectory(pathLog + "/pipeError");
-
-
 
     std::cout << "[" << robotName
               << "][MISSION_MANAGER] Created Log Folders in  "
               << pathLog  << std::endl;
   }
 
-  //wait coordinator to start
+  //wait coordinator to start TODO put in coordInterface
   std_msgs::Bool ready;
   ready.data = true;
   double msinit = 100;
@@ -187,10 +185,10 @@ int main(int argc, char **argv)
     boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
 
     /// Update state
-    rosInterface.getJointState(&(robInfo.robotState.jState));
-    rosInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-    rosInterface.getwTt(&(robInfo.transforms.wTt_eigen));
-    rosInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
+    robotInterface.getJointState(&(robInfo.robotState.jState));
+    robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
+    robotInterface.getwTt(&(robInfo.transforms.wTt_eigen));
+    robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
 
     //get ee pose RESPECT LINK 0
     kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
@@ -206,10 +204,23 @@ int main(int argc, char **argv)
 
     /// Pass state to controller which deal with tpik
     controller.updateTransforms(&robInfo);
-    std::vector<double> qDot = controller.execAlgorithm();
+    std::vector<double> yDot = controller.execAlgorithm();
+
+    /// COORD
+    ///
+    Eigen::Matrix<double, VEHICLE_DOF, 1> nonCoopCartVel_eigen =
+        robInfo.robotState.w_Jtool_robot * CONV::vector_std2Eigen(yDot);
+
+    Eigen::Matrix<double, VEHICLE_DOF, VEHICLE_DOF> admisVelTool_eigen =
+        robInfo.robotState.w_Jtool_robot * FRM::pseudoInverse(robInfo.robotState.w_Jtool_robot);
+
+    std::cout << nonCoopCartVel_eigen << "\n\n";
+    std::cout << admisVelTool_eigen << "\n\n";
+
+    coordInterface.publishToCoord(&robInfo, yDot);
 
     ///Send command to vehicle
-    rosInterface.sendQDot(qDot);
+    robotInterface.sendyDot(yDot);
 
 
     ///Log things
@@ -217,16 +228,16 @@ int main(int argc, char **argv)
       for(int i=0; i<tasks.size(); i++){
         std::string pathname = pathLog + "/" + tasks[i]->getName();
         PRT::matrixCmat2file(pathname + "/activation.txt",
-                             tasks[i]->getActivation());
+                             tasks[i]->getActivation().GetDiag());
         PRT::matrixCmat2file(pathname + "/reference.txt",
                              tasks[i]->getReference());
         PRT::matrixCmat2file(pathname + "/error.txt",
                              tasks[i]->getError());
 
       }
-      //for the moment, qDot are exactly how vehicle and arm are moving
-      std::string pathqDot = pathLog + "/qDot";
-      PRT::vectorStd2file(pathqDot, qDot);
+      //for the moment, yDot are exactly how vehicle and arm are moving
+      std::string pathyDot = pathLog + "/yDot.txt";
+      PRT::vectorStd2file(pathyDot, yDot);
     }
 
 //    ///PRINT
@@ -286,7 +297,7 @@ void setTaskListInit(std::vector<Task*> *tasks, std::string robotName){
   tasks->push_back(new PipeReachTask(5, eqType, robotName));
   //tasks->push_back(new VehicleReachTask(6, eqType, robotName));
 
-  //tasks->push_back(new ArmShapeTask(4, eqType, robotName));
+  tasks->push_back(new ArmShapeTask(4, ineqType, robotName));
   //The "fake task" with all eye and zero matrices, needed as last one for algo
   tasks->push_back(new LastTask(TOT_DOF, eqType, robotName));
 }
@@ -319,4 +330,4 @@ void startSubCallback(const std_msgs::Bool::ConstPtr& start){
 
 
 //Q.PrintMtx("Q"); ///DEBUG
-//qDot_cmat.PrintMtx("qdot");
+//yDot_cmat.PrintMtx("yDot");

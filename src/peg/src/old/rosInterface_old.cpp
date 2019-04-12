@@ -1,16 +1,16 @@
-#include "header/rosInterface.h"
+#include "header/robotInterface.h"
 
-/** @brief RosInterface Constructor
+/** @brief robotInterface Constructor
 
     @param robotName the name of the robot (found in .xml file of the scene)
     @param topicTwist the name of the topic where twist command must be published
     @param arcg, argv the standard argument of c++ main, they are needed for ros::init
 */
-RosInterface::RosInterface(std::string robotName, std::string topicRoot, int argc, char **argv)
+robotInterface::robotInterface(std::string robotName, std::string topicRoot, int argc, char **argv)
 {
 
   ROS_INFO("[ROS_INTERFACE] Start");
-  ros::init(argc, argv, "rosInterface");
+  ros::init(argc, argv, "robotInterface");
   ros::NodeHandle nh;
 
   this->robotName = robotName;
@@ -19,11 +19,11 @@ RosInterface::RosInterface(std::string robotName, std::string topicRoot, int arg
   pubTwist = nh.advertise<geometry_msgs::TwistStamped>((topicRoot + "twist_command_A"),1);
   pubJoint = nh.advertise<sensor_msgs::JointState>((topicRoot + "joint_command_A"),1);
 
-  subJointState = nh.subscribe(topicRoot+"joint_state_A", 1, &RosInterface::subJointStateCallback, this);
+  subJointState = nh.subscribe(topicRoot+"joint_state_A", 1, &robotInterface::subJointStateCallback, this);
 }
 
 
-int RosInterface::init(){
+int robotInterface::init(){
 
   if(!ros::ok()){
     return -1;
@@ -43,7 +43,7 @@ int RosInterface::init(){
   return 0;
 }
 
-int RosInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
+int robotInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
 
   if(!ros::ok()){
     return -1;
@@ -65,7 +65,7 @@ int RosInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
   return 0;
 }
 
-int RosInterface::getvTee(Eigen::Matrix4d* vTee_eigen){
+int robotInterface::getvTee(Eigen::Matrix4d* vTee_eigen){
   if(!ros::ok()){
     return -1;
   }
@@ -88,7 +88,7 @@ int RosInterface::getvTee(Eigen::Matrix4d* vTee_eigen){
 
 }
 
-int RosInterface::getvTjoints(std::vector<Eigen::Matrix4d> *vTjoints) {
+int robotInterface::getvTjoints(std::vector<Eigen::Matrix4d> *vTjoints) {
   if(!ros::ok()){
     return -1;
   }
@@ -122,18 +122,18 @@ int RosInterface::getvTjoints(std::vector<Eigen::Matrix4d> *vTjoints) {
   return 0;
 }
 
-void RosInterface::subJointStateCallback(const sensor_msgs::JointState& js)
+void robotInterface::subJointStateCallback(const sensor_msgs::JointState& js)
 {
    jState_priv = js.position;
 }
 
 /**
- * @brief RosInterface::getJointState
+ * @brief robotInterface::getJointState
  * @param jState
  * @return
  * @note Doing so, only when main call this function it gets the joint state position
  */
-int RosInterface::getJointState(std::vector<double> *jState){
+int robotInterface::getJointState(std::vector<double> *jState){
 
   if(!ros::ok()){
     return -1;
@@ -144,27 +144,27 @@ int RosInterface::getJointState(std::vector<double> *jState){
 }
 
 
-int RosInterface::sendQDot(std::vector<double> qDot){
+int robotInterface::sendyDot(std::vector<double> yDot){
 
   if(!ros::ok()){
     return -1;
   }
   sensor_msgs::JointState js;
   js.name.push_back(std::string("Slew"));
-  js.velocity.push_back(qDot.at(0));
+  js.velocity.push_back(yDot.at(0));
   js.name.push_back(std::string("Shoulder"));
-  js.velocity.push_back(qDot.at(1));
+  js.velocity.push_back(yDot.at(1));
   js.name.push_back(std::string("Elbow"));
-  js.velocity.push_back(qDot.at(2));
+  js.velocity.push_back(yDot.at(2));
   js.name.push_back(std::string("JawRotate"));
-  js.velocity.push_back(qDot.at(3));
+  js.velocity.push_back(yDot.at(3));
   geometry_msgs::TwistStamped twist;
-  twist.twist.linear.x=qDot.at(4);
-  twist.twist.linear.y=qDot.at(5);
-  twist.twist.linear.z=qDot.at(6);
-  twist.twist.angular.x=qDot.at(7);
-  twist.twist.angular.y=qDot.at(8);
-  twist.twist.angular.z=qDot.at(9);
+  twist.twist.linear.x=yDot.at(4);
+  twist.twist.linear.y=yDot.at(5);
+  twist.twist.linear.z=yDot.at(6);
+  twist.twist.angular.x=yDot.at(7);
+  twist.twist.angular.y=yDot.at(8);
+  twist.twist.angular.z=yDot.at(9);
 
   pubJoint.publish(js);
   pubTwist.publish(twist);
@@ -172,6 +172,6 @@ int RosInterface::sendQDot(std::vector<double> qDot){
 
 }
 
-void RosInterface::spinOnce(){
+void robotInterface::spinOnce(){
   ros::spinOnce();
 }

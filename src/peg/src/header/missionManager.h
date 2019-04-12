@@ -1,5 +1,5 @@
-#ifndef MISSIONMANAGERold_H
-#define MISSIONMANAGERold_H
+#ifndef MISSIONMANAGER_H
+#define MISSIONMANAGER_H
 
 #include <iostream>
 #include <string>
@@ -22,7 +22,8 @@
 
 
 #include "../controller/header/controller.h"
-#include "../rosInterface/header/rosInterface.h"
+#include "../rosInterfaces/header/robotInterface.h"
+#include "../rosInterfaces/header/coordInterfaceMissMan.h"
 
 
 #include "../tasks/header/lastTask.h"

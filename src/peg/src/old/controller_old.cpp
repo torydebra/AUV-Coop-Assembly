@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 
   tf::Transform goal = tf::Transform(tf::Matrix3x3(1, 0, 0,  0, 1, 0,  0, 0, 1), goalPoint);
 
-  tf::Vector3 qDot = tf::Vector3(0, 0, 0);
+  tf::Vector3 yDot = tf::Vector3(0, 0, 0);
   tf::Vector3 xDot = tf::Vector3(0, 0, 0);
 
   //TRANSFORM LISTENER ROBE
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
     //simple difference controller
     //double k = 0.05;
-    //qDot = k * (goalPoint - wTv.getOrigin());
+    //yDot = k * (goalPoint - wTv.getOrigin());
 
     /** with jacobian */
     //reference
@@ -72,12 +72,12 @@ int main(int argc, char **argv)
     //Jveh.
     tf::Matrix3x3 jacobianVehiclePose = wTv.getBasis();
 
-    qDot = (jacobianVehiclePose.inverse() * xDot);
+    yDot = (jacobianVehiclePose.inverse() * xDot);
 
 
-    twist.twist.linear.x=qDot.getX();
-    twist.twist.linear.y=qDot.getY();
-    twist.twist.linear.z=qDot.getZ();
+    twist.twist.linear.x=yDot.getX();
+    twist.twist.linear.y=yDot.getY();
+    twist.twist.linear.z=yDot.getZ();
 
     pubClassTwist.publish(twist);
 

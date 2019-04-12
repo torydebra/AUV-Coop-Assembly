@@ -73,15 +73,15 @@ int main(int argc, char **argv)
     transf.wTv_eigen = CONV::transfMatrix_tf2eigen(wTv_tf);
     controller.updateTransforms(&transf);
 
-    CMAT::Matrix qDot = controller.execAlgorithm();
+    CMAT::Matrix yDot = controller.execAlgorithm();
 
 
-    twist.twist.angular.x=qDot(5);
-    twist.twist.angular.y=qDot(6);
-    twist.twist.angular.z=qDot(7);
-    twist.twist.linear.x=qDot(8);
-    twist.twist.linear.y=qDot(9);
-    twist.twist.linear.z=qDot(10);
+    twist.twist.angular.x=yDot(5);
+    twist.twist.angular.y=yDot(6);
+    twist.twist.angular.z=yDot(7);
+    twist.twist.linear.x=yDot(8);
+    twist.twist.linear.y=yDot(9);
+    twist.twist.linear.z=yDot(10);
 
     pubClassTwist.publish(twist);
 

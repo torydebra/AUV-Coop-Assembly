@@ -41,43 +41,43 @@ int Controller::updateTransforms(struct Infos* const robInfo){
 
 /**
  * @brief Controller::execAlgorithm this function calls the step of the algorithm modifying (in the for)
- * each time the projection matrix Q and command vector qDot.
+ * each time the projection matrix Q and command vector yDot.
  * The function call equalityIcat or inequalityIcat according to the type of task.
- * @return the qDot command to be send to the robot at each loop
+ * @return the yDot command to be send to the robot at each loop
  *
  */
 std::vector<double> Controller::execAlgorithm(){
 
-  //initialize qdot and Q for algorithm
-  //qdot = [arm arm arm arm wx wy wz x y z]
-  CMAT::Matrix qDot_cmat = CMAT::Matrix::Zeros(TOT_DOF,1);
+  //initialize yDot and Q for algorithm
+  //yDot = [arm arm arm arm wx wy wz x y z]
+  CMAT::Matrix yDot_cmat = CMAT::Matrix::Zeros(TOT_DOF,1);
   CMAT::Matrix Q = CMAT::Matrix::Eye(TOT_DOF);
   //std::cout << "eereer\n\n\n"; ///DEBUG
   for (int i=0; i<numTasks; i++){
 
     if (tasks[i]->eqType){
       //std::cout<<tasks[i]->gain<<"\n";  ///DEBUG
-      Controller::equalityIcat(tasks[i], &qDot_cmat, &Q);
+      Controller::equalityIcat(tasks[i], &yDot_cmat, &Q);
 
     } else {
-      Controller::inequalityIcat(tasks[i], &qDot_cmat, &Q);
+      Controller::inequalityIcat(tasks[i], &yDot_cmat, &Q);
     }
 
     ////DEBUG
-    std::cout << "qdot after " << tasks[i]->getName() << ": \n";
-    qDot_cmat.PrintMtx();
-    std::cout << "\n";
+//    std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
+//    yDot_cmat.PrintMtx();
+//    std::cout << "\n";
   }
 
   //TODO metterlo nel CONV
-  std::vector<double> qDot_vect(TOT_DOF);
+  std::vector<double> yDot_vect(TOT_DOF);
   int i = 1;
-  for(std::vector<double>::iterator it = qDot_vect.begin(); it != qDot_vect.end(); ++it) {
-    *it = qDot_cmat(i);
+  for(std::vector<double>::iterator it = yDot_vect.begin(); it != yDot_vect.end(); ++it) {
+    *it = yDot_cmat(i);
     i++;
   }
 
-  return qDot_vect;
+  return yDot_vect;
 
 }
 
@@ -87,7 +87,7 @@ std::vector<double> Controller::execAlgorithm(){
  * @param task for convenience, a pointer to the task is passed even if the class has
  * the list of task std::vector<Task*> tasks as member. Anyway, it is only a pointer, no copy of the heavy
  * object task is performed.
- * @param rhop the "temporary" command qdot which will be modified by succesively calls of Icat
+ * @param rhop the "temporary" command yDot which will be modified by succesively calls of Icat
  * @param Q the prokection matrix which will be modified by succesively calls of Icat
  * @return 0 to correct execution
  *
@@ -141,7 +141,7 @@ int Controller::equalityIcat(Task* task, CMAT::Matrix* rhop, CMAT::Matrix* Q) {
  * @param task for convenience, a pointer to the task is passed even if the class has
  * the list of task std::vector<Task*> tasks as member. Anyway, it is only a pointer, no copy of the heavy
  * object task is performed.
- * @param rhop the "temporary" command qdot which will be modified by succesively calls of Icat
+ * @param rhop the "temporary" command yDot which will be modified by succesively calls of Icat
  * @param Q the prokection matrix which will be modified by succesively calls of Icat
  * @return 0 to correct execution
  *

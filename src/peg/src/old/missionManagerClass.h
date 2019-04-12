@@ -21,7 +21,7 @@
 
 
 #include "../controller/header/controller.h"
-#include "../rosInterface/header/rosInterface.h"
+#include "../robotInterface/header/robotInterface.h"
 
 
 #include "../tasks/header/lastTask.h"
@@ -46,7 +46,7 @@ public:
 private:
   std::string robotName;
   Infos robInfo;
-  RosInterface rosInterface;
+  robotInterface robotInterface;
   KDLHelper kdlHelper;
   Controller controller;
   std::vector<Task*> tasks;
@@ -54,7 +54,7 @@ private:
 
   ///execute() function
   void setGoals();
-  void initRosInterface();
+  void initrobotInterface();
   void initKdlHelper();
   void setInitialState();
   void setKdl4Tool();

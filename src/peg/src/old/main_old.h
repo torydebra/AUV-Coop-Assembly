@@ -20,6 +20,6 @@
 
 
 #include "../controller/header/controller.h"
-#include "../rosInterface/header/rosInterface.h"
+#include "../robotInterface/header/robotInterface.h"
 
 #endif // MAIN_H

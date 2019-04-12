@@ -62,7 +62,7 @@ int VehicleReachTask::setReference(
   CMAT::TransfMatrix wTv_cmat = CONV::matrix_eigen2cmat(wTv_eigen);
   CMAT::TransfMatrix wTg_cmat = CONV::matrix_eigen2cmat(wTg_eigen);
   CMAT::Vect6 errorSwapped = CMAT::CartError(wTg_cmat, wTv_cmat); //ang,lin
-  // ang and lin must be swapped because in qDot and jacob linear part is before
+  // ang and lin must be swapped because in yDot and jacob linear part is before
   CMAT::Vect6 error;
   error.SetFirstVect3(errorSwapped.GetSecondVect3());
   error.SetSecondVect3(errorSwapped.GetFirstVect3());

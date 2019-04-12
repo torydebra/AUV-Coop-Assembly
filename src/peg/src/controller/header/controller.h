@@ -14,7 +14,7 @@
  * 1) taking matrices and giving them to Tasks classes,
  *    so they can compute their activations, references, jacobians, etc matrices
  * 2) After all tasks have setted matrices, it executes the icat algorithm and return the
- *    qDot to the caller.
+ *    yDot to the caller.
 */
 class Controller {
 

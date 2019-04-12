@@ -12,7 +12,7 @@
  * task must have, methods to get these protected variables, and a pure virtual function that the derived class must
  * implement.
  *
- * @remark VERY IMPORTANT: QDOT is [joints(1...n) x, y, z, wx, wy, wz] take care when doing JACOBIAN and REFERENCES
+ * @remark VERY IMPORTANT: yDot is [joints(1...n) x, y, z, wx, wy, wz] take care when doing JACOBIAN and REFERENCES
 */
 class Task
 {

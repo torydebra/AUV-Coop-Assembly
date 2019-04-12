@@ -1,20 +1,14 @@
-#include "header/rosInterface.h"
+#include "header/robotInterface.h"
 
-/** @brief RosInterface Constructor
 
-      @param arcg, argv the standard argument of c++ main, they are needed for ros::init
-    @param ar the name of the robot (found in .xml file of the scene)
-    @param topicTwist the name of the topic where twist command must be published
-
-*/
 /**
- * @brief RosInterface::RosInterface Constructor
+ * @brief robotInterface::robotInterface Constructor
  * @param argc the standard argument of c++ main needed for ros::init
  * @param argv the standard argument of c++ main needed for ros::init and for know robot names:
  * argv[1]=robotName, argv[2] = otherRobotName
  * @param toolName name of the peg in the xml file of the scene
  */
-RosInterface::RosInterface(ros::NodeHandle nh, std::string robotName, std::string otherRobotName, std::string toolName)
+RobotInterface::RobotInterface(ros::NodeHandle nh, std::string robotName, std::string otherRobotName, std::string toolName)
 {
 
   this->robotName = robotName;
@@ -22,16 +16,16 @@ RosInterface::RosInterface(ros::NodeHandle nh, std::string robotName, std::strin
   this->topicRoot = "/uwsim/" + robotName + "/";
   this->toolName = toolName;
 
-  std::cout << "[" << robotName <<"][ROS_INTERFACE] Start"<<std::endl;
+  std::cout << "[" << robotName <<"][ROBOT_INTERFACE] Start"<<std::endl;
 
   pubTwist = nh.advertise<geometry_msgs::TwistStamped>((topicRoot + "twist_command"),1);
   pubJoint = nh.advertise<sensor_msgs::JointState>((topicRoot + "joint_command"),1);
 
-  subJointState = nh.subscribe(topicRoot+"joint_state", 1, &RosInterface::subJointStateCallback, this);
+  subJointState = nh.subscribe(topicRoot+"joint_state", 1, &RobotInterface::subJointStateCallback, this);
 }
 
 
-int RosInterface::init(){
+int RobotInterface::init(){
 
   if(!ros::ok()){
     return -1;
@@ -56,19 +50,19 @@ int RosInterface::init(){
   //Wait to joint state to be ready (ie : the callback is called at least once)
   ros::Rate rate(100);
   while (jState_priv.size()==0){
-    std::cout << "[" << robotName <<"][ROS_INTERFACE] Waiting for Jstate..."
+    std::cout << "[" << robotName <<"][ROBOT_INTERFACE] Waiting for Jstate..."
               <<std::endl;
     ros::spinOnce();
     rate.sleep();
   }
 
 
-  std::cout << "[" << robotName <<"][ROS_INTERFACE] Init done" << std::endl;
+  std::cout << "[" << robotName <<"][ROBOT_INTERFACE] Init done" << std::endl;
 
   return 0;
 }
 
-int RosInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
+int RobotInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
 
   if(!ros::ok()){
     return -1;
@@ -90,7 +84,7 @@ int RosInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
   return 0;
 }
 
-int RosInterface::getwTt(Eigen::Matrix4d* wTt_eigen){
+int RobotInterface::getwTt(Eigen::Matrix4d* wTt_eigen){
 
   if(!ros::ok()){
     return -1;
@@ -113,7 +107,7 @@ int RosInterface::getwTt(Eigen::Matrix4d* wTt_eigen){
 }
 
 //TODO: maybe get position of other with another method
-int RosInterface::getOtherRobPos(Eigen::Vector3d* pos){
+int RobotInterface::getOtherRobPos(Eigen::Vector3d* pos){
 
   if(!ros::ok()){
     return -1;
@@ -137,18 +131,18 @@ int RosInterface::getOtherRobPos(Eigen::Vector3d* pos){
 }
 
 
-void RosInterface::subJointStateCallback(const sensor_msgs::JointState& js)
+void RobotInterface::subJointStateCallback(const sensor_msgs::JointState& js)
 {
    jState_priv = js.position;
 }
 
 /**
- * @brief RosInterface::getJointState
+ * @brief robotInterface::getJointState
  * @param jState
  * @return
  * @note Doing so, only when main call this function it gets the joint state position
  */
-int RosInterface::getJointState(std::vector<double> *jState){
+int RobotInterface::getJointState(std::vector<double> *jState){
 
   if(!ros::ok()){
     return -1;
@@ -159,27 +153,27 @@ int RosInterface::getJointState(std::vector<double> *jState){
 }
 
 
-int RosInterface::sendQDot(std::vector<double> qDot){
+int RobotInterface::sendyDot(std::vector<double> yDot){
 
   if(!ros::ok()){
     return -1;
   }
   sensor_msgs::JointState js;
   js.name.push_back(std::string("Slew"));
-  js.velocity.push_back(qDot.at(0));
+  js.velocity.push_back(yDot.at(0));
   js.name.push_back(std::string("Shoulder"));
-  js.velocity.push_back(qDot.at(1));
+  js.velocity.push_back(yDot.at(1));
   js.name.push_back(std::string("Elbow"));
-  js.velocity.push_back(qDot.at(2));
+  js.velocity.push_back(yDot.at(2));
   js.name.push_back(std::string("JawRotate"));
-  js.velocity.push_back(qDot.at(3));
+  js.velocity.push_back(yDot.at(3));
   geometry_msgs::TwistStamped twist;
-  twist.twist.linear.x=qDot.at(4);
-  twist.twist.linear.y=qDot.at(5);
-  twist.twist.linear.z=qDot.at(6);
-  twist.twist.angular.x=qDot.at(7);
-  twist.twist.angular.y=qDot.at(8);
-  twist.twist.angular.z=qDot.at(9);
+  twist.twist.linear.x=yDot.at(4);
+  twist.twist.linear.y=yDot.at(5);
+  twist.twist.linear.z=yDot.at(6);
+  twist.twist.angular.x=yDot.at(7);
+  twist.twist.angular.y=yDot.at(8);
+  twist.twist.angular.z=yDot.at(9);
 
   pubJoint.publish(js);
   pubTwist.publish(twist);
@@ -187,6 +181,6 @@ int RosInterface::sendQDot(std::vector<double> qDot){
 
 }
 
-//void RosInterface::spinOnce(){
+//void robotInterface::spinOnce(){
 //  ros::spinOnce();
 //}

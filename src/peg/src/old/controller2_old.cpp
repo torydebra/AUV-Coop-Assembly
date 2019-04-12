@@ -107,23 +107,23 @@ int main(int argc, char **argv)
 
 
     /// PSEUDOINVERSE!!!!
-    CMAT::Matrix qDot(TOT_DOF,1);
-    //qdot = [arm arm arm arm wx wy wz x y z]
+    CMAT::Matrix yDot(TOT_DOF,1);
+    //yDot = [arm arm arm arm wx wy wz x y z]
 
     //pseudo easy
-    //qDot = vehicleReaching.J.RegPseudoInverse(0.001, 0.0001) * vehicleReaching.reference;
+    //yDot = vehicleReaching.J.RegPseudoInverse(0.001, 0.0001) * vehicleReaching.reference;
 
     CMAT::Matrix Q = CMAT::Matrix::Eye(TOT_DOF);
 
-    inequality_icat(vehicleReaching, qDot, Q);
+    inequality_icat(vehicleReaching, yDot, Q);
 
 
-    twist.twist.angular.x=qDot(5);
-    twist.twist.angular.y=qDot(6);
-    twist.twist.angular.z=qDot(7);
-    twist.twist.linear.x=qDot(8);
-    twist.twist.linear.y=qDot(9);
-    twist.twist.linear.z=qDot(10);
+    twist.twist.angular.x=yDot(5);
+    twist.twist.angular.y=yDot(6);
+    twist.twist.angular.z=yDot(7);
+    twist.twist.linear.x=yDot(8);
+    twist.twist.linear.y=yDot(9);
+    twist.twist.linear.z=yDot(10);
 
     pubClassTwist.publish(twist);
 
@@ -143,7 +143,7 @@ int equality_icat(Task task, CMAT::Matrix &rhop, CMAT::Matrix &Q) {
   //J jacobiana task
   //Q inizializzata a eye(totDof) prima di fare tutto
   //rhop il controllo cinematico che viene passato a tutti i lower priority task,
-  //       che poi alla fine è qdot voluto
+  //       che poi alla fine è yDot voluto
   // xdot è reference del task
   //mu double var globale che viene modificata da cmat pseudoinverse varie
   //flag int analogo a mu

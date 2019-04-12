@@ -10,6 +10,7 @@
 namespace CONV{
 
     std::vector<double> tfMat3x3_to_vector(tf::Matrix3x3 matrix3x3);
+    Eigen::VectorXd vector_std2Eigen(std::vector<double> vect);
 
     /// cmat to eigen
     Eigen::Matrix3d rotMatrix_cmat2eigen(CMAT::RotMatrix mat_cmat);

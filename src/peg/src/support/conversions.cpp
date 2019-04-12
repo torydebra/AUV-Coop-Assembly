@@ -17,6 +17,16 @@ std::vector<double> CONV::tfMat3x3_to_vector(tf::Matrix3x3 matrix3x3){
 
 }
 
+Eigen::VectorXd CONV::vector_std2Eigen(std::vector<double> vect){
+  Eigen::VectorXd vec_eig(vect.size());
+
+  for (int i=0; i<vect.size(); i++){
+    vec_eig(i) = vect.at(i);
+  }
+
+  return vec_eig;
+}
+
 
 Eigen::Matrix3d CONV::rotMatrix_cmat2eigen(CMAT::RotMatrix mat_cmat){
 
