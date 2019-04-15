@@ -5,10 +5,20 @@ CoordInterfaceCoord::CoordInterfaceCoord(ros::NodeHandle nh, std::string robotNa
   this->robotName = robotName;
   std::cout << "[COORDINATOR][COORD_INTERFACE_to_" << robotName <<"] Start"<<std::endl;
 
+  readyRob = false;
+  std::string topicReady = "/uwsim/" + robotName+"_MissionManager"  + "/ready";
+  readyRobSub = nh.subscribe(topicReady, 1, &CoordInterfaceCoord::readyRobSubCallback, this);
+
+
   std::string topicCoordFromMM = "/uwsim/" + robotName +"_MissionManager/toCoord";
   subCoordFromMM = nh.subscribe(topicCoordFromMM, 1, &CoordInterfaceCoord::subCoordFromMMCallBack, this);
 
 
+
+}
+
+bool CoordInterfaceCoord::getReadyRob(){
+  return this->readyRob;
 }
 
 /**
@@ -19,16 +29,16 @@ CoordInterfaceCoord::CoordInterfaceCoord(ros::NodeHandle nh, std::string robotNa
  *         1 Warning mess do not arrived,
  *         -1 Error about dimension of message arrived
  */
-int CoordInterfaceCoord::getxDot(
+int CoordInterfaceCoord::getNonCoopCartVel(
     Eigen::Matrix<double, VEHICLE_DOF, 1> *nonCoopCartVel_eigen){
 
 
   int vectSize = tempXdot.size();
 
   if (vectSize == 0){
-    std::cout << "[COORDINATOR][COORD_INTERFACE_to_" << robotName <<"] WARNING:"
-              << "I don't receive anything from " << robotName <<  " yet"
-              << std::endl;
+//    std::cout << "[COORDINATOR][COORD_INTERFACE_to_" << robotName <<"] WARNING:"
+//              << "No xDot_tool to read now "
+//              << std::endl;
     return 1;
   }
 
@@ -63,9 +73,9 @@ int CoordInterfaceCoord::getJJsharp(
   int nSize = tempJJsharp.size();
 
   if (nSize == 0){
-    std::cout << "[COORDINATOR][COORD_INTERFACE_to_" << robotName <<"] WARNING:"
-              << "Nothing to read now" << robotName <<  "yet"
-              << std::endl;
+//    std::cout << "[COORDINATOR][COORD_INTERFACE_to_" << robotName <<"] WARNING:"
+//              << "No JJ# to read now "
+//              << std::endl;
     return 1;
   }
 
@@ -90,6 +100,11 @@ int CoordInterfaceCoord::getJJsharp(
 }
 
 
+void CoordInterfaceCoord::readyRobSubCallback(const std_msgs::Bool::ConstPtr& start){
+  readyRob = start->data;
+}
+
+
 /**
  * @brief CoordInterfaceCoord::subCoordFromMM1CallBack
  * the callback for subscriber to one robot.
@@ -98,13 +113,17 @@ int CoordInterfaceCoord::getJJsharp(
  * copy directly in the two eigen matrices; callbacks must be fast as possible.
  * The copy is performed in the gets functions
  */
-void CoordInterfaceCoord::subCoordFromMMCallBack(const peg::toCoord_msg::ConstPtr& msg){
+void CoordInterfaceCoord::subCoordFromMMCallBack(const peg_msgs::toCoord::ConstPtr& msg){
 
-  tempXdot.resize(msg->xDot.size());
-  // a bit faster if we copy in msgData? callbacks must be fast
-  for (int i=0; i<msg->xDot.size(); ++i){
-    tempXdot.at(i) = msg->xDot.at(i).data;
-  }
+  tempXdot.resize(6); //message is a twist so 6 elements
+
+  tempXdot.at(0) = msg->xDot.twist.linear.x;
+  tempXdot.at(1) = msg->xDot.twist.linear.y;
+  tempXdot.at(2) = msg->xDot.twist.linear.z;
+  tempXdot.at(3) = msg->xDot.twist.angular.x;
+  tempXdot.at(4) = msg->xDot.twist.angular.y;
+  tempXdot.at(5) = msg->xDot.twist.angular.z;
+
 
   //dim[0].stride is the total number of element (row*col)
   tempJJsharp.resize(msg->JJsharp.layout.dim[0].stride);

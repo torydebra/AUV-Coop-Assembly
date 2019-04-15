@@ -1,6 +1,6 @@
 function plotTask(rootPath, robotName, taskName)
 
-filename = strcat(rootPath, robotName, taskName);
+filename = strcat(rootPath, robotName, "/", taskName);
 legFontSize = 13;
 titleFontSize = 16;
 ylabFontSize = 15;

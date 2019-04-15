@@ -8,13 +8,12 @@
  * argv[1]=robotName, argv[2] = otherRobotName
  * @param toolName name of the peg in the xml file of the scene
  */
-RobotInterface::RobotInterface(ros::NodeHandle nh, std::string robotName, std::string otherRobotName, std::string toolName)
+RobotInterface::RobotInterface(ros::NodeHandle nh, std::string robotName, std::string otherRobotName)
 {
 
   this->robotName = robotName;
   this->otherRobotName = otherRobotName;
   this->topicRoot = "/uwsim/" + robotName + "/";
-  this->toolName = toolName;
 
   std::cout << "[" << robotName <<"][ROBOT_INTERFACE] Start"<<std::endl;
 
@@ -35,12 +34,6 @@ int RobotInterface::init(){
   //Wait to transform wTv to be ready (or fail if wait more than 3 sec)
   std::string topic = "/" + robotName;
   tfListener.waitForTransform("world", topic, ros::Time(0), ros::Duration(3.0));
-
-
-  //wait to transform wTtool to be ready
-  std::string topic2 = "/" + toolName;
-  tfListener.waitForTransform("world", topic2, ros::Time(0), ros::Duration(1.0));
-
 
   //wait to transform wTv of the other robot to be ready
   std::string topic3 = "/" + otherRobotName;
@@ -84,27 +77,6 @@ int RobotInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
   return 0;
 }
 
-int RobotInterface::getwTt(Eigen::Matrix4d* wTt_eigen){
-
-  if(!ros::ok()){
-    return -1;
-  }
-
-  tf::StampedTransform wTt_tf;
-
-  std::string topic = "/" + toolName;
-  try {
-    tfListener.lookupTransform("world", topic, ros::Time(0), wTt_tf);
-
-  } catch (tf::TransformException &ex) {
-    ROS_ERROR("%s",ex.what());
-    ros::Duration(1.0).sleep();
-  }
-
-  *wTt_eigen = CONV::transfMatrix_tf2eigen(wTt_tf);
-
-  return 0;
-}
 
 //TODO: maybe get position of other with another method
 int RobotInterface::getOtherRobPos(Eigen::Vector3d* pos){
@@ -180,7 +152,3 @@ int RobotInterface::sendyDot(std::vector<double> yDot){
   return 0;
 
 }
-
-//void robotInterface::spinOnce(){
-//  ros::spinOnce();
-//}

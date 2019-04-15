@@ -87,6 +87,7 @@ struct ExchangedInfo {
   //position in the world of the other twin robot. for now used only for obstacledistancetask
   //(where the obstacle is the other vehicle)
   Eigen::Vector3d otherRobPos;
+  Eigen::Matrix<double, VEHICLE_DOF, 1> coopCartVel;
 };
 
 struct Infos {

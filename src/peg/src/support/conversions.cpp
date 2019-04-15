@@ -18,6 +18,7 @@ std::vector<double> CONV::tfMat3x3_to_vector(tf::Matrix3x3 matrix3x3){
 }
 
 Eigen::VectorXd CONV::vector_std2Eigen(std::vector<double> vect){
+
   Eigen::VectorXd vec_eig(vect.size());
 
   for (int i=0; i<vect.size(); i++){
@@ -27,6 +28,23 @@ Eigen::VectorXd CONV::vector_std2Eigen(std::vector<double> vect){
   return vec_eig;
 }
 
+std::vector<double> CONV::vector_cmat2std(CMAT::Matrix mat){
+
+  std::vector<double> vect;
+  if (mat.GetNumColumns() != 1){
+    std::cout << "[CONV] vector_cmat2std ERROR: argument must be a nx1 matrix (ie, a vector)";
+    return vect;
+  }
+  vect.resize(mat.GetNumRows());
+
+  int i = 1;
+  for(std::vector<double>::iterator it = vect.begin(); it != vect.end(); ++it) {
+    *it = mat(i);
+    i++;
+  }
+
+  return vect;
+}
 
 Eigen::Matrix3d CONV::rotMatrix_cmat2eigen(CMAT::RotMatrix mat_cmat){
 

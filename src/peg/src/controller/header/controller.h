@@ -5,6 +5,7 @@
 
 #include "../../support/header/defines.h"
 #include "../../support/header/prints.h"
+#include "../../support/header/conversions.h"
 #include "../../helper/header/infos.h"
 
 #include "../../tasks/header/task.h"
@@ -20,15 +21,14 @@ class Controller {
 
 public:
 
-  // the list of task. Each *tasks point to a different class (that is the specific task)
-  std::vector<Task*> tasks;
-  int numTasks;
-
   Controller(std::string robotName);
-  int setTaskList(std::vector<Task*> tasks);
 
-  int updateTransforms(struct Infos* const robInfo);
-  std::vector<double> execAlgorithm();
+  int updateMultipleTasksMatrices(std::vector<Task*> tasks, struct Infos* const robInfo);
+  int updateSingleTaskMatrices(Task* task, struct Infos* const robInfo);
+  std::vector<double> execAlgorithm(std::vector<Task*> tasks);
+
+  int resetAllAlgosFlag(std::vector<Task*> tasks);
+  int resetAllUpdatedFlags(std::vector<Task*> tasks);
 
 private:
   std::string robotName; //to differentiate robots in log folders and printsconsole

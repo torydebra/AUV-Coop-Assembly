@@ -2,7 +2,7 @@
 
 VehicleNullVelTask::VehicleNullVelTask(int dim, bool eqType, std::string robotName)
   : Task(dim, eqType, robotName, "VEHICLE_NULL_VEL") {
-  gain = 0; //non reactive task
+  //no Gain: non reactive task
 }
 
 /**

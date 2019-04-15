@@ -2,7 +2,6 @@
 #include <chrono>
 
 
-
 /**
  * @brief missionManager
  * @param argc number of input (minimum 3)
@@ -26,30 +25,13 @@ int main(int argc, char **argv)
   std::string pathLog;
   if (LOG && (argc > 3)){   //if flag log setted to 1 and path log is given
     pathLog = argv[3];
-    pathLog += "/" + robotName;
   }
-  start_glob = false;
 
 
   /// ROS NODE
   ros::init(argc, argv, robotName + "_MissionManager");
   std::cout << "[" << robotName << "][MISSION_MANAGER] Start" << std::endl;
   ros::NodeHandle nh;
-  //pub to let coord that is ready (e.g. to see if both missManager A & B started)
-  // ASK towrite in doc  _missionManager" topic are for mission manager topic...
-  //withotu missman (only robname) are topic of robotInterface
-  std::string topicReady = "/uwsim/" + robotName+"_MissionManager"  + "/ready";
-  ros::Publisher readyPub = nh.advertise<std_msgs::Bool>(topicReady, 1);
-
-  //sub to know if other robot is ready
-  //even if we can read directly the topic of the other robot,
-  // for consistency ALL infos received from extern (ie subscribed topic)
-  // are given by coordinator.
-  // for make each miss manager comunicate with its own robot, there is
-  // the ros interface
-  std::string topicStart = "/uwsim/Coord/StartStopBoth";
-  ros::Subscriber startSub = nh.subscribe(topicStart, 1, startSubCallback);
-
 
 
   /// GOAL VEHICLE
@@ -94,11 +76,15 @@ int main(int argc, char **argv)
   robInfo.transforms.wTgoalVeh_eigen = wTgoalVeh_eigen;
   robInfo.transforms.wTgoalEE_eigen = wTgoalEE_eigen;
   robInfo.transforms.wTgoalTool_eigen = wTgoalTool_eigen;
+  robInfo.robotState.vehicleVel.resize(VEHICLE_DOF);
+  std::fill(robInfo.robotState.vehicleVel.begin(), robInfo.robotState.vehicleVel.end(), 0);
 
 
   ///Ros interfaces
-  RobotInterface robotInterface(nh, robotName, otherRobotName, "pipe");
+  RobotInterface robotInterface(nh, robotName, otherRobotName);
   robotInterface.init();
+  WorldInterface worldInterface(robotName, "pipe");
+  worldInterface.init();
   CoordInterfaceMissMan coordInterface(nh, robotName);
 
 
@@ -117,7 +103,7 @@ int main(int argc, char **argv)
   /// Set initial state (todo, same as in control loop, make a function?)
   robotInterface.getJointState(&(robInfo.robotState.jState));
   robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-  robotInterface.getwTt(&(robInfo.transforms.wTt_eigen));
+  worldInterface.getwTt(&(robInfo.transforms.wTt_eigen));
   robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
 
   //get ee pose RESPECT LINK 0
@@ -143,32 +129,33 @@ int main(int argc, char **argv)
 
   ///Controller
   Controller controller(robotName);
-  std::vector<Task*> tasks;
-  setTaskListInit(&tasks, robotName);
-  controller.setTaskList(tasks);
+
+  /// Task lists
+  std::vector<Task*> tasksTPIK1; //the first, non coop, one
+  std::vector<Task*> tasksCoop;
+  std::vector<Task*> tasksArmVehCoord; //for arm-vehicle coord
+  setTaskLists(robotName, &tasksTPIK1, &tasksCoop, &tasksArmVehCoord);
 
 
   /// Log folders TO DO AFTER EVERY SETTASKLIST?
   /// //TODO ulteriore subfolder per la mission
 
+  Logger logger;
   if (pathLog.size() > 0){
-    for (int i =0; i< tasks.size(); ++i){
-      PRT::createDirectory(pathLog +"/" +tasks[i]->getName());
-    }
+    logger = Logger(robotName, pathLog);
 
-    std::cout << "[" << robotName
-              << "][MISSION_MANAGER] Created Log Folders in  "
-              << pathLog  << std::endl;
+    //to for each list... if task was in a previous list, no problem, folder with same name... overwrite?
+    logger.createTasksListDirectories(tasksTPIK1);
+    logger.createTasksListDirectories(tasksCoop);
+
   }
 
-  //wait coordinator to start TODO put in coordInterface
-  std_msgs::Bool ready;
-  ready.data = true;
-  double msinit = 100;
+  //wait coordinator to start
+  double msinit = 1;
   boost::asio::io_service ioinit;
-  while(!start_glob){
+  while(!coordInterface.getStartFromCoord()){
     boost::asio::deadline_timer loopRater(ioinit, boost::posix_time::milliseconds(msinit));
-    readyPub.publish(ready);
+    coordInterface.pubIamReadyOrNot(true);
     std::cout << "[" << robotName<< "][MISSION_MANAGER] Wating for "<<
                  "Coordinator to say I can start...\n";
     ros::spinOnce();
@@ -178,8 +165,10 @@ int main(int argc, char **argv)
 
   int ms = 100;
   boost::asio::io_service io;
+  boost::asio::io_service io2;
+
   while(1){
-    //auto start = std::chrono::steady_clock::now();
+    auto start = std::chrono::steady_clock::now();
 
     // this must be inside loop
     boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
@@ -187,7 +176,7 @@ int main(int argc, char **argv)
     /// Update state
     robotInterface.getJointState(&(robInfo.robotState.jState));
     robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-    robotInterface.getwTt(&(robInfo.transforms.wTt_eigen));
+    worldInterface.getwTt(&(robInfo.transforms.wTt_eigen));
     robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
 
     //get ee pose RESPECT LINK 0
@@ -203,67 +192,116 @@ int main(int argc, char **argv)
 
 
     /// Pass state to controller which deal with tpik
-    controller.updateTransforms(&robInfo);
-    std::vector<double> yDot = controller.execAlgorithm();
+    controller.updateMultipleTasksMatrices(tasksTPIK1, &robInfo);
+    std::vector<double> yDotTPIK1 = controller.execAlgorithm(tasksTPIK1);
+
+
+    std::vector<double> yDotFinal(TOT_DOF);
 
     /// COORD
-    ///
     Eigen::Matrix<double, VEHICLE_DOF, 1> nonCoopCartVel_eigen =
-        robInfo.robotState.w_Jtool_robot * CONV::vector_std2Eigen(yDot);
+        robInfo.robotState.w_Jtool_robot * CONV::vector_std2Eigen(yDotTPIK1);
 
     Eigen::Matrix<double, VEHICLE_DOF, VEHICLE_DOF> admisVelTool_eigen =
         robInfo.robotState.w_Jtool_robot * FRM::pseudoInverse(robInfo.robotState.w_Jtool_robot);
 
-    std::cout << nonCoopCartVel_eigen << "\n\n";
-    std::cout << admisVelTool_eigen << "\n\n";
+    std::cout << "JJsharp\n" << admisVelTool_eigen << "\n\n";
 
-    coordInterface.publishToCoord(&robInfo, yDot);
+    coordInterface.publishToCoord(nonCoopCartVel_eigen, admisVelTool_eigen);
+
+    while (coordInterface.getCoopCartVel(&(robInfo.exchangedInfo.coopCartVel)) == 1){ //wait for coopVel to be ready
+      boost::asio::deadline_timer loopRater2(io2, boost::posix_time::milliseconds(1));
+      loopRater2.wait();
+      ros::spinOnce();
+    }
+
+    std::cout << "ARRIVED coop vel:\n" << robInfo.exchangedInfo.coopCartVel << "\n\n\n";
+
+    controller.resetAllUpdatedFlags(tasksTPIK1);
+    controller.resetAllUpdatedFlags(tasksCoop);
+    controller.resetAllUpdatedFlags(tasksArmVehCoord);
+    controller.updateMultipleTasksMatrices(tasksCoop, &robInfo);
+    std::vector<double> yDotOnlyVeh = controller.execAlgorithm(tasksCoop);
+
+
+    controller.resetAllUpdatedFlags(tasksTPIK1);
+    controller.resetAllUpdatedFlags(tasksCoop);
+    controller.resetAllUpdatedFlags(tasksArmVehCoord);
+
+
+    controller.updateMultipleTasksMatrices(tasksArmVehCoord, &robInfo);
+
+
+    std::vector<double> yDotOnlyArm = controller.execAlgorithm(tasksArmVehCoord);
+
+    for (int i=0; i<ARM_DOF; i++){
+      yDotFinal.at(i) = yDotOnlyArm.at(i);
+
+    }
+    for (int i = ARM_DOF; i<TOT_DOF; i++) {
+      yDotFinal.at(i) = yDotOnlyVeh.at(i);
+      //at the moment no error so velocity are exaclty what we are giving
+      robInfo.robotState.vehicleVel.at(i-ARM_DOF) = yDotFinal.at(i);
+    }
+
+
 
     ///Send command to vehicle
-    robotInterface.sendyDot(yDot);
+    //robotInterface.sendyDot(yDotTPIK1);
+    robotInterface.sendyDot(yDotFinal);
 
 
     ///Log things
     if (pathLog.size() != 0){
-      for(int i=0; i<tasks.size(); i++){
-        std::string pathname = pathLog + "/" + tasks[i]->getName();
-        PRT::matrixCmat2file(pathname + "/activation.txt",
-                             tasks[i]->getActivation().GetDiag());
-        PRT::matrixCmat2file(pathname + "/reference.txt",
-                             tasks[i]->getReference());
-        PRT::matrixCmat2file(pathname + "/error.txt",
-                             tasks[i]->getError());
-
-      }
+      logger.writeAllForTasks(tasksTPIK1);
+      //TODO flag LOGGED to not print same thing twice
+      //or maybe another list with ALL task only to log here and create folder for log
       //for the moment, yDot are exactly how vehicle and arm are moving
-      std::string pathyDot = pathLog + "/yDot.txt";
-      PRT::vectorStd2file(pathyDot, yDot);
+      logger.writeYDot(yDotTPIK1, "yDotTPIK1");
+      logger.writeYDot(yDotFinal, "yDotFinal");
+      logger.writeEigenMatrix(admisVelTool_eigen, "JJsharp");
     }
 
-//    ///PRINT
-//    for(int i=3; i<tasks.size(); i++){
-//      /// DEBUG
-//      std::cout << "Activation " << tasks[i]->getName() << ": \n";
-//      tasks[i]->getActivation().PrintMtx() ;
-//      std::cout << "\n";
-////      std::cout << "JACOBIAN " << tasks[i]->getName() << ": \n";
-////      tasks[i]->getJacobian().PrintMtx();
-////      std::cout<< "\n";
-//      std::cout << "REFERENCE " << tasks[i]->getName() << ": \n";
-//      tasks[i]->getReference().PrintMtx() ;
-//      std::cout << "\n";
-//    }
+        std::cout <<"CULOOOOOOOOOOOO\n\n\n";
+    ///PRINT
+    /// DEBUG
+    std::vector<Task*> tasksDebug = tasksArmVehCoord;
+    for(int i=0; i<1; i++){
+      std::cout << "Activation " << tasksDebug[i]->getName() << ": \n";
+      tasksDebug[i]->getActivation().PrintMtx() ;
+      std::cout << "\n";
+      std::cout << "JACOBIAN " << tasksDebug[i]->getName() << ": \n";
+      tasksDebug[i]->getJacobian().PrintMtx();
+       std::cout<< "\n";
 
+      std::cout << "REFERENCE " << tasksDebug[i]->getName() << ": \n";
+      tasksDebug[i]->getReference().PrintMtx() ;
+      std::cout << "\n";
+    }
+        std::cout <<"MERDAAAAA\n\n\n";
 
+    controller.resetAllUpdatedFlags(tasksTPIK1);
+    controller.resetAllUpdatedFlags(tasksCoop);
+    controller.resetAllUpdatedFlags(tasksArmVehCoord);
     ros::spinOnce();
+
+
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
+    std::cout << "TEMPOOOOO  "<<duration << "\n\n";
+
+
     loopRater.wait();
-  }
+
+  } //end controol loop
 
 
 
+
+  coordInterface.pubIamReadyOrNot(false);
 
   //TODO
-  //destroy();
+  //destroy() per la task init list;
   return 0;
 }
 
@@ -276,7 +314,7 @@ int main(int argc, char **argv)
  * instead, with tasks as Task**, we need to fill the list with task[0], ...task[i] ... and changing
  * priority order would be slower.
  */
-void setTaskListInit(std::vector<Task*> *tasks, std::string robotName){
+void setTaskLists(std::string robotName, std::vector<Task*> *tasks){
 
   /// PUT HERE NEW TASKS.
   // note: order of priority at the moment is here
@@ -293,7 +331,7 @@ void setTaskListInit(std::vector<Task*> *tasks, std::string robotName){
 
   //tasks->push_back(new FovEEToToolTask(1, ineqType, robotName));
 
-  //tasks->push_back(new EndEffectorReachTask(6, eqType, robotName, tool));
+  //tasks->push_back(new EndEffectorReachTask(6, eqType, robotName));
   tasks->push_back(new PipeReachTask(5, eqType, robotName));
   //tasks->push_back(new VehicleReachTask(6, eqType, robotName));
 
@@ -302,10 +340,107 @@ void setTaskListInit(std::vector<Task*> *tasks, std::string robotName){
   tasks->push_back(new LastTask(TOT_DOF, eqType, robotName));
 }
 
+void setTaskLists(std::string robotName, std::vector<Task*> *tasks1, std::vector<Task*> *tasksFinal){
 
-void startSubCallback(const std_msgs::Bool::ConstPtr& start){
-  start_glob = start->data;
+  bool eqType = true;
+  bool ineqType = false;
+
+
+  /// CONSTRAINT TASKS
+  Task* coopTask6dof = new CoopTask(6, eqType, robotName);
+  Task* coopTask5dof = new CoopTask(5, eqType, robotName);
+
+
+  /// SAFETY TASKS
+  Task* jl = new JointLimitTask(4, ineqType, robotName);
+  Task* ha = new HorizontalAttitudeTask(1, ineqType, robotName);
+
+
+  /// PREREQUISITE TASKS
+
+
+  ///MISSION TASKS
+  Task* pr5 = new PipeReachTask(5, eqType, robotName);
+  Task* pr6 = new PipeReachTask(6, eqType, robotName);
+
+  Task* tr = new EndEffectorReachTask(6, eqType, robotName);
+
+  /// OPTIMIZATION TASKS
+  Task* shape = new ArmShapeTask(4, ineqType, robotName);
+  //The "fake task" with all eye and zero matrices, needed as last one for algo?
+  Task* last = new LastTask(TOT_DOF, eqType, robotName);
+
+  ///Fill tasks list
+  // note: order of priority at the moment is here
+  tasks1->push_back(jl);
+  tasks1->push_back(ha);
+  tasks1->push_back(pr5);
+  //tasks1->push_back(tr);
+  //tasks1->push_back(shape);
+  tasks1->push_back(last);
+
+  tasksFinal->push_back(coopTask5dof);
+  tasksFinal->push_back(jl);
+  tasksFinal->push_back(ha);
+  //tasksFinal->push_back(shape);
+  tasksFinal->push_back(last);
 }
+
+void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
+                  std::vector<Task*> *tasksCoord, std::vector<Task*> *tasksArmVeh){
+
+  bool eqType = true;
+  bool ineqType = false;
+
+
+  /// CONSTRAINT TASKS
+  Task* coopTask6dof = new CoopTask(6, eqType, robotName);
+  Task* coopTask5dof = new CoopTask(5, eqType, robotName);
+  Task* constrainVel = new VehicleConstrainVelTask(6, eqType, robotName);
+
+
+  /// SAFETY TASKS
+  Task* jl = new JointLimitTask(4, ineqType, robotName);
+  Task* ha = new HorizontalAttitudeTask(1, ineqType, robotName);
+
+
+  /// PREREQUISITE TASKS
+
+
+  ///MISSION TASKS
+  Task* pr5 = new PipeReachTask(5, eqType, robotName);
+  Task* pr6 = new PipeReachTask(6, eqType, robotName);
+
+  Task* tr = new EndEffectorReachTask(6, eqType, robotName);
+
+  /// OPTIMIZATION TASKS
+  Task* shape = new ArmShapeTask(4, ineqType, robotName);
+  //The "fake task" with all eye and zero matrices, needed as last one for algo?
+  Task* last = new LastTask(TOT_DOF, eqType, robotName);
+
+  ///Fill tasks list
+  // note: order of priority at the moment is here
+  tasks1->push_back(jl);
+  tasks1->push_back(ha);
+  tasks1->push_back(pr5);
+  //tasks1->push_back(tr);
+  //tasks1->push_back(shape);
+  tasks1->push_back(last);
+
+  tasksCoord->push_back(coopTask5dof);
+  tasksCoord->push_back(jl);
+  tasksCoord->push_back(ha);
+  //tasksFinal->push_back(shape);
+  tasksCoord->push_back(last);
+
+  tasksArmVeh->push_back(constrainVel);
+  tasksArmVeh->push_back(jl);
+  tasksArmVeh->push_back(ha);
+  //tasksArmVeh->push_back(shape);
+  tasksArmVeh->push_back(last);
+
+}
+
 
 //TODO LA DESTROY
 /** @brief
@@ -327,6 +462,10 @@ void startSubCallback(const std_msgs::Bool::ConstPtr& start){
 //    std::cout << "REFERENCE " << i << ": \n";
 //    tasks[i]->getReference().PrintMtx() ;
 //    std::cout << "\n";
+
+
+//std::cout << nonCoopCartVel_eigen << "\n\n";
+//std::cout << admisVelTool_eigen << "\n\n";
 
 
 //Q.PrintMtx("Q"); ///DEBUG

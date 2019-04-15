@@ -10,11 +10,9 @@
  *    if ee: the control point is the end effector
  *    if tool: the control point is the tool (so it is the tool frame which will reach the goal)
  */
-EndEffectorReachTask::EndEffectorReachTask(int dim, bool eqType, std::string robotName, ControlPoint pt)
+EndEffectorReachTask::EndEffectorReachTask(int dim, bool eqType, std::string robotName)
   : Task(dim, eqType, robotName, "ENDEFFECTOR_REACHING_GOAL"){
   gain = 0.2;
-  this->controlPoint = pt;
-  std::cout << "[" << taskName << "] Controlling Point: " << controlPoint << std::endl;
 
 }
 
@@ -27,18 +25,10 @@ int EndEffectorReachTask::updateMatrices(struct Infos* const robInfo){
 
   setActivation();
 
-  if (controlPoint == tool){
-    setJacobian(robInfo->robotState.w_Jtool_robot);
-    setReference(robInfo->transforms.wTgoalTool_eigen,
-               robInfo->transforms.wTt_eigen);
-  } else if (controlPoint == ee) {
-    setJacobian(robInfo->robotState.w_Jee_robot);
-    setReference(robInfo->transforms.wTgoalEE_eigen,
+
+  setJacobian(robInfo->robotState.w_Jee_robot);
+  setReference(robInfo->transforms.wTgoalEE_eigen,
                robInfo->robotState.wTv_eigen*robInfo->robotState.vTee_eigen);
-  } else {
-    std::cerr << "[" << taskName << "] Not know ControlPoint of value " << controlPoint << std::endl;
-    return -1;
-  }
 
   //setJacobian(transf->vTjoints, transf->vTee_eigen);
   //setReference(transf->vTee_eigen, transf->wTgoalEE_eigen, transf->wTv_eigen);
@@ -46,11 +36,6 @@ int EndEffectorReachTask::updateMatrices(struct Infos* const robInfo){
 }
 
 void EndEffectorReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
-
-  if (controlPoint == tool){ //ASK
-    w_J_robot.row(3) << 0, 0,0,0,0,0,0,0,0,0;
-
-  }
 
   J = CONV::matrix_eigen2cmat(w_J_robot);
 

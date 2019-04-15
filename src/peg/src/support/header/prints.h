@@ -4,6 +4,7 @@
 
 #include <tf/tf.h>
 #include <cmat/cmat.h>
+#include <Eigen/Core>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -19,6 +20,10 @@ namespace PRT{
   int createDirectory(std::string pathDirectory);
   int matrixCmat2file(std::string pathName, CMAT::Matrix);
   int vectorStd2file(std::string pathyDot, std::vector<double> yDot);
+  int matrixEigen2file(std::string pathName, Eigen::MatrixXd);
+  void double2file(std::string path, double scalar);
+
+
   std::string getCurrentDateFormatted();
 
 

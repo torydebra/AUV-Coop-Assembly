@@ -1,3 +1,3 @@
 Header header
-std_msgs/Float64[] xDot
+geometry_msgs/TwistStamped xDot
 std_msgs/Float64MultiArray JJsharp

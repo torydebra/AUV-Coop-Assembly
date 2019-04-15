@@ -1,5 +1,7 @@
 function matrix =  importMatrices(filename)
 
+filename
+
 %# open file and read all lines
 fid = fopen(filename, 'rt');
 temp = textscan(fid, '%s', 'delimiter', '\n');

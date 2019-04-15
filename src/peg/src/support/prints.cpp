@@ -55,10 +55,29 @@ int PRT::matrixCmat2file(std::string pathName, CMAT::Matrix mat){
   file.close();
 }
 
-int PRT::vectorStd2file(std::string pathyDot, std::vector<double> yDot){
+int PRT::matrixEigen2file(std::string pathName, Eigen::MatrixXd mat){
+  std::ofstream file;
+  file.open(pathName, std::ios_base::app);
+
+  for (int j=0; j<mat.rows(); ++j){
+
+    for (int i = 0; i<mat.cols(); ++i){
+      file << mat(j,i) << " ";
+    }
+    file << std::endl;
+  }
+  file << std::endl;
+
+
+  file.close();
+
+}
+
+
+int PRT::vectorStd2file(std::string path, std::vector<double> yDot){
 
   std::ofstream file;
-  file.open(pathyDot, std::ios_base::app);
+  file.open(path, std::ios_base::app);
 
   for(int i=0; i<yDot.size(); i++){
     file << yDot.at(i) << std::endl;
@@ -69,6 +88,18 @@ int PRT::vectorStd2file(std::string pathyDot, std::vector<double> yDot){
   file.close();
 
 
+}
+
+void PRT::double2file(std::string path, double scalar){
+  std::ofstream file;
+  file.open(path, std::ios_base::app);
+
+  file << scalar << std::endl;
+
+  file << std::endl;
+
+
+  file.close();
 }
 
 

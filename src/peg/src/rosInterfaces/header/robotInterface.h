@@ -17,13 +17,10 @@
 class RobotInterface
 {
 public:
-  RobotInterface(ros::NodeHandle nh, std::string robotName, std::string otherRobotName, std::string toolName);
+  RobotInterface(ros::NodeHandle nh, std::string robotName, std::string otherRobotName);
   int init();
   int getwTv(Eigen::Matrix4d* wTv_eigen);
-  int getwTt(Eigen::Matrix4d* wTt_eigen);
   int getOtherRobPos(Eigen::Vector3d* pos);
-//  int getvTee(Eigen::Matrix4d* vTee_eigen);
-//  int getvTjoints(std::vector<Eigen::Matrix4d>* vTjoints);
   int getJointState(std::vector<double>* jState);
   int sendyDot(std::vector<double> yDot);
   void spinOnce();
@@ -33,12 +30,10 @@ private:
   std::string robotName; //for tf listener (girona500_A,B)
   std::string otherRobotName; //for tf listener (girona500_B,A)
   std::string topicRoot; //for publishing yDot and subscribing to sensors ("/uwsim/g500_A/")
-  std::string toolName; //name of the tool in the scene.xml
   tf::TransformListener tfListener;
   ros::Publisher pubTwist;
   ros::Publisher pubJoint;
   ros::Subscriber subJointState;
-  //std::string topicJoint;
 
   std::vector<double> jState_priv;
   void subJointStateCallback(const sensor_msgs::JointState& js);

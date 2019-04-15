@@ -2,7 +2,7 @@
 
 VehicleConstrainVelTask::VehicleConstrainVelTask(int dim, bool eqType, std::string robotName)
   : Task(dim, eqType, robotName, "VEHICLE_CONSTRAIN_VEL") {
-  gain = 1; //non reactive task
+  //no gain: non reactive task
 
 }
 
@@ -23,19 +23,21 @@ int VehicleConstrainVelTask::updateMatrices(struct Infos* const robInfo){
 /**
  * @brief VehicleConstrainVelTask::setJacobian simple identity for vehicle part
  * @param wTv_eigen transformation from world to vehicle
- * @return 0 for correct exec
  */
 void VehicleConstrainVelTask::setJacobian(){
 
   Eigen::Matrix<double, 6, TOT_DOF> J_eigen = Eigen::Matrix<double, 6, TOT_DOF>::Zero();
   J_eigen.rightCols(dimension) = Eigen::Matrix<double, 6, 6>::Identity();
 
+  J = CONV::matrix_eigen2cmat(J_eigen);
+
+
 }
 
 void VehicleConstrainVelTask::setActivation(){
 
-  double vectDiag[6];
-  std::fill_n(vectDiag, 6, 1);
+  double vectDiag[dimension];
+  std::fill_n(vectDiag, dimension, 1);
   this->A.SetDiag(vectDiag);
 }
 /**

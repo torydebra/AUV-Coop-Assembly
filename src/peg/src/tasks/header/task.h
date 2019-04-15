@@ -29,6 +29,7 @@ protected:
   CMAT::Matrix reference;
   CMAT::Matrix error; //that is the reference without gain and saturation, useful for plotting result
 
+
   int flag_W;
   double mu_W;
   int flag_G;
@@ -41,6 +42,9 @@ protected:
        std::string robotName, std::string taskName);
 
 public:
+
+  bool updated; //to not call computeMatrices on task that were contained also in previous TPIKs list
+
 
   virtual ~Task();
 
@@ -61,6 +65,11 @@ public:
   double& getMu_W();
   int& getFlag_G();
   double& getMu_G();
+  void setFlag_W(int);
+  void setMu_W(double);
+  void setFlag_G(int);
+  void setMu_G(double);
+
 
   int getThreshold();
   int getLambda();

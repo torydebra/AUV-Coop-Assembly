@@ -23,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  message_generation
+  peg_msgs
   tf
   tf_conversions
   kdl_parser
@@ -69,10 +69,10 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-    FILES
-    toCoord_msg.msg
-)
+#add_message_files(
+    #FILES
+    #toCoord_msg.msg
+#)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -89,10 +89,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-   DEPENDENCIES
-   std_msgs
-)
+#generate_messages(
+   #DEPENDENCIES
+   #std_msgs
+#)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -132,7 +132,6 @@ catkin_package(
      std_msgs
      std_srvs
      topic_tools
-     message_runtime
      tf
      tf_conversions
    DEPENDS
@@ -146,8 +145,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
+  include ${catkin_INCLUDE_DIRS}
 )
 link_directories(
   ${catkin_LIBRARY_DIRS}
@@ -163,11 +161,13 @@ add_library(Formulas src/support/formulas.cpp)
 add_library(Prints src/support/prints.cpp)
 add_library(Controller src/controller/controller.cpp)
 add_library(RobotInterface src/rosInterfaces/robotInterface.cpp)
+add_library(WorldInterface src/rosInterfaces/worldInterface.cpp)
 add_library(CoordInterfaceMissMan src/rosInterfaces/coordInterfaceMissMan.cpp)
 add_library(CoordInterfaceCoord src/rosInterfaces/coordInterfaceCoord.cpp)
 
 add_library(KdlHelper src/helper/kdlHelper.cpp)
 add_library(JacobianHelper src/helper/jacobianHelper.cpp)
+add_library(Logger src/helper/logger.cpp)
 
 ## ADD library new task here
 
@@ -184,14 +184,20 @@ add_library(ObstacleAvoidVehicleTask src/tasks/obstacleAvoidVehicleTask.cpp)
 add_library(ObstacleAvoidEETask src/tasks/obstacleAvoidEETask.cpp)
 add_library(PipeReachTask src/tasks/pipeReachTask.cpp)
 add_library(ArmShapeTask src/tasks/armShapeTask.cpp)
+add_library(CoopTask src/tasks/coopTask.cpp)
 
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(CoordInterfaceMissMan peg_generate_messages_cpp)
-add_dependencies(CoordInterfaceCoord peg_generate_messages_cpp)
+add_dependencies(CoordInterfaceMissMan
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(CoordInterfaceCoord 
+    ${catkin_EXPORTED_TARGETS}
+)
+
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -219,15 +225,22 @@ add_executable(Coordinator src/coordinator.cpp)
 
 target_link_libraries(Coordinator
     ${catkin_LIBRARIES}
+    WorldInterface
     CoordInterfaceCoord
+    linuxcmat
+    Formulas
+    Conversions
+    Logger
 )
 
 target_link_libraries(MissionManagerA
     ${catkin_LIBRARIES}
     RobotInterface
+    WorldInterface
     CoordInterfaceMissMan
-    Prints
+    Logger
     Controller
+    Formulas
     KdlHelper
     JacobianHelper
     #put below new task (is it necessary? YES)
@@ -243,14 +256,17 @@ target_link_libraries(MissionManagerA
     ObstacleAvoidEETask
     PipeReachTask
     ArmShapeTask
+    CoopTask
 )
 
 target_link_libraries(MissionManagerB
     ${catkin_LIBRARIES}
     RobotInterface
+    WorldInterface
     CoordInterfaceMissMan
-    Prints
+    Logger
     Controller
+    Formulas
     KdlHelper
     JacobianHelper
     #put below new task (is it necessary? YES)
@@ -266,6 +282,7 @@ target_link_libraries(MissionManagerB
     ObstacleAvoidEETask
     PipeReachTask
     ArmShapeTask
+    CoopTask
 )
 
 target_link_libraries(Conversions
@@ -278,6 +295,16 @@ target_link_libraries(Formulas
     linuxcmat
 )
 
+target_link_libraries(Prints
+    linuxcmat
+)
+
+target_link_libraries(Logger
+    linuxcmat
+    Task
+    Prints
+)
+
 target_link_libraries(Controller
     linuxcmat
     Prints
@@ -288,12 +315,16 @@ target_link_libraries(RobotInterface
     tf
     Conversions
 )
+
 target_link_libraries(CoordInterfaceMissMan
-    Formulas
-    Conversions
+
 )
 
 target_link_libraries(CoordInterfaceCoord
+)
+
+target_link_libraries(WorldInterface
+    tf
 )
 
 target_link_libraries(KdlHelper
@@ -380,6 +411,12 @@ target_link_libraries(PipeReachTask
 target_link_libraries(ArmShapeTask
     Task
     linuxcmat
+)
+
+target_link_libraries(CoopTask
+    Task
+    linuxcmat
+    Conversions
 )
 
 # to add compiler flags (-Wall -pedantic)

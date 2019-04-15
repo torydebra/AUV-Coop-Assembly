@@ -19,6 +19,8 @@ Task::Task(int dimension, bool eqType,
   this->robotName = robotName;
   this->taskName = taskName;
 
+  updated = false;
+
   J = CMAT::Matrix::Zeros(dimension, dof);
   A = CMAT::Matrix::Zeros(dimension, dimension);
   reference = CMAT::Matrix::Zeros(dimension,1);
@@ -77,6 +79,12 @@ int& Task::getFlag_G(){return this->flag_G;}
  * these gets are used only to pass values to that cmat function
  */
 double& Task::getMu_G(){return this->mu_G;}
+
+void Task::setFlag_G(int v){this->flag_G = v;}
+void Task::setFlag_W(int v){this->flag_W = v;}
+void Task::setMu_G(double v){this->mu_G = v;}
+void Task::setMu_W(double v){this->mu_W = v;}
+
 
 int Task::getThreshold(){return this->threshold;}
 int Task::getLambda(){return this->lambda;}

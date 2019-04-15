@@ -1,78 +1,109 @@
 #include "header/logger.h"
 
-Logger::Logger()
-{
+Logger::Logger(){}
 
-  path_string = "~/logPeg/" + PRT::GetCurrentDateFormatted();
-  boost::filesystem::path path(path_string);
-  if(boost::filesystem::create_directories(path)){
-    std::cout << "[LOGGER] folder created : " << path << std::endl;
+Logger::Logger(std::string nodeName, std::string pathLog){
+
+  this->nodeName = nodeName;
+  this->pathLog = pathLog += "/" + nodeName;
+  std::cout << "[" << nodeName
+            << "][Logger] Start  " << std::endl;
+}
+
+void Logger::createDirectoryForNode(){
+  PRT::createDirectory(pathLog);
+  std::cout << "[" << nodeName
+            << "][Logger] Created Log Folder in  "
+            << pathLog  << std::endl;
+}
+
+int Logger::createTasksListDirectories(std::vector <Task*> tasksList){
+
+  for (int i =0; i< tasksList.size(); ++i){
+    PRT::createDirectory(pathLog +"/" +tasksList[i]->getName());
   }
+  std::cout << "[" << nodeName
+            << "][Logger] Created Log SubFolders for tasks in  "
+            << pathLog  << std::endl;
+  return 0;
 
 }
 
-int Logger::createTaskDirectory(std::string taskName){
-  this->taskName = taskName;
-  std::string path_string2 = path_string + "/" + taskName;
-  boost::filesystem::path path(path_string2);
-  boost::filesystem::create_directories(path);
+int Logger::writeAllForTasks(std::vector <Task*> tasksList){
+
+  Logger::writeActivation(tasksList);
+  Logger::writeReference(tasksList);
+  Logger::writeError(tasksList);
+
   return 0;
 }
 
-int Logger::writeActivation(CMAT::Matrix A){
+int Logger::writeActivation(std::vector <Task*> tasksList){
 
-  //activations << std::chrono::system_clock::now().time_since_epoch() << std::endl;
-
-  activations.open(path_string+ "/" + taskName + "activations.txt", std::ios_base::app);
-  for (int j=1; j<=A.GetNumColumns(); ++j){
-
-    for (int i = 1; i<=A.GetNumRows(); ++i){
-      activations << A(i,j) << " ";
-    }
-    activations << std::endl;
+  for(int i=0; i<tasksList.size(); i++){
+    std::string pathname = pathLog + "/" + tasksList[i]->getName();
+    PRT::matrixCmat2file(pathname + "/activation.txt",
+                         tasksList[i]->getActivation().GetDiag());
   }
-  activations << std::endl;
 
-  activations.close();
+  return 0;
 
 }
 
-int Logger::writeReference(CMAT::Matrix ref){
+int Logger::writeReference(std::vector <Task*> tasksList){
 
-  //auto now = std::chrono::system_clock::now();
-  //auto now_c = std::chrono::system_clock::to_time_t(now);
+  for(int i=0; i<tasksList.size(); i++){
+    std::string pathname = pathLog + "/" + tasksList[i]->getName();
 
-  //references << now.time_since_epoch() << std::endl;
-
-  activations.open(path_string+ "/" + taskName + "references.txt", std::ios_base::app);
-
-  for (int j=1; j<=ref.GetNumColumns(); ++j){
-
-    for (int i = 1; i<=ref.GetNumRows(); ++i){
-      references << ref(i,j) << " ";
-    }
-    references << std::endl;
+    PRT::matrixCmat2file(pathname + "/reference.txt",
+                         tasksList[i]->getReference());
   }
-  references << std::endl;
-
-  references.close();
+  return 0;
 
 }
 
-//int Logger::WriteErrors(CMAT::Matrix errors){
+int Logger::writeError(std::vector <Task*> tasksList){
 
-//  activations << std::chrono::system_clock::now() << std::endl;
+  for(int i=0; i<tasksList.size(); i++){
+    std::string pathname = pathLog + "/" + tasksList[i]->getName();
 
-//  for (int j=0; j<A.GetNumColumns(); ++j){
+    PRT::matrixCmat2file(pathname + "/error.txt",
+                         tasksList[i]->getError());
+  }
+  return 0;
 
-//    for (int i = 0; i<A.GetNumRows(); ++i){
-//      activations << A(i,j) << " ";
-//    }
-//    activations << std::endl;
-//  }
-//  activations << std::endl;
+}
 
-//}
+void Logger::writeYDot(std::vector<double> yDot, std::string yDotString){
+
+  std::string pathyDot = pathLog + "/" +yDotString +".txt";
+  PRT::vectorStd2file(pathyDot, yDot);
+
+}
+
+void Logger::writeNonCoopVel(Eigen::VectorXd nonCoopVel, std::string rob){
+  std::string path = pathLog + "/nonCoopVel" + rob + ".txt";
+  PRT::matrixEigen2file(path, nonCoopVel);
+
+}
+
+void Logger::writeCoopVel(Eigen::VectorXd coopVel){
+
+  std::string path = pathLog + "/coopVel.txt";
+  PRT::matrixEigen2file(path, coopVel);
+
+}
+
+void Logger::writeScalar(double scalar, std::string fileName){
+  std::string path = pathLog + "/" + fileName + ".txt";
+  PRT::double2file(path, scalar);
+
+}
+
+void Logger::writeEigenMatrix(Eigen::MatrixXd mat, std::string fileName){
+  std::string path = pathLog + "/" + fileName + ".txt";
+  PRT::matrixEigen2file(path, mat);
+}
 
 
 

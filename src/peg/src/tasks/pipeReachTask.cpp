@@ -35,8 +35,13 @@ void PipeReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
 
 
 //  totJ.bottomRows<2>() = excludeRoll * w_J_robot.bottomRows<3>();
-  CMAT::Matrix J_temp = CONV::matrix_eigen2cmat(w_J_robot);
-  J = J_temp.DeleteRow(4);
+  if (dimension == 6){
+    J = CONV::matrix_eigen2cmat(w_J_robot);
+  }
+  else if (dimension == 5){
+    CMAT::Matrix J_temp = CONV::matrix_eigen2cmat(w_J_robot);
+    J = J_temp.DeleteRow(4);
+  }
 }
 
 
@@ -48,27 +53,54 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
   CMAT::Vect6 errorSwapped = CMAT::CartError(wTgoaltool_cmat, wTtool_cmat);//ang;lin
   // ang and lin must be swapped because in yDot and jacob linear part is before
 
-  CMAT::Vect3 vect3_lin;
-  CMAT::Matrix vect2_ang(2,1);
+  if (dimension == 6){
+    error(1)= errorSwapped(4);
+    error(2)= errorSwapped(5);
+    error(3)= errorSwapped(6);
+    error(4)= errorSwapped(1);
+    error(5)= errorSwapped(2);
+    error(6)= errorSwapped(3);
 
-  error(1)= errorSwapped(4);
-  error(2)= errorSwapped(5);
-  error(3)= errorSwapped(6);
-  error(4)= errorSwapped(2);
-  error(5)= errorSwapped(3);
+    CMAT::Vect3 vect3_lin;
+    CMAT::Vect3 vect3_ang;
+    vect3_lin = (this->gain * errorSwapped.GetSecondVect3());
+    vect3_ang= (this->gain * errorSwapped.GetFirstVect3());
 
-  vect3_lin = (this->gain * errorSwapped.GetSecondVect3());
-  vect2_ang(1) = this->gain * errorSwapped(2);
-  vect2_ang(2) = this->gain * errorSwapped(3);
+    vect3_lin = FRM::saturateCmat(vect3_lin, 0.5);
+    vect3_ang = FRM::saturateCmat(vect3_ang, 0.3);
 
-  vect3_lin = FRM::saturateCmat(vect3_lin, 0.5);
-  vect2_ang = FRM::saturateCmat(vect2_ang, 0.3);
+    this->reference(1) = vect3_lin(1);
+    this->reference(2) = vect3_lin(2);
+    this->reference(3) = vect3_lin(3);
+    this->reference(4) = vect3_ang(1);
+    this->reference(5) = vect3_ang(2);
+    this->reference(6) = vect3_ang(3);
 
-  this->reference(1) = vect3_lin(1);
-  this->reference(2) = vect3_lin(2);
-  this->reference(3) = vect3_lin(3);
-  this->reference(4) = vect2_ang(1);
-  this->reference(5) = vect2_ang(2);
+  } else if (dimension == 5){
+
+
+    CMAT::Vect3 vect3_lin;
+    CMAT::Matrix vect2_ang(2,1);
+
+    error(1)= errorSwapped(4);
+    error(2)= errorSwapped(5);
+    error(3)= errorSwapped(6);
+    error(4)= errorSwapped(2);
+    error(5)= errorSwapped(3);
+
+    vect3_lin = (this->gain * errorSwapped.GetSecondVect3());
+    vect2_ang(1) = this->gain * errorSwapped(2);
+    vect2_ang(2) = this->gain * errorSwapped(3);
+
+    vect3_lin = FRM::saturateCmat(vect3_lin, 0.5);
+    vect2_ang = FRM::saturateCmat(vect2_ang, 0.2);
+
+    this->reference(1) = vect3_lin(1);
+    this->reference(2) = vect3_lin(2);
+    this->reference(3) = vect3_lin(3);
+    this->reference(4) = vect2_ang(1);
+    this->reference(5) = vect2_ang(2);
+  }
 
 }
 

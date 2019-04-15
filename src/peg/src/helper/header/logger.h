@@ -1,28 +1,41 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <boost/filesystem.hpp>
-#include <fstream>
 #include <iostream>
+#include <vector>
 #include <cmat/cmat.h>
-#include <chrono>
+#include <Eigen/Core>
 #include "../../support/header/prints.h"
+#include "../../tasks/header/task.h"
+
+//stringify prepreocessor operator
+#define GET_VARIABLE_NAME(variable) (#variable)
 
 
 class Logger
 {
 public:
   Logger();
-  int createTaskDirectory(std::string taskname);
-  int writeActivation(CMAT::Matrix A);
-  int writeReference(CMAT::Matrix ref);
+  Logger(std::string robotName, std::string pathLog);
+  void createDirectoryForNode();
+  int createTasksListDirectories(std::vector<Task*>);
+  int writeActivation(std::vector<Task*>);
+  int writeReference(std::vector<Task*>);
+  int writeError(std::vector<Task*>);
+  int writeAllForTasks(std::vector <Task*> tasksList);
+  void writeYDot(std::vector<double> yDot, std::string yDotString);
+  void writeNonCoopVel(Eigen::VectorXd nonCoopVel, std::string);
+  void writeCoopVel(Eigen::VectorXd coopVel);
+  void writeScalar(double scalar, std::string fileName);
+  void writeEigenMatrix(Eigen::MatrixXd mat, std::string fileName);
+
+
+
 
 private:
-  std::string path_string;
-  std::string taskName;
-  std::ofstream activations;
-  std::ofstream references;
-  std::ofstream errors;
+  std::string nodeName;
+  std::string pathLog;
+
 
 };
 

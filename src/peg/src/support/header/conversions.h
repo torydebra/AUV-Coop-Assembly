@@ -1,6 +1,7 @@
 #ifndef CONVERSIONS_H
 #define CONVERSIONS_H
 
+#include <iostream>
 #include <cmat/cmat.h>
 #include <Eigen/Core>
 #include <tf_conversions/tf_eigen.h>
@@ -9,8 +10,10 @@
 
 namespace CONV{
 
+    /// to/from std vectors
     std::vector<double> tfMat3x3_to_vector(tf::Matrix3x3 matrix3x3);
     Eigen::VectorXd vector_std2Eigen(std::vector<double> vect);
+    std::vector<double> vector_cmat2std(CMAT::Matrix mat);
 
     /// cmat to eigen
     Eigen::Matrix3d rotMatrix_cmat2eigen(CMAT::RotMatrix mat_cmat);

@@ -6,36 +6,88 @@
  */
 Controller::Controller(std::string robotName) {
   this->robotName = robotName;
-}
-
-/**
- * @brief Controller::setTaskList store the list of task that the controller must
- * consider.
- * @param tasks std::vector<Task*> list of tasks
- * @return 0 correct execution
- * @note only the vector of pointers is copied. Each specialized xxxTask is not copied, so we don't waste space
- */
-int Controller::setTaskList(std::vector<Task*> tasks){
-  this->tasks = tasks;
-  // store number of task inserted
-  numTasks = tasks.size();
-  std::cout << "[" << robotName<< "][CONTROLLER] Inserted " <<
-               numTasks-1 <<"+1(the null task) tasks" << std::endl;
+  std::cout << "[" << robotName<< "][CONTROLLER] Start " << std::endl;
 }
 
 
 /**
- * @brief Controller::updateTransforms This function calls all the updateMatrices of each task inserted in the
- * costructor.
+ * @brief Controller::updateAllTaskMatrices This function calls all the updateMatrices of each task
+ * @param tasks the vector of tasks pointer
  * @param robInfo the struct where all infos needed by all the tasks are
  * @return 0 to correct execution
- * @note usage of overridden pure virtual method updateMatrices
+ * @note usage of overridden pure virtual method tasks[i]->updateMatrices()
  */
-int Controller::updateTransforms(struct Infos* const robInfo){
+int Controller::updateMultipleTasksMatrices(std::vector<Task*> tasks, struct Infos* const robInfo){
 
+  int numTasks = tasks.size();
   for (int i=0; i<(numTasks-1); i++){ //LastTask has everything fixed
-    tasks[i]->updateMatrices(robInfo);
+    if (tasks[i]->updated == false){
+      tasks[i]->updateMatrices(robInfo);
+      tasks[i]->updated = true;
+      std::cout << "[" << robotName<< "][CONTROLLER] Updated transforms for " <<
+                   tasks[i]->getName() << std::endl;
+
+    }
   }
+
+  return 0;
+}
+
+/**
+ * @brief Controller::updateSingleTaskMatrices This function calls the updateMatrices for a single task
+ * @param *task pointer to the task that must be updated
+ * @param robInfo the struct where all infos needed by all the tasks are
+ * @return 0 to correct execution
+ * @note usage of overridden pure virtual method task->updateMatrices()
+ */
+int Controller::updateSingleTaskMatrices(Task* task, struct Infos* const robInfo){
+
+  if (task->updated == false){
+    task->updateMatrices(robInfo);
+    task->updated = true;
+    std::cout << "[" << robotName<< "][CONTROLLER] Calculated transforms for only the " <<
+                 task->getName() <<" task" << std::endl;
+  } else {
+    std::cout << "[" << robotName<< "][CONTROLLER] " <<
+                 task->getName() <<" task already updated" << std::endl;
+  }
+  return 0;
+}
+
+/**
+ * @brief Controller::resetAllUpdatedFlags to be called at the end of the control loop,
+ * so next loop all matrices are updated (because robot moved)
+ * @param tasks list of task to reset
+ * @return 0 correct exec
+ */
+int Controller::resetAllUpdatedFlags(std::vector<Task*> tasks){
+
+  int numTasks = tasks.size();
+  for (int i=0; i<(numTasks-1); i++){ //LastTask has everything fixed
+    tasks[i]->updated = false;
+  }
+//  std::cout << "[" << robotName<< "][CONTROLLER] Resetted Updated Flags for " <<
+//               numTasks-1 <<" (exlcuding the null final task) tasks" << std::endl;
+  return 0;
+
+}
+
+/**
+ * @brief Controller::resetAllAlgosFlag Flag_W Mu_W Flag_G Mu_G must be resetted before each TPIK
+ * @return
+ */
+int Controller::resetAllAlgosFlag(std::vector<Task*> tasks){
+
+  int numTasks = tasks.size();
+  for (int i=0; i<(numTasks); i++){
+    tasks[i]->setFlag_G(0);
+    tasks[i]->setFlag_W(0);
+    tasks[i]->setMu_G(0.0);
+    tasks[i]->setMu_W(0.0);
+
+  }
+//  std::cout << "[" << robotName<< "][CONTROLLER] Resetted Updated Flags for " <<
+//               numTasks-1 <<"+1(the null task) tasks" << std::endl;
   return 0;
 }
 
@@ -46,14 +98,16 @@ int Controller::updateTransforms(struct Infos* const robInfo){
  * @return the yDot command to be send to the robot at each loop
  *
  */
-std::vector<double> Controller::execAlgorithm(){
+std::vector<double> Controller::execAlgorithm(std::vector<Task*> tasks){
+
+  Controller::resetAllAlgosFlag(tasks);
 
   //initialize yDot and Q for algorithm
   //yDot = [arm arm arm arm wx wy wz x y z]
   CMAT::Matrix yDot_cmat = CMAT::Matrix::Zeros(TOT_DOF,1);
   CMAT::Matrix Q = CMAT::Matrix::Eye(TOT_DOF);
   //std::cout << "eereer\n\n\n"; ///DEBUG
-  for (int i=0; i<numTasks; i++){
+  for (int i=0; i<tasks.size(); i++){
 
     if (tasks[i]->eqType){
       //std::cout<<tasks[i]->gain<<"\n";  ///DEBUG
@@ -64,29 +118,19 @@ std::vector<double> Controller::execAlgorithm(){
     }
 
     ////DEBUG
-//    std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
-//    yDot_cmat.PrintMtx();
-//    std::cout << "\n";
+    std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
+    yDot_cmat.PrintMtx();
+    std::cout << "\n";
   }
 
-  //TODO metterlo nel CONV
-  std::vector<double> yDot_vect(TOT_DOF);
-  int i = 1;
-  for(std::vector<double>::iterator it = yDot_vect.begin(); it != yDot_vect.end(); ++it) {
-    *it = yDot_cmat(i);
-    i++;
-  }
-
-  return yDot_vect;
+  return (CONV::vector_cmat2std(yDot_cmat));
 
 }
 
 /**
  * @brief Controller::equalityIcat icat algorithm taken from another code. It uses the regolarized pseudoinverse
  * of cmat library.
- * @param task for convenience, a pointer to the task is passed even if the class has
- * the list of task std::vector<Task*> tasks as member. Anyway, it is only a pointer, no copy of the heavy
- * object task is performed.
+ * @param *task the pointer to the actual task that is being considered
  * @param rhop the "temporary" command yDot which will be modified by succesively calls of Icat
  * @param Q the prokection matrix which will be modified by succesively calls of Icat
  * @return 0 to correct execution
@@ -138,9 +182,7 @@ int Controller::equalityIcat(Task* task, CMAT::Matrix* rhop, CMAT::Matrix* Q) {
 /**
  * @brief Controller::inequalityIcat icat algorithm taken from another code. It uses the regolarized pseudoinverse
  * of cmat library.
- * @param task for convenience, a pointer to the task is passed even if the class has
- * the list of task std::vector<Task*> tasks as member. Anyway, it is only a pointer, no copy of the heavy
- * object task is performed.
+ * @param *task the pointer to the actual task that is being considered
  * @param rhop the "temporary" command yDot which will be modified by succesively calls of Icat
  * @param Q the prokection matrix which will be modified by succesively calls of Icat
  * @return 0 to correct execution

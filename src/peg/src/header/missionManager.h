@@ -15,14 +15,17 @@
 #include "../support/header/conversions.h"
 #include "../support/header/defines.h"
 #include "../support/header/prints.h"
+#include "../support/header/formulas.h"
 
 #include "../helper/header/infos.h"
 #include "../helper/header/jacobianHelper.h"
 #include "../helper/header/kdlHelper.h"
+#include "../helper/header/logger.h"
 
 
 #include "../controller/header/controller.h"
 #include "../rosInterfaces/header/robotInterface.h"
+#include "../rosInterfaces/header/worldInterface.h"
 #include "../rosInterfaces/header/coordInterfaceMissMan.h"
 
 
@@ -38,13 +41,12 @@
 #include "../tasks/header/obstacleAvoidEETask.h"
 #include "../tasks/header/pipeReachTask.h"
 #include "../tasks/header/armShapeTask.h"
+#include "../tasks/header/coopTask.h"
 
 
-
-bool start_glob;
 int main(int, char**);
-void setTaskListInit(std::vector<Task*> *tasks, std::string robotName);
-void startSubCallback(const std_msgs::Bool::ConstPtr& start);
-
+void setTaskLists(std::string robotName, std::vector<Task*> *tasks);
+void setTaskLists(std::string robotName, std::vector<Task*> *tasks1, std::vector<Task*> *tasksFinal);
+void setTaskLists(std::string robotName, std::vector<Task*>* , std::vector<Task*>*, std::vector<Task*>*);
 
 #endif // MISSIONMANAGER_H
