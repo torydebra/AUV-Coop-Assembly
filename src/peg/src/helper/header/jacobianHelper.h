@@ -6,7 +6,8 @@
 #include "../../support/header/defines.h"
 #include "../../support/header/formulas.h"
 
-int computeWholeJacobian(struct Infos *robInfo, ControlPoint pt);
+int computeWholeJacobianEE(struct Infos *robInfo);
+int computeWholeJacobianTool(struct Infos *robInfo);
 
 
 #endif // JACOBIANHELPER_H

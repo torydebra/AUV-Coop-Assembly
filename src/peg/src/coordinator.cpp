@@ -226,10 +226,10 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> calculateRefTool(Eigen::Matrix4d wTgoaltoo
   reference(4) = errorSwapped(2);
   reference(5) = errorSwapped(3);
 
-  reference *= 0.2;
+  //reference *= 0.2;
 
-  reference.topRows(3) = FRM::saturateVectorEigen(reference.topRows(3), 0.5);
-  reference.bottomRows(3) = FRM::saturateVectorEigen(reference.bottomRows(3), 0.2);
+  //reference.topRows(3) = FRM::saturateVectorEigen(reference.topRows(3), 0.5);
+  //reference.bottomRows(3) = FRM::saturateVectorEigen(reference.bottomRows(3), 0.2);
 
 
   return reference;

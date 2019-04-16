@@ -118,7 +118,7 @@ int main(int argc, char **argv)
   robotInterface.getJointState(&(robInfo.robotState.jState));
   robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
   worldInterface.getwTt(&(robInfo.transforms.wTt_eigen));
-  robInfo.transforms.wTgoalTool_eigen.topLeftCorner<3,3>() = robInfo.transforms.wTt_eigen.topLeftCorner<3,3>();
+  //robInfo.transforms.wTgoalTool_eigen.topLeftCorner<3,3>() = robInfo.transforms.wTt_eigen.topLeftCorner<3,3>();
   robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
 
   //get ee pose RESPECT LINK 0
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   // get jacobian respect link0
   kdlHelper.getJacobianEE(robInfo.robotState.jState, &(robInfo.robotState.link0_Jee_man));
   //get whole jacobian (arm+vehcile and projected on world
-  computeWholeJacobian(&robInfo, ee);
+  computeWholeJacobianEE(&robInfo);
 
 
   //TODO before this the robot must have grasped, here only to see if it is correct
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
     kdlHelper.setToolSolvers(eeTtool);
   }
   kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.link0_Jtool_man));
-  computeWholeJacobian(&robInfo, tool);
+  computeWholeJacobianTool(&robInfo);
 
   ///DEBUG... correct Jacobian
   //std::cout << "JACOBIAN urdf\n" << robInfo.robotState.link0_Jee_man <<"\n\n";
@@ -191,7 +191,7 @@ int main(int argc, char **argv)
   boost::asio::io_service io2;
 
   while(1){
-    auto start = std::chrono::steady_clock::now();
+    //auto start = std::chrono::steady_clock::now();
 
     // this must be inside loop
     boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
@@ -208,10 +208,10 @@ int main(int argc, char **argv)
     robInfo.robotState.vTee_eigen = robInfo.robotStruct.vTlink0 * robInfo.robotState.link0Tee_eigen;
     // get jacobian respect link0
     kdlHelper.getJacobianEE(robInfo.robotState.jState, &(robInfo.robotState.link0_Jee_man));
-    computeWholeJacobian(&robInfo, ee);
+    computeWholeJacobianEE(&robInfo);
     //if(grasped)
     kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.link0_Jtool_man));
-    computeWholeJacobian(&robInfo, tool);
+    computeWholeJacobianTool(&robInfo);
 
 
     /// Pass state to controller which deal with tpik
@@ -228,7 +228,6 @@ int main(int argc, char **argv)
     Eigen::Matrix<double, VEHICLE_DOF, VEHICLE_DOF> admisVelTool_eigen =
         robInfo.robotState.w_Jtool_robot * FRM::pseudoInverse(robInfo.robotState.w_Jtool_robot);
 
-    std::cout << "JJsharp\n" << admisVelTool_eigen << "\n\n";
 
     coordInterface.publishToCoord(nonCoopCartVel_eigen, admisVelTool_eigen);
 
@@ -238,8 +237,6 @@ int main(int argc, char **argv)
       ros::spinOnce();
     }
 
-    std::cout << "SENDED non coop vel:\n" << nonCoopCartVel_eigen <<"\n\n\n";
-    std::cout << "ARRIVED coop vel:\n" << robInfo.exchangedInfo.coopCartVel << "\n\n\n";
 
     controller.resetAllUpdatedFlags(tasksTPIK1);
     controller.resetAllUpdatedFlags(tasksCoop);
@@ -251,11 +248,7 @@ int main(int argc, char **argv)
     controller.resetAllUpdatedFlags(tasksTPIK1);
     controller.resetAllUpdatedFlags(tasksCoop);
     controller.resetAllUpdatedFlags(tasksArmVehCoord);
-
-
     controller.updateMultipleTasksMatrices(tasksArmVehCoord, &robInfo);
-
-
     std::vector<double> yDotOnlyArm = controller.execAlgorithm(tasksArmVehCoord);
 
     for (int i=0; i<ARM_DOF; i++){
@@ -272,6 +265,7 @@ int main(int argc, char **argv)
 
     ///Send command to vehicle
     //robotInterface.sendyDot(yDotTPIK1);
+
     robotInterface.sendyDot(yDotFinal);
 
 
@@ -284,10 +278,33 @@ int main(int argc, char **argv)
       logger.writeYDot(yDotTPIK1, "yDotTPIK1");
       logger.writeYDot(yDotFinal, "yDotFinal");
       logger.writeEigenMatrix(admisVelTool_eigen, "JJsharp");
+      logger.writeEigenMatrix(robInfo.robotState.w_Jtool_robot
+                              * CONV::vector_std2Eigen(yDotFinal), "toolCartVelCoop");
     }
 
     ///PRINT
     /// DEBUG
+    ///
+    //std::cout << "JJsharp\n" << admisVelTool_eigen << "\n\n";
+    //std::cout << "SENDED non coop vel:\n" << nonCoopCartVel_eigen <<"\n\n\n";
+    //std::cout << "ARRIVED coop vel:\n" << robInfo.exchangedInfo.coopCartVel << "\n\n\n";
+
+
+//    std::cout << "J: \n"
+//              << robInfo.robotState.w_Jtool_robot
+//              << "\n\n";
+//    std::cout << "yDot: \n"
+//              << CONV::vector_std2Eigen(yDotFinal)
+//              << "\n\n";
+//    std::cout << "The tool velocity non coop are (J*yDot): \n"
+//              << robInfo.robotState.w_Jtool_robot
+//                 * CONV::vector_std2Eigen(yDotTPIK1)
+//              << "\n\n";
+//    std::cout << "The tool velocity are (J*yDot): \n"
+//              << robInfo.robotState.w_Jtool_robot
+//                 * CONV::vector_std2Eigen(yDotFinal)
+//              << "\n\n";
+
 //    std::vector<Task*> tasksDebug = tasksTPIK1;
 //    for(int i=0; i<tasksDebug.size(); i++){
 //      std::cout << "Activation " << tasksDebug[i]->getName() << ": \n";
@@ -309,9 +326,9 @@ int main(int argc, char **argv)
     ros::spinOnce();
 
 
-    auto end = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
-    std::cout << "TEMPOOOOO  "<<duration << "\n\n";
+    //auto end = std::chrono::steady_clock::now();
+    //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
+    //std::cout << "TEMPOOOOO  "<<duration << "\n\n";
 
 
     loopRater.wait();
@@ -434,7 +451,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   Task* pr5 = new PipeReachTask(5, eqType, robotName);
   Task* pr6 = new PipeReachTask(6, eqType, robotName);
 
-  Task* tr = new EndEffectorReachTask(6, eqType, robotName);
+  Task* eer = new EndEffectorReachTask(6, eqType, robotName);
 
   /// OPTIMIZATION TASKS
   Task* shape = new ArmShapeTask(4, ineqType, robotName);
@@ -446,20 +463,30 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasks1->push_back(jl);
   tasks1->push_back(ha);
   tasks1->push_back(pr6);
-  //tasks1->push_back(tr);
-  //tasks1->push_back(shape);
+  //TODO discutere diff tra pr6 e pr5... il 5 mette più stress sull obj?
+  //tasks1->push_back(eer);
+  tasks1->push_back(shape);
   tasks1->push_back(last);
 
+  //TODO ASK al momento fatte così le versioni 6dof di pr e coop sono
+  //molto meglio
+  //coop 5 dof assolutamente no
+  //pr5 da un po di stress cmq (linearmente -0.034, -0.008, -0.020),
+  //i due tubi divisi si vedono tanto agli estremi
+  //si dovrebbe abbassare gain e saturaz per usare il pr5
+  //soprattutto se c'è sto shape fatto cosi che fa muovere tantissimo
+  //i bracci, è da cambiare lo shape desiderato
   tasksCoord->push_back(coopTask6dof);
   tasksCoord->push_back(jl);
   tasksCoord->push_back(ha);
-  //tasksFinal->push_back(shape);
+  tasksCoord->push_back(shape);
   tasksCoord->push_back(last);
 
+  tasksArmVeh->push_back(coopTask6dof);
   tasksArmVeh->push_back(constrainVel);
   tasksArmVeh->push_back(jl);
   tasksArmVeh->push_back(ha);
-  //tasksArmVeh->push_back(shape);
+  tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
 
 }

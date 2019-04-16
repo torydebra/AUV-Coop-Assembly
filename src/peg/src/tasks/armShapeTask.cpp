@@ -2,7 +2,7 @@
 
 ArmShapeTask::ArmShapeTask(int dim, bool eqType, std::string robotName)
   : Task(dim, eqType, robotName, "ARM_SHAPE"){
-  gain = 0.1;
+  gain = 0.05;
   std::string eqineq = (eqType) ? "equality" : "inequality";
 
   std::cout << "[" << robotName << "][ARM_SHAPE]" << " ... as " <<
@@ -41,13 +41,14 @@ int ArmShapeTask::setActivation(std::vector<double> jointGoal, std::vector<doubl
 
   } else {
     for (int i=1; i<=dimension; i++){
-      double rangeAct = 0.6;
+      double rangeAct = 0.7;
       A(i,i) =
           CMAT::DecreasingBellShapedFunction(
             jointGoal[i-1]-rangeAct, jointGoal[i-1], 0, 1, jState[i-1]) +
           CMAT::IncreasingBellShapedFunction(
             jointGoal[i-1], jointGoal[i-1]+rangeAct, 0, 1, jState[i-1]);
     }
+
   }
 
   return 0;

@@ -41,7 +41,8 @@ void CoopTask::setActivation(){
 void CoopTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_Jtool_robot){
 
   if (dimension ==6){
-    w_Jtool_robot.row(3) << 0, 0,0,0,0,0,0,0,0,0; //TRY ASK DEBUG
+    //w_Jtool_robot.row(4) << 0, 0,0,0,0,0,0,0,0,0; //TRY ASK DEBUG
+
     J = CONV::matrix_eigen2cmat(w_Jtool_robot);
   } else if (dimension == 5){
     auto temp = CONV::matrix_eigen2cmat(w_Jtool_robot);

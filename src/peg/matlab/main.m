@@ -26,3 +26,4 @@ plotYDot(rootPath, robotNameB, 'yDotFinal');
 % plotCoopGeneric(rootPath, coordName, 'notFeasibleCoopVel');
 % plotCoopGeneric(rootPath, coordName, 'idealTool');
 
+

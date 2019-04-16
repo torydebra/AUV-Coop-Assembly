@@ -24,8 +24,8 @@ int Controller::updateMultipleTasksMatrices(std::vector<Task*> tasks, struct Inf
     if (tasks[i]->updated == false){
       tasks[i]->updateMatrices(robInfo);
       tasks[i]->updated = true;
-      std::cout << "[" << robotName<< "][CONTROLLER] Updated transforms for " <<
-                   tasks[i]->getName() << std::endl;
+//      std::cout << "[" << robotName<< "][CONTROLLER] Updated transforms for " <<
+//                   tasks[i]->getName() << std::endl;
 
     }
   }
@@ -118,9 +118,9 @@ std::vector<double> Controller::execAlgorithm(std::vector<Task*> tasks){
     }
 
     ////DEBUG
-    std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
-    yDot_cmat.PrintMtx();
-    std::cout << "\n";
+//    std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
+//    yDot_cmat.PrintMtx();
+//    std::cout << "\n";
   }
 
   return (CONV::vector_cmat2std(yDot_cmat));

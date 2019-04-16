@@ -66,8 +66,8 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
     vect3_lin = (this->gain * errorSwapped.GetSecondVect3());
     vect3_ang= (this->gain * errorSwapped.GetFirstVect3());
 
-    vect3_lin = FRM::saturateCmat(vect3_lin, 0.5);
-    vect3_ang = FRM::saturateCmat(vect3_ang, 0.3);
+    vect3_lin = FRM::saturateCmat(vect3_lin, 0.4);
+    vect3_ang = FRM::saturateCmat(vect3_ang, 0.2);
 
     this->reference(1) = vect3_lin(1);
     this->reference(2) = vect3_lin(2);
@@ -92,7 +92,7 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
     vect2_ang(1) = this->gain * errorSwapped(2);
     vect2_ang(2) = this->gain * errorSwapped(3);
 
-    vect3_lin = FRM::saturateCmat(vect3_lin, 0.5);
+    vect3_lin = FRM::saturateCmat(vect3_lin, 0.4);
     vect2_ang = FRM::saturateCmat(vect2_ang, 0.2);
 
     this->reference(1) = vect3_lin(1);
