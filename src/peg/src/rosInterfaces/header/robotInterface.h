@@ -20,7 +20,7 @@ public:
   RobotInterface(ros::NodeHandle nh, std::string robotName, std::string otherRobotName);
   int init();
   int getwTv(Eigen::Matrix4d* wTv_eigen);
-  int getOtherRobPos(Eigen::Vector3d* pos);
+  //int getOtherRobPos(Eigen::Vector3d* pos);
   int getJointState(std::vector<double>* jState);
   int sendyDot(std::vector<double> yDot);
   void spinOnce();

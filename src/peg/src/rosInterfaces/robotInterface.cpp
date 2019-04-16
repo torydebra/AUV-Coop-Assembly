@@ -35,11 +35,6 @@ int RobotInterface::init(){
   std::string topic = "/" + robotName;
   tfListener.waitForTransform("world", topic, ros::Time(0), ros::Duration(3.0));
 
-  //wait to transform wTv of the other robot to be ready
-  std::string topic3 = "/" + otherRobotName;
-  tfListener.waitForTransform("world", topic3, ros::Time(0), ros::Duration(3.0));
-
-
   //Wait to joint state to be ready (ie : the callback is called at least once)
   ros::Rate rate(100);
   while (jState_priv.size()==0){
@@ -73,31 +68,6 @@ int RobotInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
   }
 
   *wTv_eigen = CONV::transfMatrix_tf2eigen(wTv_tf);
-
-  return 0;
-}
-
-
-//TODO: maybe get position of other with another method
-int RobotInterface::getOtherRobPos(Eigen::Vector3d* pos){
-
-  if(!ros::ok()){
-    return -1;
-  }
-
-  tf::StampedTransform wTvother_tf;
-
-  std::string topic = "/" + otherRobotName;
-  try {
-    tfListener.lookupTransform("world", topic, ros::Time(0), wTvother_tf);
-
-  } catch (tf::TransformException &ex) {
-    ROS_ERROR("%s",ex.what());
-    ros::Duration(1.0).sleep();
-  }
-
-  Eigen::Matrix4d wTvother_eigen = CONV::transfMatrix_tf2eigen(wTvother_tf);
-  *pos = wTvother_eigen.topRightCorner<3,1>();
 
   return 0;
 }

@@ -85,11 +85,16 @@ int main(int argc, char **argv)
   ///Ros interfaces
   RobotInterface robotInterface(nh, robotName, otherRobotName);
   robotInterface.init();
-  //debug
-  WorldInterface worldInterface(robotName, "pipe");
+  //The robot 2 has attached the tool2, we cant give him the pipe1 because
+  //if it is not followed exactly for robB the tool is moving respect EE
+  //TODO but try giving robB the pipe1
+  std::string toolName;
   if (robotName.compare("g500_B") == 0){
-    worldInterface.toolName = "pipe2";
+    toolName = "pipe2";
+  } else{
+    toolName = "pipe";
   }
+  WorldInterface worldInterface(robotName, toolName);
   worldInterface.init();
   CoordInterfaceMissMan coordInterface(nh, robotName);
 
@@ -119,7 +124,7 @@ int main(int argc, char **argv)
   robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
   worldInterface.getwTt(&(robInfo.transforms.wTt_eigen));
   //robInfo.transforms.wTgoalTool_eigen.topLeftCorner<3,3>() = robInfo.transforms.wTt_eigen.topLeftCorner<3,3>();
-  robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
+  worldInterface.getRobPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
 
   //get ee pose RESPECT LINK 0
   kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
@@ -200,7 +205,7 @@ int main(int argc, char **argv)
     robotInterface.getJointState(&(robInfo.robotState.jState));
     robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
     worldInterface.getwTt(&(robInfo.transforms.wTt_eigen));
-    robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
+    worldInterface.getRobPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
 
     //get ee pose RESPECT LINK 0
     kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
