@@ -11,14 +11,14 @@
 class WorldInterface
 {
 public:
-  WorldInterface();
   WorldInterface(std::string callerName, std::string toolName);
   int init();
   int getwTt(Eigen::Matrix4d* wTt_eigen);
+  std::string toolName;
+
 
 private:
   std::string callerName;
-  std::string toolName;
   tf::TransformListener tfListener;
 
 };

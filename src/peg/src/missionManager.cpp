@@ -85,13 +85,10 @@ int main(int argc, char **argv)
   ///Ros interfaces
   RobotInterface robotInterface(nh, robotName, otherRobotName);
   robotInterface.init();
-  //WorldInterface worldInterface(robotName, "pipe");
   //debug
-  WorldInterface worldInterface;
-  if (robotName.compare("g500_A") == 0){
-    worldInterface = WorldInterface(robotName, "pipe");
-  } else {
-    worldInterface = WorldInterface(robotName, "pipe2");
+  WorldInterface worldInterface(robotName, "pipe");
+  if (robotName.compare("g500_B") == 0){
+    worldInterface.toolName = "pipe2";
   }
   worldInterface.init();
   CoordInterfaceMissMan coordInterface(nh, robotName);
