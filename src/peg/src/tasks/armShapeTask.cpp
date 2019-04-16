@@ -5,7 +5,7 @@ ArmShapeTask::ArmShapeTask(int dim, bool eqType, std::string robotName)
   gain = 0.1;
   std::string eqineq = (eqType) ? "equality" : "inequality";
 
-  std::cout << "[" << robotName << "][ARM_SHAPE]" << " Created as " <<
+  std::cout << "[" << robotName << "][ARM_SHAPE]" << " ... as " <<
             eqineq << "task\n";
 
 }

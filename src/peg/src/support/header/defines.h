@@ -12,12 +12,12 @@
 //threshold the threshold value for the SVD regularization; if the singular value
 //is above this threshold, no regularization is performed on that singular value.
 // default one, another can be choosen when construct the task object
-#define THRESHOLD_DEFAULT 0.1 //0.01 original
+#define THRESHOLD_DEFAULT 0.01 //0.01 original
 //lambda the lambda value determines how "strong" is the regularization;
 //it should be chosen accordingly with the threshold value
 //(usually one order of magnitude smaller)
 // default one, another can be choosen when construct the task object
-#define LAMBDA_DEFAULT 0.01  //0.0001 original
+#define LAMBDA_DEFAULT 0.0001  //0.0001 original
 
 ///Joint limits (in rad) (slew shoulder elbow jawrotate)
 /// find in the urdf file of the robot

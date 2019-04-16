@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   double goalLinearVectEE[] = {-0.27, -0.102, 2.124};
   Eigen::Matrix4d wTgoalEE_eigen = Eigen::Matrix4d::Identity();
   //rot part
-  wTgoalEE_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
+  wTgoalEE_eigen.topLeftCorner<3,3>() = Eigen::Matrix3d::Identity();
 //  wTgoalEE_eigen.topLeftCorner(3,3) << 0.5147, 0 , -0.8574,
 //                                          0    ,1,     0    ,
 //                                        0.8573 , 0  , 0.5147;
@@ -59,6 +59,8 @@ int main(int argc, char **argv)
 
   /// GOAL TOOL
   double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
+  //double goalLinearVectTool[] = {-0.27, -3.102, 5.124};
+
   // (rob and world have downward z)
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
   //rot part
@@ -83,17 +85,32 @@ int main(int argc, char **argv)
   ///Ros interfaces
   RobotInterface robotInterface(nh, robotName, otherRobotName);
   robotInterface.init();
-  WorldInterface worldInterface(robotName, "pipe");
+  //WorldInterface worldInterface(robotName, "pipe");
+  //debug
+  WorldInterface worldInterface;
+  if (robotName.compare("g500_A") == 0){
+    worldInterface = WorldInterface(robotName, "pipe");
+  } else {
+    worldInterface = WorldInterface(robotName, "pipe2");
+  }
   worldInterface.init();
   CoordInterfaceMissMan coordInterface(nh, robotName);
 
 
   /// KDL parser to after( in the control loop )get jacobian from joint position
   std::string filename = "/home/tori/UWsim/Peg/model/g500ARM5.urdf";
+  std::string filenamePeg; //the model of robot with a "fake joint" in the peg
+  //so, it is ONLY for the already grasped scene
+  if (robotName.compare("g500_A") == 0){
+    filenamePeg = "/home/tori/UWsim/Peg/model/g500ARM5APeg.urdf";
+  } else {
+    filenamePeg = "/home/tori/UWsim/Peg/model/g500ARM5BPeg.urdf";
+  }
   std::string vehicle = "base_link";
   std::string link0 = "part0";
   std::string endEffector = "end_effector";
-  KDLHelper kdlHelper(filename, link0, endEffector);
+  //std::string debug = "peg";
+  KDLHelper kdlHelper(filenamePeg, link0, endEffector);
   kdlHelper.setEESolvers();
   // KDL parse for fixed things (e.g. vehicle and one of his sensor)
   //TODO Maybe exist an easier method to parse fixed frame from urdf without needed of kdl solver
@@ -104,6 +121,7 @@ int main(int argc, char **argv)
   robotInterface.getJointState(&(robInfo.robotState.jState));
   robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
   worldInterface.getwTt(&(robInfo.transforms.wTt_eigen));
+  robInfo.transforms.wTgoalTool_eigen.topLeftCorner<3,3>() = robInfo.transforms.wTt_eigen.topLeftCorner<3,3>();
   robotInterface.getOtherRobPos(&(robInfo.exchangedInfo.otherRobPos));
 
   //get ee pose RESPECT LINK 0
@@ -125,6 +143,10 @@ int main(int argc, char **argv)
   }
   kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.link0_Jtool_man));
   computeWholeJacobian(&robInfo, tool);
+
+  ///DEBUG... correct Jacobian
+  //std::cout << "JACOBIAN urdf\n" << robInfo.robotState.link0_Jee_man <<"\n\n";
+  //std::cout << "JACOBIAN addSeg\n" << robInfo.robotState.link0_Jtool_man <<"\n\n";
 
 
   ///Controller
@@ -153,14 +175,18 @@ int main(int argc, char **argv)
   //wait coordinator to start
   double msinit = 1;
   boost::asio::io_service ioinit;
+  std::cout << "[" << robotName<< "][MISSION_MANAGER] Wating for "<<
+               "Coordinator to say I can start...\n";
   while(!coordInterface.getStartFromCoord()){
     boost::asio::deadline_timer loopRater(ioinit, boost::posix_time::milliseconds(msinit));
     coordInterface.pubIamReadyOrNot(true);
-    std::cout << "[" << robotName<< "][MISSION_MANAGER] Wating for "<<
-                 "Coordinator to say I can start...\n";
+
     ros::spinOnce();
     loopRater.wait();
   }
+
+  std::cout << "[" << robotName<< "][MISSION_MANAGER] Start from coordinator "<<
+               "received\n";
 
 
   int ms = 100;
@@ -215,6 +241,7 @@ int main(int argc, char **argv)
       ros::spinOnce();
     }
 
+    std::cout << "SENDED non coop vel:\n" << nonCoopCartVel_eigen <<"\n\n\n";
     std::cout << "ARRIVED coop vel:\n" << robInfo.exchangedInfo.coopCartVel << "\n\n\n";
 
     controller.resetAllUpdatedFlags(tasksTPIK1);
@@ -262,23 +289,22 @@ int main(int argc, char **argv)
       logger.writeEigenMatrix(admisVelTool_eigen, "JJsharp");
     }
 
-        std::cout <<"CULOOOOOOOOOOOO\n\n\n";
     ///PRINT
     /// DEBUG
-    std::vector<Task*> tasksDebug = tasksArmVehCoord;
-    for(int i=0; i<1; i++){
-      std::cout << "Activation " << tasksDebug[i]->getName() << ": \n";
-      tasksDebug[i]->getActivation().PrintMtx() ;
-      std::cout << "\n";
-      std::cout << "JACOBIAN " << tasksDebug[i]->getName() << ": \n";
-      tasksDebug[i]->getJacobian().PrintMtx();
-       std::cout<< "\n";
+//    std::vector<Task*> tasksDebug = tasksTPIK1;
+//    for(int i=0; i<tasksDebug.size(); i++){
+//      std::cout << "Activation " << tasksDebug[i]->getName() << ": \n";
+//      tasksDebug[i]->getActivation().PrintMtx() ;
+//      std::cout << "\n";
+//      std::cout << "JACOBIAN " << tasksDebug[i]->getName() << ": \n";
+//      tasksDebug[i]->getJacobian().PrintMtx();
+//       std::cout<< "\n";
 
-      std::cout << "REFERENCE " << tasksDebug[i]->getName() << ": \n";
-      tasksDebug[i]->getReference().PrintMtx() ;
-      std::cout << "\n";
-    }
-        std::cout <<"MERDAAAAA\n\n\n";
+//      std::cout << "REFERENCE " << tasksDebug[i]->getName() << ": \n";
+//      tasksDebug[i]->getReference().PrintMtx() ;
+//      std::cout << "\n";
+//    }
+
 
     controller.resetAllUpdatedFlags(tasksTPIK1);
     controller.resetAllUpdatedFlags(tasksCoop);
@@ -422,12 +448,12 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   // note: order of priority at the moment is here
   tasks1->push_back(jl);
   tasks1->push_back(ha);
-  tasks1->push_back(pr5);
+  tasks1->push_back(pr6);
   //tasks1->push_back(tr);
   //tasks1->push_back(shape);
   tasks1->push_back(last);
 
-  tasksCoord->push_back(coopTask5dof);
+  tasksCoord->push_back(coopTask6dof);
   tasksCoord->push_back(jl);
   tasksCoord->push_back(ha);
   //tasksFinal->push_back(shape);

@@ -2,7 +2,7 @@
 
 PipeReachTask::PipeReachTask(int dim, bool eqType, std::string robotName)
   : Task(dim, eqType, robotName, "PIPE_REACHING_GOAL"){
-  gain = 0.2;
+  gain = 0.1;
 
 }
 

@@ -441,6 +441,8 @@ install(PROGRAMS script/keyboardCommand_A.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(PROGRAMS script/keyboardCommand_B.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(PROGRAMS script/tfListenerPrecise.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node

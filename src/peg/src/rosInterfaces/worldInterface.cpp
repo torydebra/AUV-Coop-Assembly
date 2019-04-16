@@ -1,5 +1,7 @@
 #include "header/worldInterface.h"
 
+WorldInterface::WorldInterface(){}
+
 WorldInterface::WorldInterface(std::string callerName, std::string toolName){
 
   this->callerName = callerName;

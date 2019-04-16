@@ -157,6 +157,7 @@ KDL::Frame CONV::transfMatrix_eigen2kdl(Eigen::Matrix4d mat_eigen){
 
   KDL::Frame mat_kdl; //default construct create identity
 
+
   //REMEMBER: kdl is ROW MAJOR, EIGEN is COLUMN MAJOR
   Eigen::Matrix3d rot_eigen = mat_eigen.topLeftCorner<3,3>();
 
@@ -176,6 +177,9 @@ KDL::Frame CONV::transfMatrix_eigen2kdl(Eigen::Matrix4d mat_eigen){
   mat_kdl.p.x(mat_eigen(0,3));
   mat_kdl.p.y(mat_eigen(1,3));
   mat_kdl.p.z(mat_eigen(2,3));
+
+
+
 
   return mat_kdl;
 
