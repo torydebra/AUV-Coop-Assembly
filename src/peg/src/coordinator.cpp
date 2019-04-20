@@ -148,6 +148,17 @@ int main(int argc, char **argv){
 
       publishCoopVel(coopVelPub, coopVelToolFeasible);
 
+
+      ///LOGGING
+      if (pathLog.size() != 0){
+        Eigen::Matrix4d wTt2;
+        worldInterface.getwTt(&wTt2, true);
+
+        logger.writeStressTool(wTt, wTt2);
+
+      }
+
+
       ros::spinOnce();
       loopRater.wait();
     }

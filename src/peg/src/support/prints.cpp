@@ -74,13 +74,13 @@ int PRT::matrixEigen2file(std::string pathName, Eigen::MatrixXd mat){
 }
 
 
-int PRT::vectorStd2file(std::string path, std::vector<double> yDot){
+int PRT::vectorStd2file(std::string path, std::vector<double> vect){
 
   std::ofstream file;
   file.open(path, std::ios_base::app);
 
-  for(int i=0; i<yDot.size(); i++){
-    file << yDot.at(i) << std::endl;
+  for(int i=0; i<vect.size(); i++){
+    file << vect.at(i) << std::endl;
   }
   file << std::endl;
 

@@ -34,8 +34,12 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
 
+/** **************************************************************************************************************
+                               SETTING GOALS
+*****************************************************************************************************************/
+
   /// GOAL VEHICLE
-  double goalLinearVect[] = {-0.287, -0.062, 7.424};
+  double goalLinearVect[] = {-0.287, -0.090, 8};
   Eigen::Matrix4d wTgoalVeh_eigen = Eigen::Matrix4d::Identity();
   //rot part
   wTgoalVeh_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
@@ -45,13 +49,24 @@ int main(int argc, char **argv)
   wTgoalVeh_eigen(2, 3) = goalLinearVect[2];
 
   /// GOAL EE
-  double goalLinearVectEE[] = {-0.27, -0.102, 2.124};
+  double goalLinearVectEE[3];
+  if (robotName.compare("g500_A") == 0){
+    goalLinearVectEE[0] = 2.89;
+    goalLinearVectEE[1] = -0.090;
+    goalLinearVectEE[2] = 9.594;
+
+  } else {
+    goalLinearVectEE[0] = -1.11;
+    goalLinearVectEE[1] = -0.090;
+    goalLinearVectEE[2] = 9.594;
+  }
   Eigen::Matrix4d wTgoalEE_eigen = Eigen::Matrix4d::Identity();
   //rot part
-  wTgoalEE_eigen.topLeftCorner<3,3>() = Eigen::Matrix3d::Identity();
-//  wTgoalEE_eigen.topLeftCorner(3,3) << 0.5147, 0 , -0.8574,
-//                                          0    ,1,     0    ,
-//                                        0.8573 , 0  , 0.5147;
+  //wTgoalEE_eigen.topLeftCorner<3,3>() = Eigen::Matrix3d::Identity();
+  //the ee must rotate of 90 on z axis degree to catch the peg
+  wTgoalEE_eigen.topLeftCorner(3,3) << 0, -1,  0,
+                                       1,  0,  0,
+                                       0,  0,  1;
   //trasl part
   wTgoalEE_eigen(0, 3) = goalLinearVectEE[0];
   wTgoalEE_eigen(1, 3) = goalLinearVectEE[1];
@@ -72,6 +87,10 @@ int main(int argc, char **argv)
   wTgoalTool_eigen(2, 3) = goalLinearVectTool[2];
 
 
+/** ***************************************************************************************************************
+                               INITIALIZE THINGS
+*******************************************************************************************************************/
+
   /// struct container data to pass among functions
   Infos robInfo;
   //struct transforms to pass them to Controller class
@@ -89,8 +108,8 @@ int main(int argc, char **argv)
   //if it is not followed exactly for robB the tool is moving respect EE
   //TODO but try giving robB the pipe1
   std::string toolName;
-  if (robotName.compare("g500_B") == 0){
-    toolName = "pipe2";
+  if (robotName.compare("g500_A") == 0){
+    toolName = "pipe";
   } else{
     toolName = "pipe";
   }
@@ -146,10 +165,6 @@ int main(int argc, char **argv)
   kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.link0_Jtool_man));
   computeWholeJacobianTool(&robInfo);
 
-  ///DEBUG... correct Jacobian
-  //std::cout << "JACOBIAN urdf\n" << robInfo.robotState.link0_Jee_man <<"\n\n";
-  //std::cout << "JACOBIAN addSeg\n" << robInfo.robotState.link0_Jtool_man <<"\n\n";
-
 
   ///Controller
   Controller controller(robotName);
@@ -161,6 +176,9 @@ int main(int argc, char **argv)
   setTaskLists(robotName, &tasksTPIK1, &tasksCoop, &tasksArmVehCoord);
 
 
+/** ***************************************************************************************************************
+                               LOGGING
+********************************************************************************************************************/
   /// Log folders TO DO AFTER EVERY SETTASKLIST?
   /// //TODO ulteriore subfolder per la mission
 
@@ -173,6 +191,10 @@ int main(int argc, char **argv)
     logger.createTasksListDirectories(tasksCoop);
 
   }
+
+/** *****************************************************************************************************+**********
+                               WAITING COORDINATION
+*****************************************************************************************************************/
 
   //wait coordinator to start
   double msinit = 1;
@@ -191,6 +213,9 @@ int main(int argc, char **argv)
                "received\n";
 
 
+/** *********************************************************************************************************+*********
+                               MAIN CONTROL LOOP
+*******************************************************************************************************************/
   int ms = 100;
   boost::asio::io_service io;
   boost::asio::io_service io2;
@@ -282,7 +307,7 @@ int main(int argc, char **argv)
       //for the moment, yDot are exactly how vehicle and arm are moving
       logger.writeYDot(yDotTPIK1, "yDotTPIK1");
       logger.writeYDot(yDotFinal, "yDotFinal");
-      logger.writeEigenMatrix(admisVelTool_eigen, "JJsharp");
+      //logger.writeEigenMatrix(admisVelTool_eigen, "JJsharp");
       logger.writeEigenMatrix(robInfo.robotState.w_Jtool_robot
                               * CONV::vector_std2Eigen(yDotFinal), "toolCartVelCoop");
     }
@@ -350,6 +375,9 @@ int main(int argc, char **argv)
   return 0;
 }
 
+
+
+
 /**
  * @brief setTaskListInit initialize the task list passed as first argument
  * @param *tasks std::vector<Task*> the vector of pointer to the task, passed by reference
@@ -380,7 +408,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks){
   tasks->push_back(new PipeReachTask(5, eqType, robotName));
   //tasks->push_back(new VehicleReachTask(6, eqType, robotName));
 
-  tasks->push_back(new ArmShapeTask(4, ineqType, robotName));
+  tasks->push_back(new ArmShapeTask(4, ineqType, robotName, MID_LIMITS));
   //The "fake task" with all eye and zero matrices, needed as last one for algo
   tasks->push_back(new LastTask(TOT_DOF, eqType, robotName));
 }
@@ -411,11 +439,11 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1, std::vector
   Task* tr = new EndEffectorReachTask(6, eqType, robotName);
 
   /// OPTIMIZATION TASKS
-  Task* shape = new ArmShapeTask(4, ineqType, robotName);
+  Task* shape = new ArmShapeTask(4, ineqType, robotName, MID_LIMITS);
   //The "fake task" with all eye and zero matrices, needed as last one for algo?
   Task* last = new LastTask(TOT_DOF, eqType, robotName);
 
-  ///Fill tasks list
+  ///Fill tasks list, MID_LIMITS
   // note: order of priority at the moment is here
   tasks1->push_back(jl);
   tasks1->push_back(ha);
@@ -457,9 +485,11 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   Task* pr6 = new PipeReachTask(6, eqType, robotName);
 
   Task* eer = new EndEffectorReachTask(6, eqType, robotName);
+  Task* vehR = new VehicleReachTask(3, eqType, robotName, ANGULAR);
+  Task* vehYaxis = new VehicleReachTask(1, eqType, robotName, YAXIS);
 
   /// OPTIMIZATION TASKS
-  Task* shape = new ArmShapeTask(4, ineqType, robotName);
+  Task* shape = new ArmShapeTask(4, ineqType, robotName, PEG_GRASPED_PHASE);
   //The "fake task" with all eye and zero matrices, needed as last one for algo?
   Task* last = new LastTask(TOT_DOF, eqType, robotName);
 
@@ -469,6 +499,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasks1->push_back(ha);
   tasks1->push_back(pr6);
   //TODO discutere diff tra pr6 e pr5... il 5 mette più stress sull obj?
+  //tasks1->push_back(vehR);
+  //tasks1->push_back(vehYaxis);
   //tasks1->push_back(eer);
   tasks1->push_back(shape);
   tasks1->push_back(last);
@@ -484,14 +516,14 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksCoord->push_back(coopTask6dof);
   tasksCoord->push_back(jl);
   tasksCoord->push_back(ha);
-  tasksCoord->push_back(shape);
+  //tasksCoord->push_back(shape);
   tasksCoord->push_back(last);
 
-  tasksArmVeh->push_back(coopTask6dof);
   tasksArmVeh->push_back(constrainVel);
+  tasksArmVeh->push_back(coopTask6dof);
   tasksArmVeh->push_back(jl);
   tasksArmVeh->push_back(ha);
-  tasksArmVeh->push_back(shape);
+  //tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
 
 }

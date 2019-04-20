@@ -3,6 +3,8 @@
 
 #include "task.h"
 
+enum ShapeType {MID_LIMITS, PEG_GRASPED_PHASE};
+
 /**
  * @brief The ArmShapeTask class
  * Preferred arm Shape: an optimization task. It is a non scalar task, each
@@ -18,9 +20,11 @@
 class ArmShapeTask : public Task
 {
 public:
-  ArmShapeTask(int dimension, bool eqType, std::string robotName);
+  ArmShapeTask(int dimension, bool eqType, std::string robotName, ShapeType shapeType);
   int updateMatrices(struct Infos* const robInfo);
 private:
+  ShapeType shapeType;
+
   int setActivation(std::vector<double> jointGoal, std::vector<double> jState);
   int setJacobian();
   int setReference(std::vector<double> jointGoal, std::vector<double> jState);

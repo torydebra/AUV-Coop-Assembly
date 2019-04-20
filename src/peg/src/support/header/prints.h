@@ -19,7 +19,7 @@ namespace PRT{
   // for logging things
   int createDirectory(std::string pathDirectory);
   int matrixCmat2file(std::string pathName, CMAT::Matrix);
-  int vectorStd2file(std::string pathyDot, std::vector<double> yDot);
+  int vectorStd2file(std::string pathName, std::vector<double> vect);
   int matrixEigen2file(std::string pathName, Eigen::MatrixXd);
   void double2file(std::string path, double scalar);
 

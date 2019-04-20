@@ -105,6 +105,22 @@ void Logger::writeEigenMatrix(Eigen::MatrixXd mat, std::string fileName){
   PRT::matrixEigen2file(path, mat);
 }
 
+void Logger::writeStressTool(Eigen::Matrix4d wTt, Eigen::Matrix4d wTt2){
+  CMAT::TransfMatrix wTt_cmat = CONV::matrix_eigen2cmat(wTt);
+  CMAT::TransfMatrix wTt2_cmat = CONV::matrix_eigen2cmat(wTt2);
+
+  CMAT::Vect6 stressErrorSwapped = CMAT::CartError(wTt_cmat, wTt2_cmat);
+
+  std::vector<double> norms(2);
+  norms.at(0) = stressErrorSwapped.GetSecondVect3().Norm(2);
+  norms.at(1) = stressErrorSwapped.GetFirstVect3().Norm(2);
+
+  std::string path = pathLog + "/stressTool" + ".txt";
+  PRT::vectorStd2file(path, norms);
+
+
+
+}
 
 
 

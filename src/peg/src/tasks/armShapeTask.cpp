@@ -1,8 +1,9 @@
 #include "header/armShapeTask.h"
 
-ArmShapeTask::ArmShapeTask(int dim, bool eqType, std::string robotName)
+ArmShapeTask::ArmShapeTask(int dim, bool eqType, std::string robotName, ShapeType shapeType)
   : Task(dim, eqType, robotName, "ARM_SHAPE"){
-  gain = 0.05;
+  gain = 0.1;
+  this->shapeType = shapeType;
   std::string eqineq = (eqType) ? "equality" : "inequality";
 
   std::cout << "[" << robotName << "][ARM_SHAPE]" << " ... as " <<
@@ -13,11 +14,26 @@ ArmShapeTask::ArmShapeTask(int dim, bool eqType, std::string robotName)
 int ArmShapeTask::updateMatrices(struct Infos* const robInfo){
 
   std::vector<double> jointGoal(4);
+  if (shapeType == MID_LIMITS){
   //set preferred goal at middle pos for each joint
-  jointGoal[0] = (JLIM1_MAX + JLIM1_MIN)/2;
-  jointGoal[1] = (JLIM2_MAX + JLIM2_MIN)/2;
-  jointGoal[2] = (JLIM3_MAX + JLIM3_MIN)/2;
-  jointGoal[3] = (JLIM4_MAX + JLIM4_MIN)/2;
+    jointGoal[0] = (JLIM1_MAX + JLIM1_MIN)/2;
+    jointGoal[1] = (JLIM2_MAX + JLIM2_MIN)/2;
+    jointGoal[2] = (JLIM3_MAX + JLIM3_MIN)/2;
+    jointGoal[3] = (JLIM4_MAX + JLIM4_MIN)/2;
+
+  } else if(shapeType == PEG_GRASPED_PHASE){
+
+    jointGoal[0] = 0;
+    jointGoal[1] = (JLIM2_MAX + JLIM2_MIN)/2;
+    jointGoal[2] = (JLIM3_MAX + JLIM3_MIN)/2;
+    jointGoal[3] = (JLIM4_MAX + JLIM4_MIN)/2;
+    //jointGoal[1] = 0.680;
+    //jointGoal[2] = 0.361;
+    //jointGoal[3] = 1.390;
+
+    //TODO first jointGoal is different from robot which stay in front and behind
+    //the peg, now it is at the actual pos (so no effect on it)
+  }
 
   setActivation(jointGoal, robInfo->robotState.jState);
   setJacobian();
@@ -41,7 +57,7 @@ int ArmShapeTask::setActivation(std::vector<double> jointGoal, std::vector<doubl
 
   } else {
     for (int i=1; i<=dimension; i++){
-      double rangeAct = 0.7;
+      double rangeAct = 0.5;
       A(i,i) =
           CMAT::DecreasingBellShapedFunction(
             jointGoal[i-1]-rangeAct, jointGoal[i-1], 0, 1, jState[i-1]) +
