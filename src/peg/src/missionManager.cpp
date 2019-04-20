@@ -377,6 +377,83 @@ int main(int argc, char **argv)
 
 
 
+void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
+                  std::vector<Task*> *tasksCoord, std::vector<Task*> *tasksArmVeh){
+
+  bool eqType = true;
+  bool ineqType = false;
+
+
+  /// CONSTRAINT TASKS
+  Task* coopTask6dof = new CoopTask(6, eqType, robotName);
+  Task* coopTask5dof = new CoopTask(5, eqType, robotName);
+  Task* constrainVel = new VehicleConstrainVelTask(6, eqType, robotName);
+
+
+  /// SAFETY TASKS
+  Task* jl = new JointLimitTask(4, ineqType, robotName);
+  Task* ha = new HorizontalAttitudeTask(1, ineqType, robotName);
+
+
+  /// PREREQUISITE TASKS
+
+
+  ///MISSION TASKS
+  Task* pr5 = new PipeReachTask(5, eqType, robotName);
+  Task* pr6 = new PipeReachTask(6, eqType, robotName);
+
+  Task* eer = new EndEffectorReachTask(6, eqType, robotName);
+  Task* vehR = new VehicleReachTask(3, eqType, robotName, ANGULAR);
+  Task* vehYaxis = new VehicleReachTask(1, eqType, robotName, YAXIS);
+
+  /// OPTIMIZATION TASKS
+  Task* shape = new ArmShapeTask(4, ineqType, robotName, PEG_GRASPED_PHASE);
+  //The "fake task" with all eye and zero matrices, needed as last one for algo?
+  Task* last = new LastTask(TOT_DOF, eqType, robotName);
+
+  ///Fill tasks list
+  // note: order of priority at the moment is here
+  tasks1->push_back(jl);
+  tasks1->push_back(ha);
+  tasks1->push_back(pr6);
+  //TODO discutere diff tra pr6 e pr5... il 5 mette più stress sull obj?
+  //tasks1->push_back(vehR);
+  //tasks1->push_back(vehYaxis);
+  //tasks1->push_back(eer);
+  tasks1->push_back(shape);
+  tasks1->push_back(last);
+
+  //TODO ASK al momento fatte così le versioni 6dof di pr e coop sono
+  //molto meglio
+  //coop 5 dof assolutamente no
+  //pr5 da un po di stress cmq (linearmente -0.034, -0.008, -0.020),
+  //i due tubi divisi si vedono tanto agli estremi
+  //si dovrebbe abbassare gain e saturaz per usare il pr5
+  //soprattutto se c'è sto shape fatto cosi che fa muovere tantissimo
+  //i bracci, è da cambiare lo shape desiderato
+  tasksCoord->push_back(coopTask6dof);
+  tasksCoord->push_back(jl);
+  tasksCoord->push_back(ha);
+  //tasksCoord->push_back(shape);
+  tasksCoord->push_back(last);
+
+  tasksArmVeh->push_back(constrainVel);
+  tasksArmVeh->push_back(coopTask6dof);
+  tasksArmVeh->push_back(jl);
+  tasksArmVeh->push_back(ha);
+  //tasksArmVeh->push_back(shape);
+  tasksArmVeh->push_back(last);
+
+}
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief setTaskListInit initialize the task list passed as first argument
@@ -457,75 +534,6 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1, std::vector
   tasksFinal->push_back(ha);
   //tasksFinal->push_back(shape);
   tasksFinal->push_back(last);
-}
-
-void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
-                  std::vector<Task*> *tasksCoord, std::vector<Task*> *tasksArmVeh){
-
-  bool eqType = true;
-  bool ineqType = false;
-
-
-  /// CONSTRAINT TASKS
-  Task* coopTask6dof = new CoopTask(6, eqType, robotName);
-  Task* coopTask5dof = new CoopTask(5, eqType, robotName);
-  Task* constrainVel = new VehicleConstrainVelTask(6, eqType, robotName);
-
-
-  /// SAFETY TASKS
-  Task* jl = new JointLimitTask(4, ineqType, robotName);
-  Task* ha = new HorizontalAttitudeTask(1, ineqType, robotName);
-
-
-  /// PREREQUISITE TASKS
-
-
-  ///MISSION TASKS
-  Task* pr5 = new PipeReachTask(5, eqType, robotName);
-  Task* pr6 = new PipeReachTask(6, eqType, robotName);
-
-  Task* eer = new EndEffectorReachTask(6, eqType, robotName);
-  Task* vehR = new VehicleReachTask(3, eqType, robotName, ANGULAR);
-  Task* vehYaxis = new VehicleReachTask(1, eqType, robotName, YAXIS);
-
-  /// OPTIMIZATION TASKS
-  Task* shape = new ArmShapeTask(4, ineqType, robotName, PEG_GRASPED_PHASE);
-  //The "fake task" with all eye and zero matrices, needed as last one for algo?
-  Task* last = new LastTask(TOT_DOF, eqType, robotName);
-
-  ///Fill tasks list
-  // note: order of priority at the moment is here
-  tasks1->push_back(jl);
-  tasks1->push_back(ha);
-  tasks1->push_back(pr6);
-  //TODO discutere diff tra pr6 e pr5... il 5 mette più stress sull obj?
-  //tasks1->push_back(vehR);
-  //tasks1->push_back(vehYaxis);
-  //tasks1->push_back(eer);
-  tasks1->push_back(shape);
-  tasks1->push_back(last);
-
-  //TODO ASK al momento fatte così le versioni 6dof di pr e coop sono
-  //molto meglio
-  //coop 5 dof assolutamente no
-  //pr5 da un po di stress cmq (linearmente -0.034, -0.008, -0.020),
-  //i due tubi divisi si vedono tanto agli estremi
-  //si dovrebbe abbassare gain e saturaz per usare il pr5
-  //soprattutto se c'è sto shape fatto cosi che fa muovere tantissimo
-  //i bracci, è da cambiare lo shape desiderato
-  tasksCoord->push_back(coopTask6dof);
-  tasksCoord->push_back(jl);
-  tasksCoord->push_back(ha);
-  //tasksCoord->push_back(shape);
-  tasksCoord->push_back(last);
-
-  tasksArmVeh->push_back(constrainVel);
-  tasksArmVeh->push_back(coopTask6dof);
-  tasksArmVeh->push_back(jl);
-  tasksArmVeh->push_back(ha);
-  //tasksArmVeh->push_back(shape);
-  tasksArmVeh->push_back(last);
-
 }
 
 
