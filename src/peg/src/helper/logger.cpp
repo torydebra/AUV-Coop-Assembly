@@ -111,12 +111,16 @@ void Logger::writeStressTool(Eigen::Matrix4d wTt, Eigen::Matrix4d wTt2){
 
   CMAT::Vect6 stressErrorSwapped = CMAT::CartError(wTt_cmat, wTt2_cmat);
 
-  std::vector<double> norms(2);
-  norms.at(0) = stressErrorSwapped.GetSecondVect3().Norm(2);
-  norms.at(1) = stressErrorSwapped.GetFirstVect3().Norm(2);
+  std::vector<double> stressError(6);
+  stressError.at(0) = stressErrorSwapped(4);
+  stressError.at(1) = stressErrorSwapped(5);
+  stressError.at(2) = stressErrorSwapped(6);
+  stressError.at(3) = stressErrorSwapped(1);
+  stressError.at(4) = stressErrorSwapped(2);
+  stressError.at(5) = stressErrorSwapped(3);
 
   std::string path = pathLog + "/stressTool" + ".txt";
-  PRT::vectorStd2file(path, norms);
+  PRT::vectorStd2file(path, stressError);
 
 
 

@@ -106,7 +106,6 @@ std::vector<double> Controller::execAlgorithm(std::vector<Task*> tasks){
   //yDot = [arm arm arm arm wx wy wz x y z]
   CMAT::Matrix yDot_cmat = CMAT::Matrix::Zeros(TOT_DOF,1);
   CMAT::Matrix Q = CMAT::Matrix::Eye(TOT_DOF);
-  //std::cout << "eereer\n\n\n"; ///DEBUG
   for (int i=0; i<tasks.size(); i++){
 
     if (tasks[i]->eqType){
@@ -118,9 +117,9 @@ std::vector<double> Controller::execAlgorithm(std::vector<Task*> tasks){
     }
 
     ////DEBUG
-//    std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
-//    yDot_cmat.PrintMtx();
-//    std::cout << "\n";
+    std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
+    yDot_cmat.PrintMtx();
+    std::cout << "\n";
   }
 
   return (CONV::vector_cmat2std(yDot_cmat));

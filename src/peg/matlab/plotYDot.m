@@ -10,7 +10,7 @@ nRow = size(yDot, 1);
 nStep = size(yDot, 3);
 
 %millisecond indicated in missionManager
-sControlLoop = 0.1;
+global sControlLoop
 totSecondPassed = sControlLoop*(nStep-1);
 seconds = 0:sControlLoop:totSecondPassed;
 

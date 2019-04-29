@@ -23,17 +23,22 @@ int main(int argc, char **argv){
   ros::NodeHandle nh;
 
   /// GOAL TOOL
-  double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
-  // (rob and world have downward z)
+  //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
+  double goalLinearVectTool[] = {-0.27, -1.102, 9.000};
+
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
-  //rot part
-  wTgoalTool_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
+
+   //rot part
+  wTgoalTool_eigen.topLeftCorner<3,3>() << 0, -1,  0,
+                                           1,  0,  0,
+                                           0,  0,  1;
+
+  //wTgoalTool_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
 
   //trasl part
   wTgoalTool_eigen(0, 3) = goalLinearVectTool[0];
   wTgoalTool_eigen(1, 3) = goalLinearVectTool[1];
   wTgoalTool_eigen(2, 3) = goalLinearVectTool[2];
-
 
 
   //TODO put these in interfaces ? this should be a single publisher...
@@ -51,7 +56,7 @@ int main(int argc, char **argv){
 
   /// Interfaces
   // world interface needed to find peg position to calculate barX_t (reference that brings tool in goal)
-  WorldInterface worldInterface("COORDINATOR", "pipe");
+  WorldInterface worldInterface("COORDINATOR", "pipe", "pipe2");
   worldInterface.init();
 
   CoordInterfaceCoord coordInterfaceA(nh, robotName1);
@@ -115,7 +120,6 @@ int main(int argc, char **argv){
         boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(1));
         ros::spinOnce();
         loopRater.wait();
-        continue;
       }
 
 
@@ -130,20 +134,7 @@ int main(int argc, char **argv){
                                           nonCoopCartVelB_eigen, admisVelToolB_eigen,
                                           refTool, &logger);
 
-      if (pathLog.size() > 0){
-        coopVelToolFeasible =
-            execCoordAlgo(nonCoopCartVelA_eigen, admisVelToolA_eigen,
-                          nonCoopCartVelB_eigen, admisVelToolB_eigen,
-                          refTool, &logger);
-
-      } else {
-        coopVelToolFeasible =
-            execCoordAlgo(nonCoopCartVelA_eigen, admisVelToolA_eigen,
-                          nonCoopCartVelB_eigen, admisVelToolB_eigen,
-                          refTool);
-      }
-
-    // std::cout << "Calculated coop vel:\n" << coopVelToolFeasible << "\n\n";
+      std::cout << "Calculated coop vel:\n" << coopVelToolFeasible << "\n\n";
 
 
       publishCoopVel(coopVelPub, coopVelToolFeasible);
@@ -177,12 +168,9 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> execCoordAlgo(
     Eigen::Matrix<double, VEHICLE_DOF, 1> refTool,
     Logger* logger){
 
-  double muZero = 0.01; //this is only to not divide by zero?
+  double muZero = 1; //this is only to not divide by zero?
+
   // weights to understand the "difficulty" each robot has in following the ideal reference(refTool)
-  //DEBUGGGG
-  refTool.row(3) << 0;
-  nonCoopCartVelA_eigen.row(3) << 0;
-  nonCoopCartVelB_eigen.row(3) << 0;
   double muA = muZero + ((refTool-nonCoopCartVelA_eigen).norm());
   double muB = muZero + ((refTool-nonCoopCartVelB_eigen).norm());
 
@@ -206,7 +194,7 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> execCoordAlgo(
 
   if (logger != NULL){
     logger->writeScalar(muA, "weightA");
-    logger->writeScalar(muA, "weightB");
+    logger->writeScalar(muB, "weightB");
     logger->writeEigenMatrix(coopVelTool, "notFeasibleCoopVel");
     logger->writeNonCoopVel(nonCoopCartVelA_eigen, "g500_A");
     logger->writeNonCoopVel(nonCoopCartVelB_eigen, "g500_B");
@@ -237,10 +225,10 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> calculateRefTool(Eigen::Matrix4d wTgoaltoo
   reference(4) = errorSwapped(2);
   reference(5) = errorSwapped(3);
 
-  //reference *= 0.2;
+  reference *= 0.05;
 
-  //reference.topRows(3) = FRM::saturateVectorEigen(reference.topRows(3), 0.5);
-  //reference.bottomRows(3) = FRM::saturateVectorEigen(reference.bottomRows(3), 0.2);
+  reference.topRows(3) = FRM::saturateVectorEigen(reference.topRows(3), 0.3);
+  reference.bottomRows(3) = FRM::saturateVectorEigen(reference.bottomRows(3), 0.1);
 
 
   return reference;

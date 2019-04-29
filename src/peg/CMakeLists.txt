@@ -332,7 +332,8 @@ target_link_libraries(KdlHelper
 )
 
 target_link_libraries(JacobianHelper
-
+  Conversions
+  Formulas
 )
 
 target_link_libraries(LastTask

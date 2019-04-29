@@ -18,6 +18,7 @@ void CoopTask::setReference(Eigen::Matrix<double, VEHICLE_DOF, 1> coopCartVel){
 
   if (dimension == 6){
     reference = CONV::matrix_eigen2cmat(coopCartVel);
+
   } else if (dimension ==5){
     auto temp = CONV::matrix_eigen2cmat(coopCartVel);
     reference(1)= temp(1);
@@ -42,8 +43,8 @@ void CoopTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_Jtool_robot){
 
   if (dimension ==6){
     //w_Jtool_robot.row(4) << 0, 0,0,0,0,0,0,0,0,0; //TRY ASK DEBUG
-
     J = CONV::matrix_eigen2cmat(w_Jtool_robot);
+
   } else if (dimension == 5){
     auto temp = CONV::matrix_eigen2cmat(w_Jtool_robot);
     J = temp.DeleteRow(4);

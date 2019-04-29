@@ -18,6 +18,7 @@ namespace CONV{
     /// cmat to eigen
     Eigen::Matrix3d rotMatrix_cmat2eigen(CMAT::RotMatrix mat_cmat);
     Eigen::Matrix4d transfMatrix_cmat2eigen(CMAT::TransfMatrix mat_cmat);
+    Eigen::MatrixXd matrix_cmat2eigen (CMAT::Matrix mat_cmat);
 
     /// eigen to cmat
     // one generic is ok, they are the same

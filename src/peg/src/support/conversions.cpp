@@ -70,6 +70,20 @@ Eigen::Matrix4d CONV::transfMatrix_cmat2eigen(CMAT::TransfMatrix mat_cmat){
   return mat_eigen;
 }
 
+Eigen::MatrixXd CONV::matrix_cmat2eigen(CMAT::Matrix mat_cmat){
+
+  Eigen::MatrixXd mat_eigen(mat_cmat.GetNumRows(), mat_cmat.GetNumColumns());
+
+  for (int i = 0; i<mat_cmat.GetNumRows(); i++){
+    for (int j = 0; j<mat_cmat.GetNumColumns(); j++){
+      mat_eigen(i,j) = mat_cmat(i+1, j+1);
+    }
+  }
+
+  return mat_eigen;
+
+}
+
 //CMAT::TransfMatrix CONV::transfMatrix_tf2cmat(tf::Transform mat_tf){
 
 //  std::vector<double> vector = CONV::tfMat3x3_to_vector(mat_tf.getBasis());

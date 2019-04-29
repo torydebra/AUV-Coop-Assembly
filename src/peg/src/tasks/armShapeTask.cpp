@@ -2,7 +2,7 @@
 
 ArmShapeTask::ArmShapeTask(int dim, bool eqType, std::string robotName, ShapeType shapeType)
   : Task(dim, eqType, robotName, "ARM_SHAPE"){
-  gain = 0.1;
+  gain = 0.05;
   this->shapeType = shapeType;
   std::string eqineq = (eqType) ? "equality" : "inequality";
 
@@ -24,12 +24,12 @@ int ArmShapeTask::updateMatrices(struct Infos* const robInfo){
   } else if(shapeType == PEG_GRASPED_PHASE){
 
     jointGoal[0] = 0;
-    jointGoal[1] = (JLIM2_MAX + JLIM2_MIN)/2;
-    jointGoal[2] = (JLIM3_MAX + JLIM3_MIN)/2;
-    jointGoal[3] = (JLIM4_MAX + JLIM4_MIN)/2;
-    //jointGoal[1] = 0.680;
-    //jointGoal[2] = 0.361;
-    //jointGoal[3] = 1.390;
+    //jointGoal[1] = (JLIM2_MAX + JLIM2_MIN)/2;
+    //jointGoal[2] = (JLIM3_MAX + JLIM3_MIN)/2;
+    //jointGoal[3] = (JLIM4_MAX + JLIM4_MIN)/2;
+    jointGoal[1] = 0.3744;
+    jointGoal[2] = 0.6556;
+    jointGoal[3] = 1.570;
 
     //TODO first jointGoal is different from robot which stay in front and behind
     //the peg, now it is at the actual pos (so no effect on it)

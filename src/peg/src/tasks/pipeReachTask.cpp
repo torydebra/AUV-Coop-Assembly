@@ -36,6 +36,14 @@ void PipeReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
 
 //  totJ.bottomRows<2>() = excludeRoll * w_J_robot.bottomRows<3>();
   if (dimension == 6){
+    //debug
+//    Eigen::Matrix<double, 6, TOT_DOF> temp = w_J_robot;
+//    temp.leftCols<4>() << 0, 0, 0, 0,
+//                          0,0,0,0,
+//                          0,0,0,0,
+//                          0,0,0,0,
+//                          0,0,0,0,
+//                          0,0,0,0,
     J = CONV::matrix_eigen2cmat(w_J_robot);
   }
   else if (dimension == 5){
@@ -67,7 +75,7 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
     vect3_ang= (this->gain * errorSwapped.GetFirstVect3());
 
     vect3_lin = FRM::saturateCmat(vect3_lin, 0.3);
-    vect3_ang = FRM::saturateCmat(vect3_ang, 0.2);
+    vect3_ang = FRM::saturateCmat(vect3_ang, 0.1);
 
     this->reference(1) = vect3_lin(1);
     this->reference(2) = vect3_lin(2);

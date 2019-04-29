@@ -5,7 +5,8 @@
  * @param link0_name name in the urdf file of the frame of the joint 0 (actually, name of <link></link>)
  * @param endEffector_name name in the urdf file of the frame of the end effector (actually, name of <link></link>)
  */
-KDLHelper::KDLHelper(std::string filename, std::string link0_name, std::string endEffector_name)
+KDLHelper::KDLHelper(std::string filename, std::string link0_name,
+                     std::string endEffector_name, std::string vehicle_name)
 {
 
   TiXmlDocument file_xml(filename);
@@ -26,6 +27,7 @@ KDLHelper::KDLHelper(std::string filename, std::string link0_name, std::string e
   nJoints = 0;
   this->link0_name = link0_name;
   this->endEffector_name = endEffector_name;
+  this->vehicle_name = vehicle_name;
 
 }
 
@@ -34,6 +36,7 @@ KDLHelper::~KDLHelper(){
   delete eePose_solver;
   delete jacobEE_solver;
   delete jacobTool_solver;
+
 }
 
 
@@ -71,6 +74,8 @@ int KDLHelper::setEESolvers(){
   return 0;
 }
 
+
+
 /**
  * @brief KDLHelper::setToolSolvers
  * @return 0 correct execution
@@ -80,7 +85,8 @@ int KDLHelper::setEESolvers(){
 int KDLHelper::setToolSolvers(Eigen::Matrix4d eeTtool_eigen){
 
   KDL::Chain kinChain;
-  tree.getChain(link0_name, endEffector_name, kinChain);
+
+  tree.getChain(vehicle_name, endEffector_name, kinChain);
   // now kinChain is a chain for only the arm
 
 
@@ -98,7 +104,6 @@ int KDLHelper::setToolSolvers(Eigen::Matrix4d eeTtool_eigen){
 
 }
 
-
 int KDLHelper::getEEpose(std::vector<double> jointPos, Eigen::Matrix4d *eePose_eigen){
 
   KDL::JntArray jointPositions = KDL::JntArray(nJoints);
@@ -113,6 +118,7 @@ int KDLHelper::getEEpose(std::vector<double> jointPos, Eigen::Matrix4d *eePose_e
   return 0;
 
 }
+
 
 /**
  * @brief KDLHelper::getJacobianEE respect base frame of arm (link0)
@@ -152,13 +158,14 @@ int KDLHelper::getJacobianTool(std::vector<double> jointPos, Eigen::Matrix<doubl
   }
 
   KDL::Jacobian jacobian_kdl;
-  jacobian_kdl.resize(nJoints); //ASK +1 ?? o il fixed non è considerato joint?
+  jacobian_kdl.resize(nJoints); //il fixed non è considerato joint
   jacobTool_solver->JntToJac(jointPositions, jacobian_kdl);
 
   *jacobianTool_eigen = CONV::jacobian_kdl2eigen(jacobian_kdl);
 
   return 0;
 }
+
 
 
 /**
@@ -202,3 +209,85 @@ int KDLHelper::getFixedFrame(std::string frameOrigin, std::string frameTarget, E
 
 
 int KDLHelper::getNJoints(){return nJoints;}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * @brief KDLHelper::getToolpose OnLY FOR DEBUG FOR NOW
+ * @param jointPos
+ * @param eePose_eigen
+ * @return
+ */
+int KDLHelper::getToolpose(std::vector<double> jointPos, Eigen::Matrix4d eeTtool_eigen, Eigen::Matrix4d *toolPose_eigen){
+
+  KDL::JntArray jointPositions = KDL::JntArray(nJoints);
+  for(unsigned int i=0; i<nJoints; i++){
+    jointPositions(i)=jointPos[i];
+  }
+  KDL::Frame toolPose_kdl;
+  KDL::Chain kinChain;
+  tree.getChain(link0_name, endEffector_name, kinChain);
+  KDL::Frame eeTtool_kdl = CONV::transfMatrix_eigen2kdl(eeTtool_eigen);
+
+  kinChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::None), eeTtool_kdl));
+  KDL::ChainFkSolverPos_recursive toolPose_solver(kinChain);
+
+  toolPose_solver.JntToCart(jointPositions, toolPose_kdl);
+
+  *toolPose_eigen = CONV::transfMatrix_kdl2eigen(toolPose_kdl);
+
+  return 0;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * @brief KDLHelper::setToolSolvers_old the one with link 0
+ * @return 0 correct execution
+ * @note it is ok do the same tree.getChain in this and other function
+ * because these setxxxSolvers are called only once to associate the solver to the kin chain
+ */
+int KDLHelper::setToolSolvers_old(Eigen::Matrix4d eeTtool_eigen){
+
+  KDL::Chain kinChain;
+
+  tree.getChain(link0_name, endEffector_name, kinChain);
+  // now kinChain is a chain for only the arm
+
+  // now we add a fake joint to add to kinChain a segment which is for the tool
+  //(that is fixed respect to the ee)
+  KDL::Frame eeTtool_kdl = CONV::transfMatrix_eigen2kdl(eeTtool_eigen);
+
+  kinChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::None), eeTtool_kdl));
+
+  //even if we add a segment, the number of joint of kin chain remain 4. Probably because we add a fixed joint.
+  //however, this is good.
+
+  /// kinChain until tool now
+  jacobTool_solver = new KDL::ChainJntToJacSolver(kinChain);
+
+}

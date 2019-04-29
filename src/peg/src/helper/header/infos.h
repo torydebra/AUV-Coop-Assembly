@@ -34,7 +34,7 @@ struct RobotState {
   // ASK Is it necessary? or only vTEE is needed?
   //Eigen::Matrix4d link0TEE_eigen; //from base joint to EE
 
-  //std::vector<Eigen::Matrix4d> vTjoints; // vehicle to each joint
+  std::vector<Eigen::Matrix4d> wTjoints; // world to each joint
   //Eigen::Matrix4d vTee_eigen; //vehicle to endEffector
 
   /// vehicle and joint and Sensors state
@@ -49,7 +49,11 @@ struct RobotState {
 
   //geometric jacobian of the arm projected on link 0 with tool as last frame
  // (ie: tool is the controlled one)
-  Eigen::Matrix<double, 6, ARM_DOF> link0_Jtool_man;
+  //Eigen::Matrix<double, 6, ARM_DOF> link0_Jtool_man;
+
+  Eigen::Matrix<double, 6, ARM_DOF> v_Jtool_man;
+
+
 
   //geometric jacobian of the whole robot projected on the world
   //with end effector as last frame (ie: ee is the controlled one)
@@ -59,7 +63,7 @@ struct RobotState {
   //with tool as last frame (ie: tool is the controlled one)
   //(J=[J_pos ; J_or] from Antonelly book
   Eigen::Matrix<double, 6, TOT_DOF> w_Jtool_robot;
-
+  Eigen::Matrix<double, 6, TOT_DOF> w_JNoKdltool_robot;
 
 
 };

@@ -38,7 +38,9 @@ int main(int argc, char **argv)
                                SETTING GOALS
 *****************************************************************************************************************/
 
-  /// GOAL VEHICLE
+
+
+  /// GOAL VEHICLE    TO grasp peg
   double goalLinearVect[] = {-0.287, -0.090, 8};
   Eigen::Matrix4d wTgoalVeh_eigen = Eigen::Matrix4d::Identity();
   //rot part
@@ -48,7 +50,7 @@ int main(int argc, char **argv)
   wTgoalVeh_eigen(1, 3) = goalLinearVect[1];
   wTgoalVeh_eigen(2, 3) = goalLinearVect[2];
 
-  /// GOAL EE
+  /// GOAL EE  to grasp PEG
   double goalLinearVectEE[3];
   if (robotName.compare("g500_A") == 0){
     goalLinearVectEE[0] = 2.89;
@@ -72,14 +74,21 @@ int main(int argc, char **argv)
   wTgoalEE_eigen(1, 3) = goalLinearVectEE[1];
   wTgoalEE_eigen(2, 3) = goalLinearVectEE[2];
 
-  /// GOAL TOOL
-  double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
-  //double goalLinearVectTool[] = {-0.27, -3.102, 5.124};
 
-  // (rob and world have downward z)
+
+
+  /// GOAL TOOL
+  //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
+  double goalLinearVectTool[] = {-0.27, -1.102, 9.000};
+
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
-  //rot part
-  wTgoalTool_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
+
+   //rot part
+  wTgoalTool_eigen.topLeftCorner<3,3>() << 0, -1,  0,
+                                           1,  0,  0,
+                                           0,  0,  1;
+
+ // wTgoalTool_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
 
   //trasl part
   wTgoalTool_eigen(0, 3) = goalLinearVectTool[0];
@@ -119,7 +128,7 @@ int main(int argc, char **argv)
 
 
   /// KDL parser to after( in the control loop )get jacobian from joint position
-  std::string filename = "/home/tori/UWsim/Peg/model/g500ARM5.urdf";
+  //std::string filename = "/home/tori/UWsim/Peg/model/g500ARM5.urdf";
   std::string filenamePeg; //the model of robot with a "fake joint" in the peg
   //so, it is ONLY for the already grasped scene
   if (robotName.compare("g500_A") == 0){
@@ -130,17 +139,19 @@ int main(int argc, char **argv)
   std::string vehicle = "base_link";
   std::string link0 = "part0";
   std::string endEffector = "end_effector";
+  //DEBUG
   //std::string debug = "peg";
-  KDLHelper kdlHelper(filenamePeg, link0, endEffector);
+  KDLHelper kdlHelper(filenamePeg, link0, endEffector, robotName);
   kdlHelper.setEESolvers();
   // KDL parse for fixed things (e.g. vehicle and one of his sensor)
   //TODO Maybe exist an easier method to parse fixed frame from urdf without needed of kdl solver
   kdlHelper.getFixedFrame(vehicle, link0, &(robInfo.robotStruct.vTlink0));
 
-
   /// Set initial state (todo, same as in control loop, make a function?)
   robotInterface.getJointState(&(robInfo.robotState.jState));
   robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
+  //DEBUGG
+  robotInterface.getwTjoints(&(robInfo.robotState.wTjoints));
   worldInterface.getwTt(&(robInfo.transforms.wTt_eigen));
   //robInfo.transforms.wTgoalTool_eigen.topLeftCorner<3,3>() = robInfo.transforms.wTt_eigen.topLeftCorner<3,3>();
   worldInterface.getRobPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
@@ -156,14 +167,15 @@ int main(int argc, char **argv)
 
 
   //TODO before this the robot must have grasped, here only to see if it is correct
-  if (true){ //TODO if grasped
+  //if (true){ //TODO if grasped
     Eigen::Matrix4d eeTtool =
         FRM::invertTransf(robInfo.robotState.wTv_eigen*robInfo.robotState.vTee_eigen)
           * robInfo.transforms.wTt_eigen;
     kdlHelper.setToolSolvers(eeTtool);
-  }
-  kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.link0_Jtool_man));
+  //}
+  kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.v_Jtool_man));
   computeWholeJacobianTool(&robInfo);
+
 
 
   ///Controller
@@ -220,7 +232,11 @@ int main(int argc, char **argv)
   boost::asio::io_service io;
   boost::asio::io_service io2;
 
+  //debug
+  double nLoop = 0.0;
+
   while(1){
+
     //auto start = std::chrono::steady_clock::now();
 
     // this must be inside loop
@@ -239,14 +255,19 @@ int main(int argc, char **argv)
     // get jacobian respect link0
     kdlHelper.getJacobianEE(robInfo.robotState.jState, &(robInfo.robotState.link0_Jee_man));
     computeWholeJacobianEE(&robInfo);
-    //if(grasped)
-    kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.link0_Jtool_man));
-    computeWholeJacobianTool(&robInfo);
 
+    Eigen::Matrix4d eeTtool =
+        FRM::invertTransf(robInfo.robotState.wTv_eigen*robInfo.robotState.vTee_eigen)
+          * robInfo.transforms.wTt_eigen;
+
+    kdlHelper.setToolSolvers(eeTtool);
+    kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.v_Jtool_man));
+    computeWholeJacobianTool(&robInfo);
 
     /// Pass state to controller which deal with tpik
     controller.updateMultipleTasksMatrices(tasksTPIK1, &robInfo);
     std::vector<double> yDotTPIK1 = controller.execAlgorithm(tasksTPIK1);
+
 
 
     std::vector<double> yDotFinal(TOT_DOF);
@@ -267,17 +288,14 @@ int main(int argc, char **argv)
       ros::spinOnce();
     }
 
-
-    controller.resetAllUpdatedFlags(tasksTPIK1);
-    controller.resetAllUpdatedFlags(tasksCoop);
-    controller.resetAllUpdatedFlags(tasksArmVehCoord);
+   // controller.resetAllUpdatedFlags(tasksCoop);
     controller.updateMultipleTasksMatrices(tasksCoop, &robInfo);
     std::vector<double> yDotOnlyVeh = controller.execAlgorithm(tasksCoop);
 
 
-    controller.resetAllUpdatedFlags(tasksTPIK1);
-    controller.resetAllUpdatedFlags(tasksCoop);
-    controller.resetAllUpdatedFlags(tasksArmVehCoord);
+
+
+    //controller.resetAllUpdatedFlags(tasksArmVehCoord);
     controller.updateMultipleTasksMatrices(tasksArmVehCoord, &robInfo);
     std::vector<double> yDotOnlyArm = controller.execAlgorithm(tasksArmVehCoord);
 
@@ -285,6 +303,7 @@ int main(int argc, char **argv)
       yDotFinal.at(i) = yDotOnlyArm.at(i);
 
     }
+
     for (int i = ARM_DOF; i<TOT_DOF; i++) {
       yDotFinal.at(i) = yDotOnlyVeh.at(i);
       //at the moment no error so velocity are exaclty what we are giving
@@ -293,9 +312,10 @@ int main(int argc, char **argv)
 
 
 
+
     ///Send command to vehicle
     //robotInterface.sendyDot(yDotTPIK1);
-
+    //robotInterface.sendyDot(yDotOnlyVeh);
     robotInterface.sendyDot(yDotFinal);
 
 
@@ -309,28 +329,27 @@ int main(int argc, char **argv)
       logger.writeYDot(yDotFinal, "yDotFinal");
       //logger.writeEigenMatrix(admisVelTool_eigen, "JJsharp");
       logger.writeEigenMatrix(robInfo.robotState.w_Jtool_robot
-                              * CONV::vector_std2Eigen(yDotFinal), "toolCartVelCoop");
+                              * CONV::vector_std2Eigen(yDotOnlyVeh), "toolCartVelCoop");
     }
 
     ///PRINT
     /// DEBUG
-    ///
-    //std::cout << "JJsharp\n" << admisVelTool_eigen << "\n\n";
-    //std::cout << "SENDED non coop vel:\n" << nonCoopCartVel_eigen <<"\n\n\n";
-    //std::cout << "ARRIVED coop vel:\n" << robInfo.exchangedInfo.coopCartVel << "\n\n\n";
+
+//    std::cout << "JJsharp\n" << admisVelTool_eigen << "\n\n";
+//    std::cout << "SENDED non coop vel:\n" << nonCoopCartVel_eigen <<"\n\n\n";
+//    std::cout << "ARRIVED coop vel:\n" << robInfo.exchangedInfo.coopCartVel << "\n\n\n";
 
 
 //    std::cout << "J: \n"
 //              << robInfo.robotState.w_Jtool_robot
 //              << "\n\n";
 //    std::cout << "yDot: \n"
-//              << CONV::vector_std2Eigen(yDotFinal)
+//              << CONV::vector_std2Eigen(yDotOnlyVeh)
 //              << "\n\n";
 //    std::cout << "The tool velocity non coop are (J*yDot): \n"
-//              << robInfo.robotState.w_Jtool_robot
-//                 * CONV::vector_std2Eigen(yDotTPIK1)
+//              << nonCoopCartVel_eigen
 //              << "\n\n";
-//    std::cout << "The tool velocity are (J*yDot): \n"
+//    std::cout << "The tool velocity coop are (J*yDot): \n"
 //              << robInfo.robotState.w_Jtool_robot
 //                 * CONV::vector_std2Eigen(yDotFinal)
 //              << "\n\n";
@@ -362,6 +381,11 @@ int main(int argc, char **argv)
 
 
     loopRater.wait();
+    //nLoop += 1;
+
+//    if (nLoop > 10){
+//      exit(-1);
+//    }
 
   } //end controol loop
 
@@ -393,6 +417,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   /// SAFETY TASKS
   Task* jl = new JointLimitTask(4, ineqType, robotName);
   Task* ha = new HorizontalAttitudeTask(1, ineqType, robotName);
+  Task* eeAvoid = new ObstacleAvoidEETask(1, ineqType, robotName);
+
 
 
   /// PREREQUISITE TASKS
@@ -415,6 +441,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   // note: order of priority at the moment is here
   tasks1->push_back(jl);
   tasks1->push_back(ha);
+  //tasks1->push_back(eeAvoid);
   tasks1->push_back(pr6);
   //TODO discutere diff tra pr6 e pr5... il 5 mette più stress sull obj?
   //tasks1->push_back(vehR);
@@ -434,14 +461,18 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksCoord->push_back(coopTask6dof);
   tasksCoord->push_back(jl);
   tasksCoord->push_back(ha);
-  //tasksCoord->push_back(shape);
+  //tasksCoord->push_back(pr6);
+  //tasks1->push_back(eeAvoid);
+  tasksCoord->push_back(shape);
   tasksCoord->push_back(last);
 
-  tasksArmVeh->push_back(constrainVel);
   tasksArmVeh->push_back(coopTask6dof);
+  tasksArmVeh->push_back(constrainVel);
   tasksArmVeh->push_back(jl);
   tasksArmVeh->push_back(ha);
-  //tasksArmVeh->push_back(shape);
+  //tasks1->push_back(eeAvoid);
+
+  tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
 
 }
@@ -530,8 +561,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1, std::vector
   tasks1->push_back(last);
 
   tasksFinal->push_back(coopTask5dof);
-  tasksFinal->push_back(jl);
-  tasksFinal->push_back(ha);
+ // tasksFinal->push_back(jl);
+  //tasksFinal->push_back(ha);
   //tasksFinal->push_back(shape);
   tasksFinal->push_back(last);
 }
@@ -565,3 +596,21 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1, std::vector
 
 //Q.PrintMtx("Q"); ///DEBUG
 //yDot_cmat.PrintMtx("yDot");
+
+
+
+//DEBUGGGG
+//computeJacobianToolNoKdl(&robInfo, robotName);
+
+//std::cout << "con KDL:\n" << robInfo.robotState.w_Jtool_robot << "\n\n";
+//std::cout << "senza KDL:\n" << robInfo.robotState.w_JNoKdltool_robot << "\n\n";
+
+/*
+//debug
+Eigen::Matrix4d toolPose_eigen;
+kdlHelper.getToolpose(robInfo.robotState.jState, eeTtool, &toolPose_eigen);
+Eigen::Matrix4d W_toolPose_eigen = robInfo.robotState.wTv_eigen * robInfo.robotStruct.vTlink0 * toolPose_eigen;
+
+std::cout << "ToolPOSE\n" <<
+             W_toolPose_eigen << "\n\n";
+*/

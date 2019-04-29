@@ -44,8 +44,15 @@ int WorldInterface::getwTt(Eigen::Matrix4d* wTt_eigen, bool tool2){
   tf::StampedTransform wTt_tf;
 
   std::string topic;
-  if (tool2 == true && toolName2.size() != 0){
+  if (tool2 == true){
+    if (toolName2.size() == 0){
+      std::cout << "[" << callerName <<"][WORLD_INTERFACE] ERROR"
+                << "tool Name 2 not inserted during a previous calling to my costructor"
+                << std::endl;
+      return -1;
+    }
     topic = "/" + toolName2;
+
   } else {
     topic = "/" + toolName;
   }
