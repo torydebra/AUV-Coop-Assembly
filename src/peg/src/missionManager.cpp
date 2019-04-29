@@ -175,6 +175,7 @@ int main(int argc, char **argv)
   //}
   kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.v_Jtool_man));
   computeWholeJacobianTool(&robInfo);
+  computeWholeVehicleJacobianTool(&robInfo);
 
 
 
@@ -259,10 +260,12 @@ int main(int argc, char **argv)
     Eigen::Matrix4d eeTtool =
         FRM::invertTransf(robInfo.robotState.wTv_eigen*robInfo.robotState.vTee_eigen)
           * robInfo.transforms.wTt_eigen;
+    robInfo.robotState.eeTtool_eigen = eeTtool;
 
     kdlHelper.setToolSolvers(eeTtool);
     kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.v_Jtool_man));
     computeWholeJacobianTool(&robInfo);
+    computeWholeVehicleJacobianTool(&robInfo);
 
     /// Pass state to controller which deal with tpik
     controller.updateMultipleTasksMatrices(tasksTPIK1, &robInfo);
@@ -460,19 +463,19 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   //i bracci, è da cambiare lo shape desiderato
   tasksCoord->push_back(coopTask6dof);
   tasksCoord->push_back(jl);
-  tasksCoord->push_back(ha);
+  //tasksCoord->push_back(ha);
   //tasksCoord->push_back(pr6);
   //tasks1->push_back(eeAvoid);
-  tasksCoord->push_back(shape);
+  //tasksCoord->push_back(shape);
   tasksCoord->push_back(last);
 
   tasksArmVeh->push_back(coopTask6dof);
   tasksArmVeh->push_back(constrainVel);
-  tasksArmVeh->push_back(jl);
-  tasksArmVeh->push_back(ha);
+  //tasksArmVeh->push_back(jl);
+  //tasksArmVeh->push_back(ha);
   //tasks1->push_back(eeAvoid);
 
-  tasksArmVeh->push_back(shape);
+  //tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
 
 }

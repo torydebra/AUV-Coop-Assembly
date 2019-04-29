@@ -132,6 +132,76 @@ int computeWholeJacobianTool(struct Infos *robInfo){
 }
 
 
+/**
+ * @brief computeWholeJacobianTool
+ * @param robInfo (in & out) info to calculate jacobian and store it (passed by reference)
+ * @return 0 correct execution
+ */
+int computeWholeVehicleJacobianTool(struct Infos *robInfo){
+
+
+  //positional and orientational part of arm jacobian PROJECTED ON WORLD
+  Eigen::Matrix <double, 3, ARM_DOF> v_J_man_pos;
+  Eigen::Matrix <double, 3, ARM_DOF> v_J_man_or;
+
+  //J_man_xxx = wR0 * zeroJ_man_xxx
+  v_J_man_pos = robInfo->robotState.v_Jtool_man.topRows<3>();
+  v_J_man_or = robInfo->robotState.v_Jtool_man.bottomRows<3>();
+
+  /// Compute jacobian for tool position (J_pos from Antonelli book)
+  Eigen::Matrix<double, 3, TOT_DOF> v_J_pos;
+
+  // part relative to joints
+  v_J_pos.leftCols<ARM_DOF>() = v_J_man_pos;
+
+  // part relative to linear velocities
+  v_J_pos.block<3,3>(0,ARM_DOF) = Eigen::Matrix3d::Identity(); //with block indexes start from 0
+
+  // part relative to angular velocities
+  //distance from vehicle to TOOL respect to world (wRv * v_eta_v,ee)
+  Eigen::Matrix4d vTt =
+      robInfo->robotState.vTee_eigen *
+      robInfo->robotState.eeTtool_eigen;
+
+
+  //skew__XXX : skew of XXX
+  v_J_pos.rightCols<3>() = -(FRM::skewMat(vTt.topRightCorner<3,1>()));
+
+
+  /// Compute jacobian for orientation (J_or from Antonelli book)
+  Eigen::Matrix<double, 3, TOT_DOF> v_J_or;
+  v_J_or.leftCols<ARM_DOF>() = v_J_man_or; //relative to arm
+  v_J_or.block<3,3>(0,ARM_DOF) = Eigen::Matrix3d::Zero(); //relative to linear vel
+  v_J_or.rightCols<3>() = Eigen::Matrix3d::Identity(); //relative to angular vel
+
+  /// Store in struct
+
+  robInfo->robotState.v_Jtool_robot.topRows<3>() = v_J_pos;
+  robInfo->robotState.v_Jtool_robot.bottomRows<3>() = v_J_or;
+
+
+
+  //DEBUG
+//  std::cout << "kdl first Skew\n" << skew__w_Dist_v0 << "\n\n";
+//  std::cout << "kdl secodn Skew\n" << skew__w_Dist_0tool << "\n\n";
+//  std::cout << "eta1\n"
+//            << robInfo->robotState.wTv_eigen.topRightCorner<3,1>()
+//                  << "\n\n";
+//  std::cout << "eta2\n"
+//            << robInfo->robotState.wTv_eigen.topLeftCorner<3,3>()
+//            << "\n\n";
+//  std::cout << "eta_ee1\n"
+//            << robInfo->transforms.wTt_eigen.topRightCorner<3,1>()
+//            << "\n\n";
+
+
+//  std::cout << "J: \n"
+//            << robInfo->robotState.w_Jtool_robot
+//            << "\n\n";
+
+
+  return 0;
+}
 
 
 /*

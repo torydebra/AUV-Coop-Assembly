@@ -9,6 +9,8 @@
 
 int computeWholeJacobianEE(struct Infos *robInfo);
 int computeWholeJacobianTool(struct Infos *robInfo);
+int computeWholeVehicleJacobianTool(struct Infos *robInfo);
+
 
 
 //int computeWholeJacobianTool_old(struct Infos *robInfo);

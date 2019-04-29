@@ -10,8 +10,13 @@ PipeReachTask::PipeReachTask(int dim, bool eqType, std::string robotName)
 int PipeReachTask::updateMatrices(Infos * const robInfo){
 
   setActivation();
-  setJacobian(robInfo->robotState.w_Jtool_robot);
-  setReference(robInfo->transforms.wTgoalTool_eigen, robInfo->transforms.wTt_eigen);
+  setJacobian(robInfo->robotState.v_Jtool_robot);
+  Eigen::Matrix4d vTgoaltool_eigen =
+      FRM::invertTransf(robInfo->robotState.wTv_eigen) *
+      robInfo->transforms.wTgoalTool_eigen;
+
+  setReference(vTgoaltool_eigen,
+               robInfo->robotState.vTee_eigen * robInfo->robotState.eeTtool_eigen);
 }
 
 int PipeReachTask::setActivation(){
@@ -24,7 +29,7 @@ int PipeReachTask::setActivation(){
 
 }
 
-void PipeReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
+void PipeReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> v_J_robot){
 
 //  Eigen::Matrix<double, 5, TOT_DOF> totJ;
 //  totJ.topRows<3>() = w_J_robot.topRows<3>();
@@ -44,21 +49,22 @@ void PipeReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
 //                          0,0,0,0,
 //                          0,0,0,0,
 //                          0,0,0,0,
-    J = CONV::matrix_eigen2cmat(w_J_robot);
+    J = CONV::matrix_eigen2cmat(v_J_robot);
   }
   else if (dimension == 5){
-    CMAT::Matrix J_temp = CONV::matrix_eigen2cmat(w_J_robot);
+    CMAT::Matrix J_temp = CONV::matrix_eigen2cmat(v_J_robot);
     J = J_temp.DeleteRow(4);
   }
 }
 
 
-void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix4d wTtool_eigen){
+void PipeReachTask::setReference(Eigen::Matrix4d vTgoaltool_eigen, Eigen::Matrix4d vTtool_eigen){
 
-  CMAT::TransfMatrix wTgoaltool_cmat = CONV::matrix_eigen2cmat(wTgoaltool_eigen);
-  CMAT::TransfMatrix wTtool_cmat = CONV::matrix_eigen2cmat(wTtool_eigen);
+  CMAT::TransfMatrix vTgoaltool_cmat = CONV::matrix_eigen2cmat(vTgoaltool_eigen);
+  CMAT::TransfMatrix vTtool_cmat = CONV::matrix_eigen2cmat(vTtool_eigen);
 
-  CMAT::Vect6 errorSwapped = CMAT::CartError(wTgoaltool_cmat, wTtool_cmat);//ang;lin
+
+  CMAT::Vect6 errorSwapped = CMAT::CartError(vTgoaltool_cmat, vTtool_cmat);//ang;lin
   // ang and lin must be swapped because in yDot and jacob linear part is before
 
   if (dimension == 6){

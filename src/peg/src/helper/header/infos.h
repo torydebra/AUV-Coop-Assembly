@@ -30,7 +30,7 @@ struct RobotState {
   Eigen::Matrix4d wTv_eigen; //world to vehicle
   Eigen::Matrix4d link0Tee_eigen; //link0 to end effector
   Eigen::Matrix4d vTee_eigen; //vehicle to end effector (redundant but useful)
-
+  Eigen::Matrix4d eeTtool_eigen;
   // ASK Is it necessary? or only vTEE is needed?
   //Eigen::Matrix4d link0TEE_eigen; //from base joint to EE
 
@@ -64,6 +64,9 @@ struct RobotState {
   //(J=[J_pos ; J_or] from Antonelly book
   Eigen::Matrix<double, 6, TOT_DOF> w_Jtool_robot;
   Eigen::Matrix<double, 6, TOT_DOF> w_JNoKdltool_robot;
+
+  Eigen::Matrix<double, 6, TOT_DOF> v_Jtool_robot;
+
 
 
 };
