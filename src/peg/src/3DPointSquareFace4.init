@@ -1,0 +1,6 @@
+4              # Number of points
+#xyz with x going out, y on the right, z up
+0      -0.4     0.4   # top rigth corner
+0      0.4      0.4     # top left
+0      0.4     -0.4     # bottom left
+0      -0.4    -0.4     # bottom right

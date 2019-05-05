@@ -23,14 +23,22 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  sensor_msgs
   peg_msgs
   tf
   tf_conversions
   kdl_parser
+  cv_bridge
+  image_transport
+
 )
 #package not catkin
-#find_package(
-#    )
+find_package(
+  OpenCV REQUIRED
+)
+find_package(
+  VISP REQUIRED
+)
 
 
 ## System dependencies are found with CMake's conventions
@@ -41,7 +49,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
-
 
 
 ################################################
@@ -146,6 +153,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include ${catkin_INCLUDE_DIRS}
+  ${VISP_INCLUDE_DIRS}
 )
 link_directories(
   ${catkin_LIBRARY_DIRS}
@@ -161,6 +169,7 @@ add_library(Formulas src/support/formulas.cpp)
 add_library(Prints src/support/prints.cpp)
 add_library(Controller src/controller/controller.cpp)
 add_library(RobotInterface src/rosInterfaces/robotInterface.cpp)
+add_library(RobotVisionInterface src/rosInterfaces/robotVisionInterface.cpp)
 add_library(WorldInterface src/rosInterfaces/worldInterface.cpp)
 add_library(CoordInterfaceMissMan src/rosInterfaces/coordInterfaceMissMan.cpp)
 add_library(CoordInterfaceCoord src/rosInterfaces/coordInterfaceCoord.cpp)
@@ -206,6 +215,8 @@ add_dependencies(CoordInterfaceCoord
 add_executable(MissionManagerA src/missionManager.cpp)
 add_executable(MissionManagerB src/missionManager.cpp)
 add_executable(Coordinator src/coordinator.cpp)
+add_executable(Vision src/vision.cpp)
+add_executable(Vision2 src/vision2.cpp)
 
 
 ## Rename C++ executable without prefix
@@ -285,6 +296,19 @@ target_link_libraries(MissionManagerB
     CoopTask
 )
 
+target_link_libraries(Vision
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+)
+
+target_link_libraries(Vision2
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${VISP_LIBRARIES}
+    cv_bridge
+    RobotVisionInterface
+)
+
 target_link_libraries(Conversions
     tf_conversions
     linuxcmat
@@ -312,6 +336,12 @@ target_link_libraries(Controller
 )
 
 target_link_libraries(RobotInterface
+    tf
+    Conversions
+)
+
+target_link_libraries(RobotVisionInterface
+    ${catkin_LIBRARIES}
     tf
     Conversions
 )
@@ -441,6 +471,8 @@ target_link_libraries(CoopTask
 install(PROGRAMS script/keyboardCommand_A.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(PROGRAMS script/keyboardCommand_B.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(PROGRAMS script/keyboardCommand_C.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(PROGRAMS script/tfListenerPrecise.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

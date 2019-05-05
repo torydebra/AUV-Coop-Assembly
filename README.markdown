@@ -28,6 +28,10 @@ kdl (already installed with ros)
 
 parse_urdf (already installed ros)
 
+opencv 3.4 (ros-kinetic-opencv)
+
+VISP??
+
 
 
 
@@ -51,5 +55,7 @@ Libraries:
 Usata anche per riempire le jacobiane nelle classi task (più comoda di cmat).
 Nota a TASKS e (main) ma non è un problema perchè è indipendente da ros, (installabile anche senza ros)
 controllore non la usa perchè usa solo cmat
+
+**kdl** get jacobians from urdf models
 
 

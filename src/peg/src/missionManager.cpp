@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 
 
   ///Ros interfaces
-  RobotInterface robotInterface(nh, robotName, otherRobotName);
+  RobotInterface robotInterface(nh, robotName);
   robotInterface.init();
   //The robot 2 has attached the tool2, we cant give him the pipe1 because
   //if it is not followed exactly for robB the tool is moving respect EE
@@ -139,8 +139,7 @@ int main(int argc, char **argv)
   std::string vehicle = "base_link";
   std::string link0 = "part0";
   std::string endEffector = "end_effector";
-  //DEBUG
-  //std::string debug = "peg";
+
   KDLHelper kdlHelper(filenamePeg, link0, endEffector, robotName);
   kdlHelper.setEESolvers();
   // KDL parse for fixed things (e.g. vehicle and one of his sensor)
@@ -288,14 +287,10 @@ int main(int argc, char **argv)
       ros::spinOnce();
     }
 
-   // controller.resetAllUpdatedFlags(tasksCoop);
     controller.updateMultipleTasksMatrices(tasksCoop, &robInfo);
     std::vector<double> yDotOnlyVeh = controller.execAlgorithm(tasksCoop);
 
 
-
-
-    //controller.resetAllUpdatedFlags(tasksArmVehCoord);
     controller.updateMultipleTasksMatrices(tasksArmVehCoord, &robInfo);
     std::vector<double> yDotOnlyArm = controller.execAlgorithm(tasksArmVehCoord);
 
@@ -394,8 +389,9 @@ int main(int argc, char **argv)
 
   coordInterface.pubIamReadyOrNot(false);
 
-  //TODO
-  //destroy() per la task init list;
+  //todo lista con all task per cancellarli
+  deleteTasks(&tasksArmVehCoord);
+
   return 0;
 }
 
@@ -475,6 +471,19 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
 
+}
+
+
+/** @brief
+ * @note It is important to delete singularly all object pointed by the vector tasks. simply tasks.clear()
+ * deletes the pointer but not the object Task pointed
+*/
+void deleteTasks(std::vector<Task*> *tasks){
+  for (std::vector< Task* >::iterator it = tasks->begin() ; it != tasks->end(); ++it)
+    {
+      delete (*it);
+    }
+    tasks->clear();
 }
 
 
@@ -568,18 +577,9 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1, std::vector
 }
 
 
-//TODO LA DESTROY
-/** @brief
- * @note It is important to delete singularly all object pointed by the vector tasks. simply tasks.clear()
- * deletes the pointer but not the object Task pointed
-*/
-//Controller::~Controller(){
-//  for (std::vector< Task* >::iterator it = tasks.begin() ; it != tasks.end(); ++it)
-//    {
-//      delete (*it);
-//    }
-//    tasks.clear();
-//}
+
+
+
 
 /// DEBUG
 //    std::cout << "JACOBIAN " << i << ": \n";

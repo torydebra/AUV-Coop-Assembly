@@ -46,7 +46,12 @@
 
 int main(int, char**);
 void setTaskLists(std::string robotName, std::vector<Task*> *tasks);
-void setTaskLists(std::string robotName, std::vector<Task*> *tasks1, std::vector<Task*> *tasksFinal);
-void setTaskLists(std::string robotName, std::vector<Task*>* , std::vector<Task*>*, std::vector<Task*>*);
+void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
+                  std::vector<Task*> *tasksFinal);
+
+void setTaskLists(std::string robotName, std::vector<Task*>* ,
+                  std::vector<Task*>*, std::vector<Task*>*);
+
+void deleteTasks(std::vector<Task*> *tasks);
 
 #endif // MISSIONMANAGER_H

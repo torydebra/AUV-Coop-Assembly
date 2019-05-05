@@ -3,16 +3,13 @@
 
 /**
  * @brief robotInterface::robotInterface Constructor
- * @param argc the standard argument of c++ main needed for ros::init
- * @param argv the standard argument of c++ main needed for ros::init and for know robot names:
- * argv[1]=robotName, argv[2] = otherRobotName
- * @param toolName name of the peg in the xml file of the scene
+ * @param nh the nodehandle to deal with ros sub and pub
+ * @param name of the robot itself (for sub to topics and print purposes)
  */
-RobotInterface::RobotInterface(ros::NodeHandle nh, std::string robotName, std::string otherRobotName)
+RobotInterface::RobotInterface(ros::NodeHandle nh, std::string robotName)
 {
 
   this->robotName = robotName;
-  this->otherRobotName = otherRobotName;
   this->topicRoot = "/uwsim/" + robotName + "/";
 
   std::cout << "[" << robotName <<"][ROBOT_INTERFACE] Start"<<std::endl;
