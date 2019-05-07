@@ -21,9 +21,23 @@
 #include <cmat/cmat.h>
 
 
-int objDetectionInit(vpImage<unsigned char> I, vpMbEdgeTracker *tracker);
-int objDetection(vpImage<unsigned char> I, vpMbEdgeTracker *tracker,
+
+const std::string configFileL = "/home/tori/UWsim/Peg/src/peg/src/vision/cameraL.xml";
+const std::string configFileR = configFileL; //ONLY because instrinsic param of cameras L and R are the same
+const std::string caoModel = "/home/tori/UWsim/Peg/src/peg/src/vision/blockHole.cao";
+const std::string configFileDetector = "/home/tori/UWsim/Peg/src/peg/src/vision/detection-config-SIFT.xml";
+const std::string initFileClick = "/home/tori/UWsim/Peg/src/peg/src/vision/3DPointSquareFace4.init";
+const std::string learnData = "/home/tori/UWsim/Peg/src/peg/src/vision/blockHole_learning_data.bin";
+
+
+int objDetectionInit(vpImage<unsigned char> I, vpMbGenericTracker *tracker);
+int objDetection(vpImage<unsigned char> I, vpMbGenericTracker *tracker,
                  vpKeyPoint *keypoint_detection, vpHomogeneousMatrix *cMo,
                  double *error, double* elapsedTime);
+int stereoTracking(vpImage<unsigned char> I_left, vpImage<unsigned char> I_right,
+                   vpMbGenericTracker *tracker,
+                   vpHomogeneousMatrix *cLeftTo, vpHomogeneousMatrix *cRightTo);
+int initTracker(vpMbGenericTracker *tracker, int nCameras, Eigen::Matrix4d cLTcR);
+
 
 #endif // VISION_H

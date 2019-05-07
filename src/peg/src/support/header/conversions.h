@@ -7,7 +7,7 @@
 #include <tf_conversions/tf_eigen.h>
 #include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
-#include <visp/vpMatrix.h>
+#include <visp3/core/vpHomogeneousMatrix.h>
 #include <opencv2/core.hpp>
 
 namespace CONV{
@@ -54,6 +54,7 @@ namespace CONV{
 
     //visp ~ eigen
     Eigen::MatrixXd matrix_visp2eigen(vpMatrix mat_visp);
+    vpHomogeneousMatrix transfMatrix_eigen2visp(Eigen::MatrixXd mat_eigen);
 
 
 }

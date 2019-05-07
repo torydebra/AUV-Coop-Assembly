@@ -313,6 +313,8 @@ target_link_libraries(Vision
 )
 
 target_link_libraries(Conversions
+    ${OpenCV_LIBS}
+    ${VISP_LIBRARIES}
     tf_conversions
     linuxcmat
 )

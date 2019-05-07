@@ -69,17 +69,48 @@ int main(int argc, char** argv){
 
 
 
+
+
 /** *********************************************************************************************************+*********
                                  MAIN VISION LOOP
 *******************************************************************************************************************/
-  vpMbEdgeTracker tracker;
-  vpKeyPoint keypoint_detection;
+  std::vector<int> trackerTypes;
+  trackerTypes.push_back(vpMbGenericTracker::KLT_TRACKER);
+  //trackerTypes.push_back(vpMbGenericTracker::KLT_TRACKER);
+
+  vpMbGenericTracker tracker(trackerTypes);
+  initTracker(&tracker, trackerTypes.size(), robVisInfo.robotStruct.cLTcR);
+
+  vpDisplayX display_left;
+  vpDisplayX display_right;
+  display_left.setDownScalingFactor(vpDisplay::SCALE_AUTO);
+  display_right.setDownScalingFactor(vpDisplay::SCALE_AUTO);
+  display_left.init(imageL_vp, 100, 100, "Model-based tracker (Left)");
+  display_right.init(imageR_vp, 110 + (int)imageL_vp.getWidth(), 100,
+                     "Model-based tracker (Right)");
+
+  bool initByClick = true;
+  if (initByClick){ //init by click
+    switch (trackerTypes.size()){
+    case 1:
+      tracker.initClick(imageL_vp, initFileClick, false);
+      break;
+    case 2:
+      tracker.initClick(imageL_vp, imageR_vp, initFileClick, initFileClick, true);
+      break;
+    default:
+      std::cerr << "WRONG NUMBER OF TRACKERS\n";
+    }
+
+  } else { //find point da solo COME??
+    //tracker->initTracking(I);
+  }
+
   objDetectionInit(imageL_vp, &tracker);
-  std::string configurationFile = "/home/tori/UWsim/Peg/src/peg/src/detection-config-SIFT.xml";
 
-  keypoint_detection.loadConfigFile(configurationFile);
-
-  keypoint_detection.loadLearningData("/home/tori/UWsim/Peg/src/peg/src/blockHole_learning_data.bin", true);
+  vpKeyPoint keypoint_detection;
+  keypoint_detection.loadConfigFile(configFileDetector);
+  keypoint_detection.loadLearningData(learnData, true);
 
   ros::Rate loop_rate(10);
   while (ros::ok()) {
@@ -92,7 +123,6 @@ int main(int argc, char** argv){
     imageL_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
     vpImageConvert::convert(imageL_cv, imageL_vp);
     vpImageConvert::convert(imageR_cv, imageR_vp);
-
 
     /// OBJECT DETECTION
     vpHomogeneousMatrix cLThole;
@@ -131,7 +161,7 @@ int main(int argc, char** argv){
    return 0;
 }
 
-int objDetectionInit(vpImage<unsigned char> I, vpMbEdgeTracker *tracker){
+int objDetectionInit(vpImage<unsigned char> I, vpMbGenericTracker *tracker){
 
   try {
 
@@ -142,24 +172,27 @@ int objDetectionInit(vpImage<unsigned char> I, vpMbEdgeTracker *tracker){
 
   display.init(I, 100, 100, "Model-based edge tracker");
 
-  tracker->loadConfigFile("/home/tori/UWsim/Peg/src/peg/src/cameraL.xml");
   tracker->getCameraParameters(cam);
 
-  tracker->setOgreVisibilityTest(false);
-  tracker->loadModel("/home/tori/UWsim/Peg/src/peg/src/blockHole.cao");
-
-  tracker->setDisplayFeatures(true);
-  tracker->initClick(I, "/home/tori/UWsim/Peg/src/peg/src/3DPointSquareFace4.init", true);
   tracker->track(I);
 
-  std::string configurationFile = "/home/tori/UWsim/Peg/src/peg/src/detection-config-SIFT.xml";
 
   vpKeyPoint keypoint_learning;
-  keypoint_learning.loadConfigFile(configurationFile);
+  keypoint_learning.loadConfigFile(configFileDetector);
 
   std::vector<cv::KeyPoint> trainKeyPoints;
   double elapsedTime;
   keypoint_learning.detect(I, trainKeyPoints, elapsedTime);
+  // display found points
+  vpDisplay::display(I);
+  for (std::vector<cv::KeyPoint>::const_iterator it = trainKeyPoints.begin(); it != trainKeyPoints.end(); ++it) {
+    vpDisplay::displayCross(I, (int)it->pt.y, (int)it->pt.x, 4, vpColor::red);
+  }
+  vpDisplay::displayText(I, 10, 10, "All Keypoints...", vpColor::red);
+  vpDisplay::displayText(I, 30, 10, "Click to continue with detection...", vpColor::red);
+  vpDisplay::flush(I);
+  vpDisplay::getClick(I, true);
+
   std::vector<vpPolygon> polygons;
   std::vector<std::vector<vpPoint> > roisPt;
   std::pair<std::vector<vpPolygon>, std::vector<std::vector<vpPoint> > > pair
@@ -171,12 +204,14 @@ int objDetectionInit(vpImage<unsigned char> I, vpMbEdgeTracker *tracker){
   vpKeyPoint::compute3DForPointsInPolygons(cMo, cam, trainKeyPoints,
                                            polygons, roisPt, points3f);
   keypoint_learning.buildReference(I, trainKeyPoints, points3f);
-  keypoint_learning.saveLearningData("/home/tori/UWsim/Peg/src/peg/src/blockHole_learning_data.bin", true);
+  keypoint_learning.saveLearningData(learnData, true);
+
+  // display found points
   vpDisplay::display(I);
   for (std::vector<cv::KeyPoint>::const_iterator it = trainKeyPoints.begin(); it != trainKeyPoints.end(); ++it) {
     vpDisplay::displayCross(I, (int)it->pt.y, (int)it->pt.x, 4, vpColor::red);
   }
-  vpDisplay::displayText(I, 10, 10, "Learning step: keypoints are detected on visible teabox faces", vpColor::red);
+  vpDisplay::displayText(I, 10, 10, "Keypoints only on block...", vpColor::red);
   vpDisplay::displayText(I, 30, 10, "Click to continue with detection...", vpColor::red);
   vpDisplay::flush(I);
   vpDisplay::getClick(I, true);
@@ -191,7 +226,7 @@ int objDetectionInit(vpImage<unsigned char> I, vpMbEdgeTracker *tracker){
 
 
 ///OBJECT DETECTIONN
-int objDetection(vpImage<unsigned char> I, vpMbEdgeTracker *tracker,
+int objDetection(vpImage<unsigned char> I, vpMbGenericTracker *tracker,
                  vpKeyPoint *keypoint_detection, vpHomogeneousMatrix *cMo,
                  double *error, double* elapsedTime){
 
@@ -221,10 +256,80 @@ int objDetection(vpImage<unsigned char> I, vpMbEdgeTracker *tracker,
 
 }
 
+int stereoTracking(vpImage<unsigned char> I_left, vpImage<unsigned char> I_right,
+                   vpMbGenericTracker *tracker,
+                   vpHomogeneousMatrix *cLeftTo, vpHomogeneousMatrix *cRightTo){
+
+  try {
+    vpDisplay::display(I_left);
+    vpDisplay::display(I_right);
+
+
+    tracker->track(I_left, I_right);
+
+    tracker->getPose(*cLeftTo, *cRightTo);
+
+    vpCameraParameters cam_left, cam_right;
+    tracker->getCameraParameters(cam_left, cam_right);
+    tracker->display(I_left, I_right, *cLeftTo, *cRightTo, cam_left, cam_right, vpColor::red, 2);
+    vpDisplay::displayFrame(I_left, *cLeftTo, cam_left, 0.25, vpColor::none, 2);
+    vpDisplay::displayFrame(I_right, *cRightTo, cam_right, 0.25, vpColor::none, 2);
+    vpDisplay::displayText(I_left, 10, 10, "A click to exit...", vpColor::red);
+    vpDisplay::flush(I_left);
+    vpDisplay::flush(I_right);
+    if (vpDisplay::getClick(I_left, false)) {
+      return 1;
+    }
+
+  } catch (const vpException &e) {
+    std::cerr << "Catch a ViSP exception: " << e.what() << std::endl;
+  }
+  return 0;
+}
+
+
+int initTracker(vpMbGenericTracker *tracker, int nCameras, Eigen::Matrix4d cLTcR){
+
+  //vpMbGenericTracker temp(trackerTypes);
+
+  //*tracker = temp;
+
+  switch (nCameras){
+  case 1: {
+
+      tracker->loadConfigFile(configFileL);
+      tracker->loadModel(caoModel);
+    }
+
+    break;
+  case 2: {
+      tracker->loadConfigFile(configFileL, configFileR);
+      tracker->loadModel(caoModel, caoModel);
+
+      std::map<std::string, vpHomogeneousMatrix> mapCameraTransf;
+      mapCameraTransf["Camera1"] = vpHomogeneousMatrix(); //identity
+      mapCameraTransf["Camera2"] = CONV::transfMatrix_eigen2visp(cLTcR);;
+
+      tracker->setCameraTransformationMatrix(mapCameraTransf);
+
+
+    }
+    break;
+  default:
+    std::cerr << "WRONG NUMBER OF TRACKERS\n";
+
+  }
+  tracker->setOgreVisibilityTest(false);
+  tracker->setDisplayFeatures(true);
+
+  return 0;
+
+}
 
 
 
-    /// KEYPOINT DETECTOR
+
+//    /// KEYPOINT DETECTOR
 //    vpImage<unsigned char> I;
 //    vpImageIo::read(I, "/home/tori/UWsim/Peg/cameraL_front.png");
 
@@ -275,120 +380,8 @@ int objDetection(vpImage<unsigned char> I, vpMbEdgeTracker *tracker,
 
 
 
-
-
-    /// TRACKING 3D model generic tracker
-    ///
-//    ros::Rate loop_rate(10);
-
-//    try {
-//    vpImage<unsigned char> I_left, I_right;
-//    vpDisplayX display_left;
-//    vpDisplayX display_right;
-
-//    cv::Mat cvIL, cvIR;
-//    robVisInterface.getLeftImage(&cvIL);
-//    robVisInterface.getRightImage(&cvIR);
-//    cvIL.convertTo(cvIL, CV_8U); //TODO check if necessary convert in 8U
-//    cvIR.convertTo(cvIR, CV_8U);
-
-//    vpImageConvert::convert(cvIL, I_left);
-//    vpImageConvert::convert(cvIR, I_right);
-
-
-
-//    display_left.setDownScalingFactor(vpDisplay::SCALE_AUTO);
-//    display_right.setDownScalingFactor(vpDisplay::SCALE_AUTO);
-
-//    display_left.init(I_left, 100, 100, "Model-based tracker (Left)");
-//    display_right.init(I_right, 110 + (int)I_left.getWidth(), 100,
-//                       "Model-based tracker (Right)");
-
-
-//    int opt_tracker1 = vpMbGenericTracker::KLT_TRACKER;
-//    int opt_tracker2 = vpMbGenericTracker::KLT_TRACKER;
-//    std::vector<int> trackerTypes(2);
-//    trackerTypes[0] = opt_tracker1;
-//    trackerTypes[1] = opt_tracker2;
-//    vpMbGenericTracker tracker(trackerTypes);
-
-//    tracker.loadConfigFile("/home/tori/UWsim/Peg/src/peg/src/cameraL.xml",
-//                           "/home/tori/UWsim/Peg/src/peg/src/cameraL.xml");
-
-//    tracker.loadModel("/home/tori/UWsim/Peg/src/peg/src/blockHole.cao",
-//                      "/home/tori/UWsim/Peg/src/peg/src/blockHole.cao");
-//    tracker.setDisplayFeatures(true);
-
-//    vpHomogeneousMatrix cRightMcLeft;
-//    std::ifstream file_cRightMcLeft("/home/tori/UWsim/Peg/src/peg/src/lTr.txt");
-//    cRightMcLeft.load(file_cRightMcLeft);
-
-//    std::map<std::string, vpHomogeneousMatrix> mapOfCameraTransformationMatrix;
-//    mapOfCameraTransformationMatrix["Camera1"] = vpHomogeneousMatrix(); //identity
-//    mapOfCameraTransformationMatrix["Camera2"] = cRightMcLeft;
-
-//    tracker.setCameraTransformationMatrix(mapOfCameraTransformationMatrix);
-
-//    //click in order: top right, top left, bottom right, bottom left
-//    tracker.initClick(I_left, I_right, "/home/tori/UWsim/Peg/src/peg/src/3DPointSquareFace4.init", "/home/tori/UWsim/Peg/src/peg/src/3DPointSquareFace4.init", false);
-
-//    while (ros::ok()) {
-
-//       //(src, dest)
-//      cv::Mat cvIL, cvIR;
-//      robVisInterface.getLeftImage(&cvIL);
-//      robVisInterface.getRightImage(&cvIR);
-//      cvIL.convertTo(cvIL, CV_8U);
-//      cvIR.convertTo(cvIR, CV_8U);
-
-//      vpImageConvert::convert(cvIL, I_left);
-//      vpImageConvert::convert(cvIR, I_right);
-
-//      vpDisplay::display(I_left);
-//      vpDisplay::display(I_right);
-
-
-//      tracker.track(I_left, I_right);
-
-//      vpHomogeneousMatrix cLeftMo, cRightMo;
-//      tracker.getPose(cLeftMo, cRightMo);
-
-
-//      vpCameraParameters cam_left, cam_right;
-//      tracker.getCameraParameters(cam_left, cam_right);
-//      tracker.display(I_left, I_right, cLeftMo, cRightMo, cam_left, cam_right, vpColor::red, 2);
-//      vpDisplay::displayFrame(I_left, cLeftMo, cam_left, 0.25, vpColor::none, 2);
-//      vpDisplay::displayFrame(I_right, cRightMo, cam_right, 0.25, vpColor::none, 2);
-//      vpDisplay::displayText(I_left, 10, 10, "A click to exit...", vpColor::red);
-//      vpDisplay::flush(I_left);
-//      vpDisplay::flush(I_right);
-//      if (vpDisplay::getClick(I_left, false)) {
-//        break;
-//      }
-//      ros::spinOnce();
-//    }
-//    vpDisplay::getClick(I_left);
-//    } catch (const vpException &e) {
-//      std::cerr << "Catch a ViSP exception: " << e.what() << std::endl;
-
-
-
-//    }
-
-
    ///KEYPOINT TRACKER
    /// IT WORKS!
-
-//  ros::Rate loop_rate(10);
-//  while (ros::ok()) {
-//      if (imageCVL == NULL){
-//        std::cout << "no imageL ancora\n";
-//        ros::spinOnce();
-//        loop_rate.sleep();
-//      } else{
-//          break;
-//      }
-//  }
 
 //  try {
 //    bool opt_init_by_click = false;

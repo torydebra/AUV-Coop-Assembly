@@ -224,6 +224,16 @@ Eigen::MatrixXd CONV::matrix_visp2eigen(vpMatrix mat_visp){
   return mat_eigen;
 }
 
+vpHomogeneousMatrix CONV::transfMatrix_eigen2visp(Eigen::MatrixXd mat_eigen){
+  vpHomogeneousMatrix mat_visp;
+  for (int i=0; i<mat_eigen.rows(); i++){
+    for (int j=0; j<mat_eigen.cols(); j++){
+      mat_visp[i][j] = mat_eigen(i,j);
+    }
+  }
+  return mat_visp;
+}
+
 /// NOT TESTED
 //CMAT::Matrix CONV::matrix_opencv2cmat(cv::Mat1d mat_opencv){
 
