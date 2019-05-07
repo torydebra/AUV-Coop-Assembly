@@ -122,8 +122,8 @@ int main(int argc, char **argv)
   } else{
     toolName = "pipe";
   }
-  WorldInterface worldInterface(robotName, toolName);
-  worldInterface.init();
+  WorldInterface worldInterface(robotName);
+  worldInterface.waitReady(toolName);
   CoordInterfaceMissMan coordInterface(nh, robotName);
 
 
@@ -146,14 +146,16 @@ int main(int argc, char **argv)
   //TODO Maybe exist an easier method to parse fixed frame from urdf without needed of kdl solver
   kdlHelper.getFixedFrame(vehicle, link0, &(robInfo.robotStruct.vTlink0));
 
+
+
   /// Set initial state (todo, same as in control loop, make a function?)
   robotInterface.getJointState(&(robInfo.robotState.jState));
   robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
   //DEBUGG
   robotInterface.getwTjoints(&(robInfo.robotState.wTjoints));
-  worldInterface.getwTt(&(robInfo.transforms.wTt_eigen));
+  worldInterface.getwT(&(robInfo.transforms.wTt_eigen), toolName);
   //robInfo.transforms.wTgoalTool_eigen.topLeftCorner<3,3>() = robInfo.transforms.wTt_eigen.topLeftCorner<3,3>();
-  worldInterface.getRobPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
+  worldInterface.getwPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
 
   //get ee pose RESPECT LINK 0
   kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
@@ -244,8 +246,8 @@ int main(int argc, char **argv)
     /// Update state
     robotInterface.getJointState(&(robInfo.robotState.jState));
     robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-    worldInterface.getwTt(&(robInfo.transforms.wTt_eigen));
-    worldInterface.getRobPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
+    worldInterface.getwT(&(robInfo.transforms.wTt_eigen), toolName);
+    worldInterface.getwPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
 
     //get ee pose RESPECT LINK 0
     kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));

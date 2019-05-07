@@ -56,8 +56,12 @@ int main(int argc, char **argv){
 
   /// Interfaces
   // world interface needed to find peg position to calculate barX_t (reference that brings tool in goal)
-  WorldInterface worldInterface("COORDINATOR", "pipe", "pipe2");
-  worldInterface.init();
+  std::string toolName = "pipe";
+  std::string toolName2 = "pipe2";
+  WorldInterface worldInterface("COORDINATOR");
+  worldInterface.waitReady(toolName);
+  worldInterface.waitReady(toolName2);
+
 
   CoordInterfaceCoord coordInterfaceA(nh, robotName1);
   CoordInterfaceCoord coordInterfaceB(nh, robotName2);
@@ -128,7 +132,7 @@ int main(int argc, char **argv){
 //      std::cout << nonCoopCartVelB_eigen << "\n\n";
 //      std::cout << admisVelToolB_eigen << "\n\n";
 
-      worldInterface.getwTt(&wTt);
+      worldInterface.getwT(&wTt, toolName);
       refTool = calculateRefTool(wTgoalTool_eigen, wTt);
       coopVelToolFeasible = execCoordAlgo(nonCoopCartVelA_eigen, admisVelToolA_eigen,
                                           nonCoopCartVelB_eigen, admisVelToolB_eigen,
@@ -143,7 +147,7 @@ int main(int argc, char **argv){
       ///LOGGING
       if (pathLog.size() != 0){
         Eigen::Matrix4d wTt2;
-        worldInterface.getwTt(&wTt2, true);
+        worldInterface.getwT(&wTt2, toolName2);
 
         logger.writeStressTool(wTt, wTt2);
 

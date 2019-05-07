@@ -7,6 +7,8 @@
 #include <tf_conversions/tf_eigen.h>
 #include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
+#include <visp/vpMatrix.h>
+#include <opencv2/core.hpp>
 
 namespace CONV{
 
@@ -43,6 +45,16 @@ namespace CONV{
 
     //Eigen to KDL
     KDL::Frame transfMatrix_eigen2kdl(Eigen::Matrix4d mat_eigen);
+
+    //openCV ~ CMAT
+    //CMAT::Matrix matrix_opencv2cmat(cv::Mat1d mat_opencv);
+
+    //visp ~ CMAT
+    CMAT::Matrix matrix_visp2cmat(vpMatrix mat_visp);
+
+    //visp ~ eigen
+    Eigen::MatrixXd matrix_visp2eigen(vpMatrix mat_visp);
+
 
 }
 

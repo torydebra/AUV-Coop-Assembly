@@ -7,28 +7,30 @@
 
 #include "../../support/header/conversions.h"
 
-
+/**
+ * @brief The WorldInterface class
+ * to get position from world to anything else.
+ * @note waitReady should be called to wait/check if the two frames exist in ros
+ */
 class WorldInterface
 {
 public:
   /**
    * @brief WorldInterface
    * @param callerName
-   * @param toolName
-   * @param toolName2 actually, the pipe2 attached to robotB. Useful
-   * know its position to see how distant is from pipe1 to understand the
-   * mechanical stress that we would apply to a real pipe in real world
-   * Actually used by logger for this scope
    */
-  WorldInterface(std::string callerName, std::string toolName,
-                 std::string toolName2 = "");
-  int init();
-  int getwTt(Eigen::Matrix4d* wTt_eigen, bool tool2 = false);
-  int getRobPos(Eigen::Vector3d* pos, std::string robotName);
+  WorldInterface(std::string callerName);
+  int waitReady(std::string objName);
+  int waitReady(std::string firstFrame, std::string secondFrame);
+
+
+  int getwT(Eigen::Matrix4d *wTobj, std::string objName);
+  int getT(Eigen::Matrix4d* xTx_eigen, std::string firstFrame, std::string secondFrame);
+  int getwPos(Eigen::Vector3d* pos, std::string robotName);
+
+
 
 private:
-  std::string toolName;
-  std::string toolName2;
   std::string callerName;
   tf::TransformListener tfListener;
 

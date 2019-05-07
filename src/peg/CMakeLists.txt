@@ -215,8 +215,8 @@ add_dependencies(CoordInterfaceCoord
 add_executable(MissionManagerA src/missionManager.cpp)
 add_executable(MissionManagerB src/missionManager.cpp)
 add_executable(Coordinator src/coordinator.cpp)
+add_executable(Vision_old src/vision_old.cpp)
 add_executable(Vision src/vision.cpp)
-add_executable(Vision2 src/vision2.cpp)
 
 
 ## Rename C++ executable without prefix
@@ -296,17 +296,20 @@ target_link_libraries(MissionManagerB
     CoopTask
 )
 
-target_link_libraries(Vision
+target_link_libraries(Vision_old
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
 )
 
-target_link_libraries(Vision2
+target_link_libraries(Vision
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
     ${VISP_LIBRARIES}
     cv_bridge
     RobotVisionInterface
+    linuxcmat
+    WorldInterface
+    Logger
 )
 
 target_link_libraries(Conversions

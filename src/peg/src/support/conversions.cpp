@@ -199,4 +199,43 @@ KDL::Frame CONV::transfMatrix_eigen2kdl(Eigen::Matrix4d mat_eigen){
 
 }
 
+CMAT::Matrix CONV::matrix_visp2cmat(vpMatrix mat_visp){
+    CMAT::Matrix mat_cmat(mat_visp.getRows(), mat_visp.getCols());
+    for (int i=0; i<mat_visp.getRows(); i++){
+      for (int j=0; j<mat_visp.getCols(); j++){
+        mat_cmat(i+1, j+1) = mat_visp[i][j];
+      }
+    }
+
+    return mat_cmat;
+
+
+}
+
+Eigen::MatrixXd CONV::matrix_visp2eigen(vpMatrix mat_visp){
+
+  Eigen::MatrixXd mat_eigen(mat_visp.getRows(), mat_visp.getCols());
+  for (int i=0; i<mat_visp.getRows(); i++){
+    for (int j=0; j<mat_visp.getCols(); j++){
+      mat_eigen(i,j) = mat_visp[i][j];
+    }
+  }
+
+  return mat_eigen;
+}
+
+/// NOT TESTED
+//CMAT::Matrix CONV::matrix_opencv2cmat(cv::Mat1d mat_opencv){
+
+//  CMAT::Matrix mat_cmat(mat_opencv.rows, mat_opencv.cols);
+//  for (int i=0; i<mat_opencv.rows; i++){
+//    for (int j=0; j<mat_opencv.cols; j++){
+//      mat_cmat(i+1, j+1) = mat_opencv.at<double>(i,j);
+//    }
+//  }
+
+//  return mat_cmat;
+
+//}
+
 

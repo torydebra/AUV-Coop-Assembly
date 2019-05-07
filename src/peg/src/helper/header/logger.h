@@ -29,6 +29,7 @@ public:
   void writeCoopVel(Eigen::VectorXd coopVel);
   void writeScalar(double scalar, std::string fileName);
   void writeEigenMatrix(Eigen::MatrixXd mat, std::string fileName);
+  void writeCmatMatrix(CMAT::Matrix mat, std::string fileName);
   void writeStressTool(Eigen::Matrix4d wTt, Eigen::Matrix4d wTt2);
 
 

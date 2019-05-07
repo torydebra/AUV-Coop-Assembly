@@ -105,6 +105,11 @@ void Logger::writeEigenMatrix(Eigen::MatrixXd mat, std::string fileName){
   PRT::matrixEigen2file(path, mat);
 }
 
+void Logger::writeCmatMatrix(CMAT::Matrix mat, std::string fileName){
+  Logger::writeEigenMatrix(CONV::matrix_cmat2eigen(mat), fileName);
+}
+
+
 void Logger::writeStressTool(Eigen::Matrix4d wTt, Eigen::Matrix4d wTt2){
   CMAT::TransfMatrix wTt_cmat = CONV::matrix_eigen2cmat(wTt);
   CMAT::TransfMatrix wTt2_cmat = CONV::matrix_eigen2cmat(wTt2);

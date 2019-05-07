@@ -177,7 +177,9 @@ int KDLHelper::getJacobianTool(std::vector<double> jointPos, Eigen::Matrix<doubl
  * @param *xTx_eigen FIXED transformation between origin and target, passed by reference
  * @return 0 correct execution
  * @warning DO NOT USE for trasformations that change during the mission.
- * @todo Maybe exist an easier method to parse fixed frame from urdf without needed of kdl solver
+ * @todo Maybe exist an easier method to parse fixed frame from urdf without needed of kdl solver:
+ *       The other method is to use the tf listener (in world interface) but it is a ros inteface so specifically only if simulator used
+ *       publish frame positions on ros
  */
 int KDLHelper::getFixedFrame(std::string frameOrigin, std::string frameTarget, Eigen::Matrix4d *xTx_eigen){
 

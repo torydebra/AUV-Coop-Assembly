@@ -30,7 +30,7 @@ sControlLoop = 0.1;
 % plotCoopGeneric(rootPath, coordName, 'notFeasibleCoopVel');
 % plotCoopGeneric(rootPath, coordName, 'idealTool');
 %plotDifferenceCoopVel(rootPath, robotNameA, robotNameB)
-plotStressTool(rootPath, coordName);
+%plotStressTool(rootPath, coordName);
 
 
 %% diff tra feasabile e non coop velocities
@@ -58,3 +58,8 @@ plotStressTool(rootPath, coordName);
 %     plot(seconds, a);
 % end
 % xlabel('time [s]');
+
+
+%% Vision
+pathName ="~/LogPegVisio/7/Vision2/error2.txt";
+plotGenericError(pathName)
