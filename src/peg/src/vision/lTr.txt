@@ -1,6 +1,4 @@
-#the left frame has z pointing out the camera, x on the LEFT, y UP.
-# so the right camera is along negative component
-1 0 0 -0.19999999999999984
+1 0 0 0.19999999999999984
 0 1 0 0.0
 0 0 1 0.0
 0 0 0 0
