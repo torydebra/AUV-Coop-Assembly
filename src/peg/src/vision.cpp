@@ -1,6 +1,22 @@
 #include "header/vision.h"
 
+
+
+
+void MatchingMethod(int match_method, cv::Mat img, cv::Mat templ,
+                    cv::Point *bestMatch, double *minMaxVal);
+
+/**
+ * @brief main
+ * @param argc
+ * @param argv
+ * @return
+ * @todo racconta del init by click, che lo setti perfetto tanto è facile cliccare sui 4 angoli zoomando con il
+ * display di opencv. E cmq è da fare solo una volta, poi salva i file .pos
+ */
 int main(int argc, char** argv){
+
+
 
   if (argc < 2){
     std::cout << "[VISION] Please insert robot name for Vision"<< std::endl;
@@ -74,6 +90,10 @@ int main(int argc, char** argv){
   robotVisInterface.getRightImage(&imageR_cv);
   imageL_cv.convertTo(imageL_cv, CV_8U); //TODO check if necessary convert in 8U
   imageR_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
+  //cut top part of image where a piece of auv is visible and can distract cv algos
+  imageL_cv = imageL_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
+  imageR_cv = imageR_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
+
   vpImageConvert::convert(imageL_cv, imageL_vp);
   vpImageConvert::convert(imageR_cv, imageR_vp);
 
@@ -97,7 +117,7 @@ int main(int argc, char** argv){
   display_right.init(imageR_vp, 110 + (int)imageL_vp.getWidth(), 100,
                      "Model-based tracker (Right)");
 
-  bool initByClick = true;
+  bool initByClick = false;
   if (initByClick){ //init by click
     switch (trackerTypes.size()){
     case 1:
@@ -111,9 +131,361 @@ int main(int argc, char** argv){
     }
 
   } else { //find point da solo COME??
-    //tracker->initTracking(I);
-  }
 
+
+
+
+
+
+
+
+//    ///cv corner detect TRY srivi che non è buono ***********************************************
+//    // coor of rect are top-left corner
+//    src = imageL_cv;
+//    cv::namedWindow( source_window );
+//    cv::imshow( source_window, src );
+//    goodFeaturesToTrack_Demo( 0, 0 );
+//    cv::waitKey(0);
+
+    /// EDGE detect con canny e hough ****************************************************
+//    cv::Mat dst, cdst, cdstP;
+//    // Loads an image
+//    cv::Mat src = imageL_cv;
+//    // Check if image is loaded fine
+
+//    // Edge detection
+//    cv::Canny(src, dst, 50, 200, 3);
+//    // Copy edges to the images that will display the results in BGR
+//    cv::cvtColor(dst, cdst, cv::COLOR_GRAY2BGR);
+//    cdstP = cdst.clone();
+//    // Standard Hough Line Transform
+//    std::vector<cv::Vec2f> lines; // will hold the results of the detection
+//    cv::HoughLines(dst, lines, 1, CV_PI/180, 60, 0, 0 ); // runs the actual detection
+//    // Draw the lines
+//    for( size_t i = 0; i < lines.size(); i++ )
+//    {
+//        float rho = lines[i][0], theta = lines[i][1];
+//        cv::Point pt1, pt2;
+//        double a = cos(theta), b = sin(theta);
+//        double x0 = a*rho, y0 = b*rho;
+//        pt1.x = cvRound(x0 + 1000*(-b));
+//        pt1.y = cvRound(y0 + 1000*(a));
+//        pt2.x = cvRound(x0 - 1000*(-b));
+//        pt2.y = cvRound(y0 - 1000*(a));
+//        cv::line( cdst, pt1, pt2, cv::Scalar(0,0,255), 3, cv::LINE_AA);
+//    }
+//    // Probabilistic Line Transform
+//    std::vector<cv::Vec4i> linesP; // will hold the results of the detection
+//    cv::HoughLinesP(dst, linesP, 1, CV_PI/180, 50, 50, 10 ); // runs the actual detection
+//    // Draw the lines
+//    for( size_t i = 0; i < linesP.size(); i++ )
+//    {
+//        cv::Vec4i l = linesP[i];
+//        cv::line( cdstP, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0,0,255), 3, cv::LINE_AA);
+//    }
+//    // Show results
+//    cv::imshow("Source", src);
+//    cv::imshow("Standard Hough Line Transform", cdst);
+//    cv::imshow("Probabilistic Line Transform", cdstP);
+//    // Wait and Exit
+//    cv::waitKey();
+    /// EDGE detect con canny e hough ****************************************************
+
+
+    /// BOUNDING BOX DETECTION ***********************************************************************************************
+//    src = imageL_cv.clone();
+//    //cv::blur( src, src, cv::Size(3,3) );
+//    std::string source_window = "Source";
+
+//    cv::namedWindow( source_window );
+//    cv::imshow( source_window, src );
+//    const int max_thresh = 255;
+//    cv::createTrackbar( "Canny thresh:", source_window, &thresh, max_thresh, thresh_callback );
+//    cv::createTrackbar("canny thres 2:", source_window, &thresh2, 500, thresh_callback );
+
+//    cv::createTrackbar("poli thresh:", source_window, &thresh_poly, 30, thresh_callback );
+//    thresh_callback( 0, 0 );
+//    cv::waitKey(0);
+    /// BOUNDING BOX DETECTION  https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html********************************************************************
+
+
+    /// FIND SQUARE METHOD https://docs.opencv.org/3.4/db/d00/samples_2cpp_2squares_8cpp-example.html#a20
+//    std::vector<std::vector<cv::Point> > squares, orderedSquares;
+//    cv::Mat image;
+//    cv::cvtColor(imageL_cv, image, cv::COLOR_GRAY2BGR); //actually not real conv in colors
+//    findSquares(image, squares);
+//    orderedSquares.resize(squares.size());
+//    orderAngles(squares, &orderedSquares);
+//    drawSquares(image, squares);
+    /// FIND SQUARE METHOD https://docs.opencv.org/3.4/db/d00/samples_2cpp_2squares_8cpp-example.html#a20
+
+
+    /// TEMPLATE MATCHING OPENCV ********************************************************************************************+++
+      // https://docs.opencv.org/3.4.6/de/da9/tutorial_template_matching.html
+
+    const char* image_window = "Source Image";
+
+    cv::Mat templ = cv::imread("/home/tori/UWsim/Peg/templateFrontLittle.jpg", cv::IMREAD_COLOR);
+    cv::Mat img;
+    //img = cv::imread("/home/tori/UWsim/Peg/source10.png", cv::IMREAD_COLOR);
+    cv::cvtColor(imageL_cv, img, cv::COLOR_GRAY2BGR); //actually not real conv in colors
+
+    cv::Mat img_display = img.clone();
+
+    cv::namedWindow( image_window, cv::WINDOW_AUTOSIZE );
+
+    int templ_method = cv::TM_CCOEFF_NORMED;
+    std::vector<double>scaleFactors = {1, 0.9, 0.8, 0.7, 0.75, 0.6, 0.65, 0.5,
+                                         0.48, 0.45, 0.42, 0.4, 0.38, 0.38, 0.32, 0.3,
+                                        0.28, 0.25, 0.22, 0.2, 0.15, 0.1};
+    //std::vector<double>scaleFactors = {0.3};
+
+
+    std::vector<double> minMaxValue(scaleFactors.size()),
+                        scaleUpY(scaleFactors.size()),
+                        scaleUpX(scaleFactors.size());
+
+    std::vector<cv::Point> bestMatch(scaleFactors.size());
+    cv::Mat imgScaled = img.clone();
+
+    //last scaling is the last scaling, then if the for is "break" last scale is modified
+    //it is used as index to consider only max/min values until the last scaling factor used
+    int lastScale=scaleFactors.size();
+    for (int i=0; i<scaleFactors.size(); i++){
+
+      cv::resize(img, imgScaled, cv::Size(), scaleFactors[i], scaleFactors[i]);
+      std::cout << "img size y, x: " << img.rows << "  " << img.cols << "\n";
+      std::cout << "scaled img y, x: " << imgScaled.rows << "  " <<imgScaled.cols << "\n";
+      // actual scale can be approximated so calculate scaleUp in this way
+      // is better than 1/scaleFactors[i]
+      scaleUpY[i] = ((double)img.rows) / ((double)imgScaled.rows);
+      scaleUpX[i] = ((double)img.cols) / ((double)imgScaled.cols);
+
+      //if scaled img little than template, break loop
+      if (imgScaled.rows < templ.rows || imgScaled.cols < templ.cols){
+        std::cout << "template bigger\n";
+        lastScale = i-1;
+        break;
+      }
+
+
+      MatchingMethod(templ_method, imgScaled, templ, &(bestMatch[i]), &(minMaxValue[i]));
+
+
+//      std::cout << "scale factor UPX and UPY  " << scaleUpX << " " << scaleUpY  << "\n";
+//      std::cout << "bestMatrch.x: " << bestMatch[i].x << "\n";
+//      std::cout << "bestMatrch.y: " << bestMatch[i].y << "\n";
+//      std::cout << "topLeft.x: " << topLeft.x << "\n";
+//      std::cout << "topLeft.y: " << topLeft.y << "\n";
+//      std::cout << "bottomRi.x: " << bottomRight.x << "\n";
+//      std::cout << "bottomRi.y: " << bottomRight.y << "\n";
+//      std::cout << "temple row col " << templ.rows << "  " << templ.cols << "\n\n";
+
+
+//      cv::rectangle( imgScaled, bestMatch[i],
+//                    cv::Point( bestMatch[i].x + templ.cols , bestMatch[i].y + templ.rows ),
+//                     cv::Scalar::all(0), 1, 8, 0 );
+//      std::string boh = "asdasda" + std::to_string(i);
+//      cv::imshow( boh, imgScaled );
+//      cv::Mat otherMat;
+//      cv::resize (imgScaled, otherMat, cv::Size(), scaleUpX[i], scaleUpY[i]);
+//      cv::imshow( "boh", otherMat );
+//      cv::waitKey();
+
+
+
+    }
+
+    int indexBest;
+    if( templ_method  == cv::TM_SQDIFF || templ_method == cv::TM_SQDIFF_NORMED ){
+      indexBest = std::distance(minMaxValue.begin(),
+                                  std::min_element(minMaxValue.begin(),
+                                                   minMaxValue.begin() + lastScale));
+
+    } else{
+      indexBest = std::distance(minMaxValue.begin(),
+                                 std::max_element(minMaxValue.begin(),
+                                                  minMaxValue.begin() + lastScale));
+    }
+
+    std::cout << "BEST ITERATION: scaling factor " << scaleFactors[indexBest]
+                 <<"\n VALUE:" << minMaxValue.at(indexBest) << "\n\n";
+
+    cv::Point topLeft, bottomRight;
+    topLeft.x = (int)(bestMatch[indexBest].x * scaleUpX[indexBest]);
+    topLeft.y = (int)(bestMatch[indexBest].y * scaleUpY[indexBest]);
+    bottomRight.x = (int)( (bestMatch[indexBest].x + templ.cols) * scaleUpX[indexBest]);
+    bottomRight.y = (int)( (bestMatch[indexBest].y +  templ.rows) * scaleUpY[indexBest]);
+
+    cv::rectangle( img_display, topLeft, bottomRight,
+                   cv::Scalar::all(0), 1, 8, 0 );
+    cv::imshow( image_window, img_display);
+    cv::waitKey(0);
+
+
+    //original not scaled
+   // cv::createTrackbar( trackbar_label, image_window, &match_method, max_Trackbar, MatchingMethod );
+    //MatchingMethod( 0, 0 ,);
+    //cv::waitKey(0);
+
+    /// TEMPLATE MATCHING OPENCV ********************************************************************************************+++
+
+
+    /// FEATURE 2 + HOMOGRAPy *******************************************************************************************************+
+    /// https://docs.opencv.org/3.4/d7/dff/tutorial_feature_homography.html
+    /// NOT works, too parameters to set for all the function, even with canny preprocessing
+    /// keypoint are not matched. Maybe a fine setup will work.
+
+    //-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
+//    cv::Mat img_object = cv::imread("/home/tori/UWsim/Peg/templateSideBorder.jpg",
+//                                    cv::IMREAD_GRAYSCALE );
+
+//    cv::Mat img_scene = imageL_cv;
+//    cv::Canny(img_object, img_object, 50, 200, 3);
+//    cv::Canny(img_scene, img_scene, 50, 200, 3);
+
+//    cv::Mat imgd_scene = img_scene; //for intermiadate display
+//    cv::Mat imgd_obj = img_object; //for intermiadate display
+
+//    cv::Ptr<cv::xfeatures2d::SURF> detectorSURF = cv::xfeatures2d::SURF::create(300);
+//    cv::Ptr<cv::xfeatures2d::SURF> detectorSURF2 = cv::xfeatures2d::SURF::create(
+//          100, 4, 3, true);
+//    cv::Ptr<cv::xfeatures2d::SIFT> detectorSIFT = cv::xfeatures2d::SIFT::create(
+//          0, 3, 0.04, 10);
+//    cv::Ptr<cv::xfeatures2d::SIFT> detectorSIFT2 = cv::xfeatures2d::SIFT::create(
+//          0, 3, 0.02, 15);
+//    std::vector<cv::KeyPoint> keypoints_object, keypoints_scene;
+//    cv::Mat descriptors_object, descriptors_scene;
+//    detectorSURF->detectAndCompute( img_object, cv::noArray(), keypoints_object, descriptors_object );
+//    detectorSURF->detectAndCompute( img_scene, cv::noArray(), keypoints_scene, descriptors_scene );
+//    std::cout <<"point in template: " << keypoints_object.size() << "\n\n";
+//    std::cout <<"point in scene: " << keypoints_scene.size() << "\n\n";
+//    cv::drawKeypoints(img_scene, keypoints_scene, imgd_scene, cv::Scalar(255,0,0));
+//    cv::drawKeypoints(img_object, keypoints_object, imgd_obj, cv::Scalar(255,0,0));
+//    cv::imshow("scena keypoint", imgd_scene);
+//    cv::imshow("temmplate keypoint", imgd_obj);
+//    cv::waitKey();
+
+
+//    //-- Step 2: Matching descriptor vectors with a FLANN based matcher
+//    // Since SURF is a floating-point descriptor NORM_L2 is used
+//    cv::Ptr<cv::DescriptorMatcher> matcher =
+//        cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
+//    std::vector< std::vector<cv::DMatch> > knn_matches;
+//    matcher->knnMatch( descriptors_object, descriptors_scene, knn_matches, 2 );
+
+//    //-- Filter matches using the Lowe's ratio test
+//    const float ratio_thresh = 0.75f;
+//    std::vector<cv::DMatch> good_matches;
+//    std::cout << "knn_matches matches: " << knn_matches.size() << "\n\n";
+
+//    for (size_t i = 0; i < knn_matches.size(); i++)
+//    {
+//        if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
+//        {
+//            good_matches.push_back(knn_matches[i][0]);
+//        }
+//    }
+
+//    std::cout << "goo matches: " << good_matches.size() << "\n\n";
+
+//    //-- Draw matches
+//    cv::Mat img_matches;
+//    cv::drawMatches( img_object, keypoints_object, img_scene, keypoints_scene,
+//                     good_matches, img_matches, cv::Scalar::all(-1),
+//                     cv::Scalar::all(-1), std::vector<char>(),
+//                     cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+//    //-- Localize the object
+//    std::vector<cv::Point2f> obj;
+//    std::vector<cv::Point2f> scene;
+//    for( size_t i = 0; i < good_matches.size(); i++ )
+//    {
+//        //-- Get the keypoints from the good matches
+//        obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
+//        scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
+//    }
+//    std::cout << "to find homog template good match: " << obj.size() << "\n\n";
+//    std::cout << "to find homog scene good match: " << scene.size() << "\n\n";
+
+//    cv::Mat H = cv::findHomography( obj, scene, cv::RANSAC, 3 );
+//    std::cout << "mat result of findhomog: " << H.size() << "\n\n";
+//    //-- Get the corners from the image_1 ( the object to be "detected" )
+//    std::vector<cv::Point2f> obj_corners(4);
+//    obj_corners[0] = cv::Point2f(0, 0);
+//    obj_corners[1] = cv::Point2f( (float)img_object.cols, 0 );
+//    obj_corners[2] = cv::Point2f( (float)img_object.cols, (float)img_object.rows );
+//    obj_corners[3] = cv::Point2f( 0, (float)img_object.rows );
+//    std::vector<cv::Point2f> scene_corners(4);
+//    cv::perspectiveTransform( obj_corners, scene_corners, H);
+//    //-- Draw lines between the corners (the mapped object in the scene - image_2 )
+//    cv::line( img_matches, scene_corners[0] + cv::Point2f((float)img_object.cols, 0),
+//          scene_corners[1] + cv::Point2f((float)img_object.cols, 0), cv::Scalar(0, 255, 0), 4 );
+//    cv::line( img_matches, scene_corners[1] + cv::Point2f((float)img_object.cols, 0),
+//          scene_corners[2] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+//    cv::line( img_matches, scene_corners[2] + cv::Point2f((float)img_object.cols, 0),
+//          scene_corners[3] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+//    cv::line( img_matches, scene_corners[3] + cv::Point2f((float)img_object.cols, 0),
+//          scene_corners[0] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+//    //-- Show detected matches
+//    cv::imshow("Good Matches & Object detection", img_matches );
+//    cv::waitKey();
+
+    /// FEATURE 2 + HOMOGRAPy *******************************************************************************************************+
+
+
+
+
+    /**  VISP METHOD FOR KEYPOINT DETECTION, CHE NO BUONI*/
+    // in comune per tutti i metodi di visp
+    //vpDisplayOpenCV d(imageL_vp, 500, 500, "Tracking");
+    //vpDisplay::display(imageL_vp);
+    //vpDisplay::flush(imageL_vp);
+
+//    /// method tracker *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//    vpKltOpencv tracker;
+//    tracker.setMaxFeatures(200);
+//    tracker.setWindowSize(10);
+//    tracker.setQuality(0.015);
+//    tracker.setMinDistance(15);
+//    tracker.setHarrisFreeParameter(0.04);
+//    tracker.setBlockSize(9);
+//    tracker.setUseHarris(1);
+//    tracker.setPyramidLevels(3);
+//    tracker.initTracking(imageL_cv);
+
+//    /// method keypoint ***********************************************************************
+//    vpKeyPoint keypoint_learning;
+//    keypoint_learning.loadConfigFile(configFileDetector);
+
+//    while(ros::ok()){
+//      /// TRACKING keypoint 1
+//      //tracker.track(imageL_cv);
+//      //tracker.display(imageL_vp, vpColor::red);
+
+////      /// Tracking keypoint 2
+//////      std::vector<cv::KeyPoint> trainKeyPoints;
+//////      double elapsedTime;
+//////      keypoint_learning.detect(imageL_vp, trainKeyPoints, elapsedTime);
+//////      // display found points
+//////      vpDisplay::display(imageL_vp);
+//////      for (std::vector<cv::KeyPoint>::const_iterator it = trainKeyPoints.begin(); it != trainKeyPoints.end(); ++it) {
+//////        vpDisplay::displayCross(imageL_vp, (int)it->pt.y, (int)it->pt.x, 4, vpColor::red);
+//////      }
+/////
+
+
+//      vpDisplay::flush(imageL_vp);
+//      vpDisplay::getClick(imageL_vp);
+//    }
+
+
+
+  } ///else not init by click
+
+
+
+
+  //// old tracking method (con inizializ initclick)
   //objDetectionInit(imageL_vp, &tracker);
   //vpKeyPoint keypoint_detection;
   //keypoint_detection.loadConfigFile(configFileDetector);
@@ -166,6 +538,12 @@ int main(int argc, char** argv){
 //    error.SetFirstVect3(swappedError.GetSecondVect3());
 //    error.SetSecondVect3(swappedError.GetFirstVect3());
 //    logger.writeCmatMatrix(error, "error");
+
+
+    /// method TRACKING DETECTION VISP ***********************************************************
+                    ///TODO
+    /// method TRACKING DETECTION VISP ***********************************************************
+
 
     /// METHOD 2 STEREO
 
@@ -240,6 +618,8 @@ int stereoTracking(vpImage<unsigned char> I_left, vpImage<unsigned char> I_right
 }
 
 
+
+
 int initTracker(vpMbGenericTracker *tracker, int nCameras, Eigen::Matrix4d cRTcL){
 
   switch (nCameras){
@@ -269,6 +649,317 @@ int initTracker(vpMbGenericTracker *tracker, int nCameras, Eigen::Matrix4d cRTcL
 
   return 0;
 }
+
+
+
+// returns sequence of squares detected on the image.
+void findSquares( const cv::Mat& image, std::vector<std::vector<cv::Point> >& squares,
+                         int thresh, int N)
+{
+
+  using namespace std;
+  using namespace cv;
+
+  squares.clear();
+  Mat pyr, timg, gray0(image.size(), CV_8U), gray;
+  // down-scale and upscale the image to filter out the noise
+  pyrDown(image, pyr, Size(image.cols/2, image.rows/2));
+  pyrUp(pyr, timg, image.size());
+  vector<vector<Point> > contours;
+  // find squares in every color plane of the image
+  for( int c = 0; c < 3; c++ )
+  {
+      int ch[] = {c, 0};
+      mixChannels(&timg, 1, &gray0, 1, ch, 1);
+      // try several threshold levels
+      for( int l = 0; l < N; l++ )
+      {
+          // hack: use Canny instead of zero threshold level.
+          // Canny helps to catch squares with gradient shading
+          if( l == 0 )
+          {
+              // apply Canny. Take the upper threshold
+              // and set the lower to 0 (which forces edges merging)
+              Canny(gray0, gray, 0, thresh, 5);
+              // dilate canny output to remove potential
+              // holes between edge segments
+              dilate(gray, gray, Mat(), Point(-1,-1));
+          }
+          else
+          {
+              // apply threshold if l!=0:
+              //     tgray(x,y) = gray(x,y) < (l+1)*255/N ? 255 : 0
+              gray = gray0 >= (l+1)*255/N;
+          }
+          // find contours and store them all as a list
+          findContours(gray, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
+          vector<Point> approx;
+          // test each contour
+          for( size_t i = 0; i < contours.size(); i++ )
+          {
+              // approximate contour with accuracy proportional
+              // to the contour perimeter
+              approxPolyDP(contours[i], approx, arcLength(contours[i], true)*0.02, true);
+              // square contours should have 4 vertices after approximation
+              // relatively large area (to filter out noisy contours)
+              // and be convex.
+              // Note: absolute value of an area is used because
+              // area may be positive or negative - in accordance with the
+              // contour orientation
+              if( approx.size() == 4 &&
+                  fabs(contourArea(approx)) > 1000 &&
+                  isContourConvex(approx) )
+              {
+                  double maxCosine = 0;
+                  for( int j = 2; j < 5; j++ )
+                  {
+                      // find the maximum cosine of the angle between joint edges
+                      double cosine = fabs(angle(approx[j%4], approx[j-2], approx[j-1]));
+                      maxCosine = MAX(maxCosine, cosine);
+                  }
+                  // if cosines of all angles are small
+                  // (all angles are ~90 degree) then write quandrange
+                  // vertices to resultant sequence
+                  if( maxCosine < 0.3 )
+                      squares.push_back(approx);
+              }
+          }
+      }
+  }
+}
+
+
+// the function draws all the squares in the image
+void drawSquares( cv::Mat& image, const std::vector<std::vector<cv::Point> >& squares,
+                         const char* wndname)
+{
+
+  using namespace std;
+  using namespace cv;
+    for( size_t i = 0; i < squares.size(); i++ )
+    {
+        const Point* p = &squares[i][0];
+        int n = (int)squares[i].size();
+        std::cout << "number of point:" << n<< "\n";
+        polylines(image, &p, &n, 1, true, Scalar(0,255,0), 3, LINE_AA);
+        circle(image, squares[i][0], 5, Scalar(0,0,0), FILLED);
+        circle(image, squares[i][1], 5, Scalar(255,255,0), FILLED);
+        circle(image, squares[i][2], 5, Scalar(0,255,255), FILLED);
+        circle(image, squares[i][3], 5, Scalar(255,255,255), FILLED);
+
+    }
+    imshow(wndname, image);
+}
+
+/**
+ * @brief angle // helper function:
+ * finds a cosine of angle between vectors
+ * from pt0->pt1 and from pt0->pt2
+ * @param pt1
+ * @param pt2
+ * @param pt0
+ * @return
+ */
+double angle( cv::Point pt1, cv::Point pt2, cv::Point pt0 )
+{
+    double dx1 = pt1.x - pt0.x;
+    double dy1 = pt1.y - pt0.y;
+    double dx2 = pt2.x - pt0.x;
+    double dy2 = pt2.y - pt0.y;
+    return (dx1*dx2 + dy1*dy2)/sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
+}
+
+int orderAngles(std::vector<std::vector<cv::Point>> angles, std::vector<std::vector<cv::Point>> *orderedAngles){
+  for (int i=0; i< angles.size(); i++){
+    if (angles.at(i).size() != 4){
+      std::cerr << "Angles must be 4\n";
+      return -1;
+    }
+    orderAngles(angles.at(i), &(orderedAngles->at(i)));
+  }
+  return 0;
+}
+
+int orderAngles(std::vector<cv::Point> angles, std::vector<cv::Point> *orderedAngles){
+
+  if (angles.size() != 4){
+    std::cerr << "Angles must be 4\n";
+    return -1;
+  }
+
+  cv::Point center = getCenter(angles);
+
+  orderedAngles->resize(4);
+  for (int i=0; i<4; i++){
+
+    if (angles.at(i).x < center.x){
+      if (angles.at(i).y < center.y){ //top left corner
+        orderedAngles->at(0) = angles.at(i);
+      } else { // bottom left corner
+        orderedAngles->at(3) = angles.at(i);
+      }
+
+    } else {
+      if (angles.at(i).y < center.y){ //top right corner
+        orderedAngles->at(1) = angles.at(i);
+      } else { // bottom rigth corner
+        orderedAngles->at(2) = angles.at(i);
+      }
+    }
+  }
+
+}
+
+cv::Point getCenter(std::vector<cv::Point> points){
+
+    cv::Point A = points.at(0);
+    cv::Point B = points.at(1);
+    cv::Point C = points.at(2);
+    cv::Point D = points.at(3);
+
+    // Line AB represented as a1x + b1y = c1
+    double a1 = A.x - A.y;
+    double b1 = A.x - B.x;
+    double c1 = a1*(A.x) + b1*(A.y);
+
+    // Line CD represented as a2x + b2y = c2
+    double a2 = D.y - C.y;
+    double b2 = C.x - D.x;
+    double c2 = a2*(C.x)+ b2*(C.y);
+
+    double determinant = a1*b2 - a2*b1;
+
+    if (determinant == 0)
+    {
+        /// TODO error, lines parallel
+    }
+
+    double x = (b2*c1 - b1*c2)/determinant;
+    double y = (a1*c2 - a2*c1)/determinant;
+    return cv::Point(x, y);
+
+}
+
+
+void MatchingMethod(int match_method, cv::Mat img, cv::Mat templ,
+                    cv::Point *bestMatch, double *minMaxVal){
+  using namespace std;
+  using namespace cv;
+
+  Mat result;
+
+  int result_cols =  img.cols - templ.cols + 1;
+  int result_rows = img.rows - templ.rows + 1;
+
+  result.create( result_rows, result_cols, CV_32FC1 );
+
+  matchTemplate( img, templ, result, match_method);
+
+  double minVal; double maxVal; Point minLoc; Point maxLoc;
+  minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc);
+  if( match_method  == TM_SQDIFF || match_method == TM_SQDIFF_NORMED ) {
+    *bestMatch = minLoc;
+    *minMaxVal = minVal;
+  } else {
+    *bestMatch = maxLoc;
+    *minMaxVal = maxVal;
+  }
+
+
+  return;
+}
+
+
+/**
+ * @brief thresh_callback
+ *
+ * Also with this, difficult to select the right rectangle.
+ *
+ * global vvar required:
+ * cv::Mat src;
+int thresh = 10;
+int thresh2 = 30;
+int thresh_poly = 3;
+cv::RNG rng(12345);
+void thresh_callback(int, void* );
+ *
+ */
+//void thresh_callback(int, void* )
+//{
+//  using namespace std;
+//  using namespace cv;
+
+//  Mat canny_output;
+//  Canny( src, canny_output, thresh, thresh2, 3);
+
+//  vector<vector<Point> > contours;
+//  findContours( canny_output, contours, RETR_TREE, CHAIN_APPROX_SIMPLE );
+//  vector<vector<Point> > contours_poly( contours.size() );
+//  vector<Rect> boundRect( contours.size() );
+//  vector<Point2f>centers( contours.size() );
+//  vector<float>radius( contours.size() );
+//  for( size_t i = 0; i < contours.size(); i++ )
+//  {
+//      approxPolyDP( contours[i], contours_poly[i], thresh_poly, true );
+//      boundRect[i] = boundingRect( contours_poly[i] );
+//  }
+//  Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );
+//  std::cout<< "find " <<  contours.size() << " countors\n";
+//  for( size_t i = 0; i< contours.size(); i++ )
+//  {
+//      Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
+//      //drawContours( drawing, contours_poly, (int)i, color );
+//      rectangle( drawing, boundRect[i].tl(), boundRect[i].br(), color, 2 );
+//  }
+//  imshow( "Contours", drawing );
+
+//}
+
+
+
+/**
+ * @brief goodFeaturesToTrack_Demo
+ *
+ * /// corner detect not useful, too many corners and the best one are not the corner
+/// of the square
+ *
+ * var globali necessarie :
+ * cv::Mat src;
+int maxCorners = 20;
+cv::RNG rng(12345);
+const char* source_window = "Image";
+void goodFeaturesToTrack_Demo( int, void* );
+ */
+//void goodFeaturesToTrack_Demo( int, void* )
+//{
+//    maxCorners = MAX(maxCorners, 1);
+//    std::vector<cv::Point2f> corners;
+//    double qualityLevel = 0.018;
+//    double minDistance = 50;
+//    int blockSize = 3, gradientSize = 3;
+//    bool useHarrisDetector = false;
+//    double k = 0.04;
+//    cv::Mat copy = src.clone();
+//    cv::goodFeaturesToTrack( src,
+//                         corners,
+//                         maxCorners,
+//                         qualityLevel,
+//                         minDistance,
+//                         cv::Mat(),
+//                         blockSize,
+//                         gradientSize,
+//                         useHarrisDetector,
+//                         k );
+//    std::cout << "** Number of corners detected: " << corners.size() << std::endl;
+//    int radius = 4;
+//    for( size_t i = 0; i < corners.size(); i++ )
+//    {
+//        cv::circle( copy, corners[i], radius, cv::Scalar(
+//                      rng.uniform(0,255), rng.uniform(0, 256), rng.uniform(0, 256)), cv::FILLED );
+//    }
+//    cv::namedWindow( source_window );
+//    cv::imshow( source_window, copy );
+//}
 
 //int objDetectionInit(vpImage<unsigned char> I, vpMbGenericTracker *tracker){
 
@@ -564,6 +1255,57 @@ int initTracker(vpMbGenericTracker *tracker, int nCameras, Eigen::Matrix4d cRTcL
 
 
 
+
+/**  FOR TEMPLATE MATCHINGGGG
+ * TODO MULTISCALE APPROACH...
+ * @brief MatchingMethod ORIGINAL FROM OPENCV
+ *
+ * gloabl var:
+ * /// glob for template matching
+bool use_mask = false;
+cv::Mat img; cv::Mat templ; cv::Mat mask; cv::Mat result;
+const char* image_window = "Source Image";
+const char* result_window = "Result window";
+int match_method;
+int max_Trackbar = 5;
+void MatchingMethod( int, void* );
+
+ *
+ */
+//void MatchingMethod( int, void*)
+//{
+//  using namespace std;
+//  using namespace cv;
+
+//  Mat img_display;
+//  img.copyTo( img_display );
+
+//  int result_cols =  img.cols - templ.cols + 1;
+//  int result_rows = img.rows - templ.rows + 1;
+
+//  result.create( result_rows, result_cols, CV_32FC1 );
+
+//  bool method_accepts_mask = (TM_SQDIFF == match_method || match_method == TM_CCORR_NORMED);
+//  if (use_mask && method_accepts_mask)
+//    { matchTemplate( img, templ, result, match_method, mask); }
+//  else
+//    { matchTemplate( img, templ, result, match_method); }
+
+//  normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
+//  double minVal; double maxVal; Point minLoc; Point maxLoc;
+//  Point matchLoc;
+//  minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+//  if( match_method  == TM_SQDIFF || match_method == TM_SQDIFF_NORMED )
+//    { matchLoc = minLoc; }
+//  else
+//    { matchLoc = maxLoc; }
+
+//  rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+//  rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+//  imshow( image_window, img_display );
+//  imshow( result_window, result );
+//  return;
+//}
 
 
 

@@ -8,3 +8,6 @@ Peg.workspace.user
 #autosave
 *.autosave
 .catkin_workspace
+
+# OSX / *nix default autosave extension
+*.m~
