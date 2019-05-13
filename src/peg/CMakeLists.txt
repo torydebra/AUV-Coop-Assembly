@@ -178,6 +178,11 @@ add_library(KdlHelper src/helper/kdlHelper.cpp)
 add_library(JacobianHelper src/helper/jacobianHelper.cpp)
 add_library(Logger src/helper/logger.cpp)
 
+add_library(Detector src/vision/detector.cpp)
+add_library(Tracker src/vision/tracker.cpp)
+
+
+
 ## ADD library new task here
 
 add_library(Task src/tasks/task.cpp)
@@ -310,6 +315,15 @@ target_link_libraries(Vision
     linuxcmat
     WorldInterface
     Logger
+)
+
+target_link_libraries(Detector
+    ${OpenCV_LIBS}
+)
+
+target_link_libraries(Tracker
+    ${VISP_LIBRARIES}
+    Conversions
 )
 
 target_link_libraries(Conversions

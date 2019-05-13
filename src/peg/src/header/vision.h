@@ -31,20 +31,22 @@
 
 
 
-const std::string configFileL = "/home/tori/UWsim/Peg/src/peg/src/vision/cameraL.xml";
+const std::string configFileL = "/home/tori/UWsim/Peg/src/peg/src/vision/data/cameraL.xml";
 const std::string configFileR = configFileL; //ONLY because instrinsic param of cameras L and R are the same
-const std::string caoModel = "/home/tori/UWsim/Peg/src/peg/src/vision/blockHoleCilinder.cao";
-const std::string configFileDetector = "/home/tori/UWsim/Peg/src/peg/src/vision/detection-config-SIFT.xml";
-const std::string initFileClickLeft = "/home/tori/UWsim/Peg/src/peg/src/vision/3DPointSquareFace4_left.init";
-const std::string initFileClickRight = "/home/tori/UWsim/Peg/src/peg/src/vision/3DPointSquareFace4_right.init";
-const std::string learnData = "/home/tori/UWsim/Peg/src/peg/src/vision/blockHole_learning_data.bin";
-const std::string transfcameraLtoR = "/home/tori/UWsim/Peg/src/peg/src/vision/lTr.txt";
+const std::string caoModel = "/home/tori/UWsim/Peg/src/peg/src/vision/data/blockHoleCilinder.cao";
+const std::string configFileDetector = "/home/tori/UWsim/Peg/src/peg/src/vision/data/detection-config-SIFT.xml";
+const std::string initFileClickLeft = "/home/tori/UWsim/Peg/src/peg/src/vision/data/3DPointSquareFace4_left.init";
+const std::string initFileClickRight = "/home/tori/UWsim/Peg/src/peg/src/vision/data/3DPointSquareFace4_right.init";
+const std::string initFileClickLeft_w2D = "/home/tori/UWsim/Peg/src/peg/src/vision/data/3DPointSquareFace4_left_w2d.init";
+const std::string initFileClickRight_w2D = "/home/tori/UWsim/Peg/src/peg/src/vision/data/3DPointSquareFace4_right_w2d.init";
+const std::string learnData = "/home/tori/UWsim/Peg/src/peg/src/vision/data/blockHole_learning_data.bin";
+const std::string transfcameraLtoR = "/home/tori/UWsim/Peg/src/peg/src/vision/data/lTr.txt";
 
 
-//int objDetectionInit(vpImage<unsigned char> I, vpMbGenericTracker *tracker);
-//int objDetection(vpImage<unsigned char> I, vpMbGenericTracker *tracker,
-//                 vpKeyPoint *keypoint_detection, vpHomogeneousMatrix *cMo,
-//                 double *error, double* elapsedTime);
+int objDetectionInit(vpImage<unsigned char> I, vpMbGenericTracker *tracker);
+int objDetection(vpImage<unsigned char> I, vpMbGenericTracker *tracker,
+                 vpKeyPoint *keypoint_detection, vpHomogeneousMatrix *cMo,
+                 double *error, double* elapsedTime);
 int stereoTracking(vpImage<unsigned char> I_left, vpImage<unsigned char> I_right,
                    vpMbGenericTracker *tracker,
                    vpHomogeneousMatrix *cLeftTo, vpHomogeneousMatrix *cRightTo);

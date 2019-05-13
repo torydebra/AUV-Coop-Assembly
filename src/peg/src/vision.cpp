@@ -1,6 +1,16 @@
 #include "header/vision.h"
 
 
+cv::Mat src;
+int thresh = 10;
+int thresh2 = 30;
+int thresh_poly = 3;
+cv::RNG rng(12345);
+void thresh_callback(int, void* );
+
+
+
+
 
 
 void MatchingMethod(int match_method, cv::Mat img, cv::Mat templ,
@@ -17,16 +27,33 @@ void MatchingMethod(int match_method, cv::Mat img, cv::Mat templ,
 int main(int argc, char** argv){
 
 
+  //TODO check if overwrite il w2D vecchio)
+//  std::ifstream  srcL(initFileClickLeft, std::ios::binary);
+//  std::ofstream  dstL(initFileClickLeft_w2D,  std::ios::binary);
+//  std::ifstream  srcR(initFileClickRight, std::ios::binary);
+//  std::ofstream  dstR(initFileClickRight_w2D,   std::ios::binary);
+//  dstL << srcL.rdbuf();
+//  dstR << srcR.rdbuf();
+//  srcL.close();
+//  srcR.close();
+
 
   if (argc < 2){
     std::cout << "[VISION] Please insert robot name for Vision"<< std::endl;
     return -1;
   }
+
   std::string robotName = argv[1];
   std::string pathLog;
   if (LOG && (argc > 2)){   //if flag log setted to 1 and path log is given
     pathLog = argv[2];
   }
+
+  /// path of source to find images and config files for vision
+  boost::filesystem::path sourcePath(__FILE__);
+  sourcePath.remove_filename();
+  std::cout << sourcePath << "\n";
+
 
 
   /// ROS NODE
@@ -97,13 +124,14 @@ int main(int argc, char** argv){
   vpImageConvert::convert(imageL_cv, imageL_vp);
   vpImageConvert::convert(imageR_cv, imageR_vp);
 
+  /// METHOD 1 E 2
   std::vector<int> trackerTypes;
 //  trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER);
 //  trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER);
+  trackerTypes.push_back(vpMbGenericTracker::KLT_TRACKER );
 //  trackerTypes.push_back(vpMbGenericTracker::KLT_TRACKER );
-//  trackerTypes.push_back(vpMbGenericTracker::KLT_TRACKER );
-  trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
-  trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+ // trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+  //trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
 
   vpMbGenericTracker tracker(trackerTypes);
@@ -117,7 +145,7 @@ int main(int argc, char** argv){
   display_right.init(imageR_vp, 110 + (int)imageL_vp.getWidth(), 100,
                      "Model-based tracker (Right)");
 
-  bool initByClick = false;
+  bool initByClick = true;
   if (initByClick){ //init by click
     switch (trackerTypes.size()){
     case 1:
@@ -134,13 +162,8 @@ int main(int argc, char** argv){
 
 
 
-
-
-
-
-
 //    ///cv corner detect TRY srivi che non è buono ***********************************************
-//    // coor of rect are top-left corner
+    // coor of rect are top-left corner
 //    src = imageL_cv;
 //    cv::namedWindow( source_window );
 //    cv::imshow( source_window, src );
@@ -223,104 +246,106 @@ int main(int argc, char** argv){
     /// TEMPLATE MATCHING OPENCV ********************************************************************************************+++
       // https://docs.opencv.org/3.4.6/de/da9/tutorial_template_matching.html
 
-    const char* image_window = "Source Image";
+//    const char* image_window = "Source Image";
 
-    cv::Mat templ = cv::imread("/home/tori/UWsim/Peg/templateFrontLittle.jpg", cv::IMREAD_COLOR);
-    cv::Mat img;
-    //img = cv::imread("/home/tori/UWsim/Peg/source10.png", cv::IMREAD_COLOR);
-    cv::cvtColor(imageL_cv, img, cv::COLOR_GRAY2BGR); //actually not real conv in colors
+//    cv::Mat templ;
+//    //= cv::imread("execPath + "templateFrontLittle.jpg", cv::IMREAD_COLOR);
+//    std::cout << templ.size() << "\n";
+//    cv::Mat img;
+//    //img = cv::imread("/home/tori/UWsim/Peg/source10.png", cv::IMREAD_COLOR);
+//    cv::cvtColor(imageL_cv, img, cv::COLOR_GRAY2BGR); //actually not real conv in colors
 
-    cv::Mat img_display = img.clone();
+//    cv::Mat img_display = img.clone();
 
-    cv::namedWindow( image_window, cv::WINDOW_AUTOSIZE );
+//    cv::namedWindow( image_window, cv::WINDOW_AUTOSIZE );
 
-    int templ_method = cv::TM_CCOEFF_NORMED;
-    std::vector<double>scaleFactors = {1, 0.9, 0.8, 0.7, 0.75, 0.6, 0.65, 0.5,
-                                         0.48, 0.45, 0.42, 0.4, 0.38, 0.38, 0.32, 0.3,
-                                        0.28, 0.25, 0.22, 0.2, 0.15, 0.1};
-    //std::vector<double>scaleFactors = {0.3};
-
-
-    std::vector<double> minMaxValue(scaleFactors.size()),
-                        scaleUpY(scaleFactors.size()),
-                        scaleUpX(scaleFactors.size());
-
-    std::vector<cv::Point> bestMatch(scaleFactors.size());
-    cv::Mat imgScaled = img.clone();
-
-    //last scaling is the last scaling, then if the for is "break" last scale is modified
-    //it is used as index to consider only max/min values until the last scaling factor used
-    int lastScale=scaleFactors.size();
-    for (int i=0; i<scaleFactors.size(); i++){
-
-      cv::resize(img, imgScaled, cv::Size(), scaleFactors[i], scaleFactors[i]);
-      std::cout << "img size y, x: " << img.rows << "  " << img.cols << "\n";
-      std::cout << "scaled img y, x: " << imgScaled.rows << "  " <<imgScaled.cols << "\n";
-      // actual scale can be approximated so calculate scaleUp in this way
-      // is better than 1/scaleFactors[i]
-      scaleUpY[i] = ((double)img.rows) / ((double)imgScaled.rows);
-      scaleUpX[i] = ((double)img.cols) / ((double)imgScaled.cols);
-
-      //if scaled img little than template, break loop
-      if (imgScaled.rows < templ.rows || imgScaled.cols < templ.cols){
-        std::cout << "template bigger\n";
-        lastScale = i-1;
-        break;
-      }
+//    int templ_method = cv::TM_CCOEFF_NORMED;
+//    std::vector<double>scaleFactors = {1, 0.9, 0.8, 0.7, 0.75, 0.6, 0.65, 0.5,
+//                                         0.48, 0.45, 0.42, 0.4, 0.38, 0.38, 0.32, 0.3,
+//                                        0.28, 0.25, 0.22, 0.2, 0.15, 0.1};
+//    //std::vector<double>scaleFactors = {0.3};
 
 
-      MatchingMethod(templ_method, imgScaled, templ, &(bestMatch[i]), &(minMaxValue[i]));
+//    std::vector<double> minMaxValue(scaleFactors.size()),
+//                        scaleUpY(scaleFactors.size()),
+//                        scaleUpX(scaleFactors.size());
+
+//    std::vector<cv::Point> bestMatch(scaleFactors.size());
+//    cv::Mat imgScaled = img.clone();
+
+//    //last scaling is the last scaling, then if the for is "break" last scale is modified
+//    //it is used as index to consider only max/min values until the last scaling factor used
+//    int lastScale=scaleFactors.size();
+//    for (int i=0; i<scaleFactors.size(); i++){
+
+//      cv::resize(img, imgScaled, cv::Size(), scaleFactors[i], scaleFactors[i]);
+//      std::cout << "img size y, x: " << img.rows << "  " << img.cols << "\n";
+//      std::cout << "scaled img y, x: " << imgScaled.rows << "  " <<imgScaled.cols << "\n";
+//      // actual scale can be approximated so calculate scaleUp in this way
+//      // is better than 1/scaleFactors[i]
+//      scaleUpY[i] = ((double)img.rows) / ((double)imgScaled.rows);
+//      scaleUpX[i] = ((double)img.cols) / ((double)imgScaled.cols);
+
+//      //if scaled img little than template, break loop
+//      if (imgScaled.rows < templ.rows || imgScaled.cols < templ.cols){
+//        std::cout << "template bigger\n";
+//        lastScale = i-1;
+//        break;
+//      }
 
 
-//      std::cout << "scale factor UPX and UPY  " << scaleUpX << " " << scaleUpY  << "\n";
-//      std::cout << "bestMatrch.x: " << bestMatch[i].x << "\n";
-//      std::cout << "bestMatrch.y: " << bestMatch[i].y << "\n";
-//      std::cout << "topLeft.x: " << topLeft.x << "\n";
-//      std::cout << "topLeft.y: " << topLeft.y << "\n";
-//      std::cout << "bottomRi.x: " << bottomRight.x << "\n";
-//      std::cout << "bottomRi.y: " << bottomRight.y << "\n";
-//      std::cout << "temple row col " << templ.rows << "  " << templ.cols << "\n\n";
+//      MatchingMethod(templ_method, imgScaled, templ, &(bestMatch[i]), &(minMaxValue[i]));
 
 
-//      cv::rectangle( imgScaled, bestMatch[i],
-//                    cv::Point( bestMatch[i].x + templ.cols , bestMatch[i].y + templ.rows ),
-//                     cv::Scalar::all(0), 1, 8, 0 );
-//      std::string boh = "asdasda" + std::to_string(i);
-//      cv::imshow( boh, imgScaled );
-//      cv::Mat otherMat;
-//      cv::resize (imgScaled, otherMat, cv::Size(), scaleUpX[i], scaleUpY[i]);
-//      cv::imshow( "boh", otherMat );
-//      cv::waitKey();
+////      std::cout << "scale factor UPX and UPY  " << scaleUpX << " " << scaleUpY  << "\n";
+////      std::cout << "bestMatrch.x: " << bestMatch[i].x << "\n";
+////      std::cout << "bestMatrch.y: " << bestMatch[i].y << "\n";
+////      std::cout << "topLeft.x: " << topLeft.x << "\n";
+////      std::cout << "topLeft.y: " << topLeft.y << "\n";
+////      std::cout << "bottomRi.x: " << bottomRight.x << "\n";
+////      std::cout << "bottomRi.y: " << bottomRight.y << "\n";
+////      std::cout << "temple row col " << templ.rows << "  " << templ.cols << "\n\n";
+
+
+////      cv::rectangle( imgScaled, bestMatch[i],
+////                    cv::Point( bestMatch[i].x + templ.cols , bestMatch[i].y + templ.rows ),
+////                     cv::Scalar::all(0), 1, 8, 0 );
+////      std::string boh = "asdasda" + std::to_string(i);
+////      cv::imshow( boh, imgScaled );
+////      cv::Mat otherMat;
+////      cv::resize (imgScaled, otherMat, cv::Size(), scaleUpX[i], scaleUpY[i]);
+////      cv::imshow( "boh", otherMat );
+////      cv::waitKey();
 
 
 
-    }
+//    }
 
-    int indexBest;
-    if( templ_method  == cv::TM_SQDIFF || templ_method == cv::TM_SQDIFF_NORMED ){
-      indexBest = std::distance(minMaxValue.begin(),
-                                  std::min_element(minMaxValue.begin(),
-                                                   minMaxValue.begin() + lastScale));
+//    int indexBest;
+//    if( templ_method  == cv::TM_SQDIFF || templ_method == cv::TM_SQDIFF_NORMED ){
+//      indexBest = std::distance(minMaxValue.begin(),
+//                                  std::min_element(minMaxValue.begin(),
+//                                                   minMaxValue.begin() + lastScale));
 
-    } else{
-      indexBest = std::distance(minMaxValue.begin(),
-                                 std::max_element(minMaxValue.begin(),
-                                                  minMaxValue.begin() + lastScale));
-    }
+//    } else{
+//      indexBest = std::distance(minMaxValue.begin(),
+//                                 std::max_element(minMaxValue.begin(),
+//                                                  minMaxValue.begin() + lastScale));
+//    }
 
-    std::cout << "BEST ITERATION: scaling factor " << scaleFactors[indexBest]
-                 <<"\n VALUE:" << minMaxValue.at(indexBest) << "\n\n";
+//    std::cout << "BEST ITERATION: scaling factor " << scaleFactors[indexBest]
+//                 <<"\n VALUE:" << minMaxValue.at(indexBest) << "\n\n";
 
-    cv::Point topLeft, bottomRight;
-    topLeft.x = (int)(bestMatch[indexBest].x * scaleUpX[indexBest]);
-    topLeft.y = (int)(bestMatch[indexBest].y * scaleUpY[indexBest]);
-    bottomRight.x = (int)( (bestMatch[indexBest].x + templ.cols) * scaleUpX[indexBest]);
-    bottomRight.y = (int)( (bestMatch[indexBest].y +  templ.rows) * scaleUpY[indexBest]);
+//    cv::Point topLeft, bottomRight;
+//    topLeft.x = (int)(bestMatch[indexBest].x * scaleUpX[indexBest]);
+//    topLeft.y = (int)(bestMatch[indexBest].y * scaleUpY[indexBest]);
+//    bottomRight.x = (int)( (bestMatch[indexBest].x + templ.cols) * scaleUpX[indexBest]);
+//    bottomRight.y = (int)( (bestMatch[indexBest].y +  templ.rows) * scaleUpY[indexBest]);
 
-    cv::rectangle( img_display, topLeft, bottomRight,
-                   cv::Scalar::all(0), 1, 8, 0 );
-    cv::imshow( image_window, img_display);
-    cv::waitKey(0);
+//    cv::rectangle( img_display, topLeft, bottomRight,
+//                   cv::Scalar::all(0), 1, 8, 0 );
+//    cv::imshow( image_window, img_display);
+//    cv::waitKey(0);
 
 
     //original not scaled
@@ -337,7 +362,7 @@ int main(int argc, char** argv){
     /// keypoint are not matched. Maybe a fine setup will work.
 
     //-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
-//    cv::Mat img_object = cv::imread("/home/tori/UWsim/Peg/templateSideBorder.jpg",
+//    cv::Mat img_object = cv::imread("/home/tori/UWsim/Peg/src/peg/src/vision/data/templateSideBorder.jpg",
 //                                    cv::IMREAD_GRAYSCALE );
 
 //    cv::Mat img_scene = imageL_cv;
@@ -381,10 +406,10 @@ int main(int argc, char** argv){
 
 //    for (size_t i = 0; i < knn_matches.size(); i++)
 //    {
-//        if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
-//        {
-//            good_matches.push_back(knn_matches[i][0]);
-//        }
+//      if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
+//      {
+//        good_matches.push_back(knn_matches[i][0]);
+//      }
 //    }
 
 //    std::cout << "goo matches: " << good_matches.size() << "\n\n";
@@ -400,9 +425,9 @@ int main(int argc, char** argv){
 //    std::vector<cv::Point2f> scene;
 //    for( size_t i = 0; i < good_matches.size(); i++ )
 //    {
-//        //-- Get the keypoints from the good matches
-//        obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
-//        scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
+//      //-- Get the keypoints from the good matches
+//      obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
+//      scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
 //    }
 //    std::cout << "to find homog template good match: " << obj.size() << "\n\n";
 //    std::cout << "to find homog scene good match: " << scene.size() << "\n\n";
@@ -419,13 +444,13 @@ int main(int argc, char** argv){
 //    cv::perspectiveTransform( obj_corners, scene_corners, H);
 //    //-- Draw lines between the corners (the mapped object in the scene - image_2 )
 //    cv::line( img_matches, scene_corners[0] + cv::Point2f((float)img_object.cols, 0),
-//          scene_corners[1] + cv::Point2f((float)img_object.cols, 0), cv::Scalar(0, 255, 0), 4 );
+//        scene_corners[1] + cv::Point2f((float)img_object.cols, 0), cv::Scalar(0, 255, 0), 4 );
 //    cv::line( img_matches, scene_corners[1] + cv::Point2f((float)img_object.cols, 0),
-//          scene_corners[2] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+//        scene_corners[2] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
 //    cv::line( img_matches, scene_corners[2] + cv::Point2f((float)img_object.cols, 0),
-//          scene_corners[3] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+//        scene_corners[3] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
 //    cv::line( img_matches, scene_corners[3] + cv::Point2f((float)img_object.cols, 0),
-//          scene_corners[0] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+//        scene_corners[0] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
 //    //-- Show detected matches
 //    cv::imshow("Good Matches & Object detection", img_matches );
 //    cv::waitKey();
@@ -485,11 +510,11 @@ int main(int argc, char** argv){
 
 
 
-  //// old tracking method (con inizializ initclick)
-  //objDetectionInit(imageL_vp, &tracker);
-  //vpKeyPoint keypoint_detection;
-  //keypoint_detection.loadConfigFile(configFileDetector);
-  //keypoint_detection.loadLearningData(learnData, true);
+  //// METHOD 1 CON INITIALIZE CLICK E SAVE LEARNING FEATURES
+  objDetectionInit(imageL_vp, &tracker);
+  vpKeyPoint keypoint_detection;
+  keypoint_detection.loadConfigFile(configFileDetector);
+  keypoint_detection.loadLearningData(learnData, true);
 
 
 /** *********************************************************************************************************+*********
@@ -504,6 +529,9 @@ int main(int argc, char** argv){
     robotVisInterface.getRightImage(&imageR_cv);
     imageL_cv.convertTo(imageL_cv, CV_8U); //TODO check if necessary convert in 8U
     imageR_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
+    //cut top part of image where a piece of auv is visible and can distract cv algos
+    imageL_cv = imageL_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
+    imageR_cv = imageR_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
     vpImageConvert::convert(imageL_cv, imageL_vp);
     vpImageConvert::convert(imageR_cv, imageR_vp);
 
@@ -514,30 +542,33 @@ int main(int argc, char** argv){
         CONV::matrix_eigen2cmat(robVisInfo.transforms.wTh_eigen);
 
     /// METHOD 1 OBJECT DETECTION
-//    vpDisplay::displayText(imageL_vp, 10, 10, "Detection and localization in process...", vpColor::red);
-//    vpHomogeneousMatrix cLThole;
-//    double ransacError = 0.0;
-//    double elapsedTime = 0.0;
-//    objDetection(imageL_vp, &tracker, &keypoint_detection, &cLThole,
-//                 &ransacError, &elapsedTime);
+        vpDisplay::displayText(imageL_vp, 10, 10, "Detection and localization in process...", vpColor::red);
+        vpHomogeneousMatrix cLThole;
+        double ransacError = 0.0;
+        double elapsedTime = 0.0;
+        objDetection(imageL_vp, &tracker, &keypoint_detection, &cLThole,
+                     &ransacError, &elapsedTime);
 
-//    vpDisplay::displayFrame(imageL_vp, cLThole, cam_left, 0.25, vpColor::none, 3);
+        vpCameraParameters cam_left;
+        tracker.getCameraParameters(cam_left);
+
+        vpDisplay::displayFrame(imageL_vp, cLThole, cam_left, 0.25, vpColor::none, 3);
 
 
-//    robVisInfo.transforms.wTh_estimated_eigen =
-//        robVisInfo.robotState.wTv_eigen *
-//        robVisInfo.robotStruct.vTcameraL *
-//        CONV::matrix_visp2eigen(cLThole);
+        robVisInfo.transforms.wTh_estimated_eigen =
+            robVisInfo.robotState.wTv_eigen *
+            robVisInfo.robotStruct.vTcameraL *
+            CONV::matrix_visp2eigen(cLThole);
 
-//    CMAT::TransfMatrix wTholeEstimated_cmat =
-//        CONV::matrix_eigen2cmat(robVisInfo.transforms.wTh_estimated_eigen);
+        CMAT::TransfMatrix wTholeEstimated_cmat =
+            CONV::matrix_eigen2cmat(robVisInfo.transforms.wTh_estimated_eigen);
 
-//    CMAT::Vect6 swappedError =
-//        CMAT::CartError(wThole_cmat, wTholeEstimated_cmat);
-//    CMAT::Vect6 error;
-//    error.SetFirstVect3(swappedError.GetSecondVect3());
-//    error.SetSecondVect3(swappedError.GetFirstVect3());
-//    logger.writeCmatMatrix(error, "error");
+        CMAT::Vect6 swappedError =
+            CMAT::CartError(wThole_cmat, wTholeEstimated_cmat);
+        CMAT::Vect6 error;
+        error.SetFirstVect3(swappedError.GetSecondVect3());
+        error.SetSecondVect3(swappedError.GetFirstVect3());
+        logger.writeCmatMatrix(error, "error");
 
 
     /// method TRACKING DETECTION VISP ***********************************************************
@@ -547,52 +578,55 @@ int main(int argc, char** argv){
 
     /// METHOD 2 STEREO
 
-    vpHomogeneousMatrix cLThole_st, cRThole_st;
-    stereoTracking(imageL_vp, imageR_vp, &tracker, &cLThole_st, &cRThole_st);
+//    vpHomogeneousMatrix cLThole_st, cRThole_st;
+//    stereoTracking(imageL_vp, imageR_vp, &tracker, &cLThole_st, &cRThole_st);
 
-    // display
-    vpCameraParameters cam_left, cam_right;
-    tracker.getCameraParameters(cam_left, cam_right);
-    tracker.display(imageL_vp, imageR_vp, cLThole_st, cRThole_st, cam_left, cam_right, vpColor::red, 2);
-    vpDisplay::displayFrame(imageL_vp, cLThole_st, cam_left, 0.25, vpColor::none, 2);
-    vpDisplay::displayFrame(imageR_vp, cRThole_st, cam_right, 0.25, vpColor::none, 2);
-
-
-    Eigen::Matrix4d wTh_estimated_stereo_left =
-        robVisInfo.robotState.wTv_eigen *
-        robVisInfo.robotStruct.vTcameraL *
-        CONV::matrix_visp2eigen(cLThole_st);
-
-    Eigen::Matrix4d wTh_estimated_stereo_right =
-        robVisInfo.robotState.wTv_eigen *
-        robVisInfo.robotStruct.vTcameraR *
-        CONV::matrix_visp2eigen(cRThole_st);
+//    // display
+//    vpCameraParameters cam_left, cam_right;
+//    tracker.getCameraParameters(cam_left, cam_right);
+//    tracker.display(imageL_vp, imageR_vp, cLThole_st, cRThole_st, cam_left, cam_right, vpColor::red, 2);
+//    vpDisplay::displayFrame(imageL_vp, cLThole_st, cam_left, 0.25, vpColor::none, 2);
+//    vpDisplay::displayFrame(imageR_vp, cRThole_st, cam_right, 0.25, vpColor::none, 2);
 
 
-    CMAT::TransfMatrix wTholeEstimated_stereoL_cmat =
-        CONV::matrix_eigen2cmat(wTh_estimated_stereo_left);
-    CMAT::TransfMatrix wTholeEstimated_stereoR_cmat =
-        CONV::matrix_eigen2cmat(wTh_estimated_stereo_right);
+//    Eigen::Matrix4d wTh_estimated_stereo_left =
+//        robVisInfo.robotState.wTv_eigen *
+//        robVisInfo.robotStruct.vTcameraL *
+//        CONV::matrix_visp2eigen(cLThole_st);
+
+//    Eigen::Matrix4d wTh_estimated_stereo_right =
+//        robVisInfo.robotState.wTv_eigen *
+//        robVisInfo.robotStruct.vTcameraR *
+//        CONV::matrix_visp2eigen(cRThole_st);
 
 
-    CMAT::Vect6 swappedError2 =
-        CMAT::CartError(wThole_cmat, wTholeEstimated_stereoL_cmat);
-    CMAT::Vect6 error2;
-    error2.SetFirstVect3(swappedError2.GetSecondVect3());
-    error2.SetSecondVect3(swappedError2.GetFirstVect3());
-    logger.writeCmatMatrix(error2, "errorStereoL");
+//    CMAT::TransfMatrix wTholeEstimated_stereoL_cmat =
+//        CONV::matrix_eigen2cmat(wTh_estimated_stereo_left);
+//    CMAT::TransfMatrix wTholeEstimated_stereoR_cmat =
+//        CONV::matrix_eigen2cmat(wTh_estimated_stereo_right);
 
-    /// TODO check if error l and r are same, they must are when stereo method is used
-    CMAT::Vect6 swappedError3 =
-        CMAT::CartError(wThole_cmat, wTholeEstimated_stereoR_cmat);
-    CMAT::Vect6 error3;
-    error3.SetFirstVect3(swappedError3.GetSecondVect3());
-    error3.SetSecondVect3(swappedError3.GetFirstVect3());
-    logger.writeCmatMatrix(error3, "errorStereoR");
 
-    vpDisplay::displayText(imageL_vp, 30, 10, "A click to exit.", vpColor::red);
-    vpDisplay::flush(imageL_vp);
-    vpDisplay::flush(imageR_vp);
+//    CMAT::Vect6 swappedError2 =
+//        CMAT::CartError(wThole_cmat, wTholeEstimated_stereoL_cmat);
+//    CMAT::Vect6 error2;
+//    error2.SetFirstVect3(swappedError2.GetSecondVect3());
+//    error2.SetSecondVect3(swappedError2.GetFirstVect3());
+//    logger.writeCmatMatrix(error2, "errorStereoL");
+
+//    /// TODO check if error l and r are same, they must are when stereo method is used
+//    CMAT::Vect6 swappedError3 =
+//        CMAT::CartError(wThole_cmat, wTholeEstimated_stereoR_cmat);
+//    CMAT::Vect6 error3;
+//    error3.SetFirstVect3(swappedError3.GetSecondVect3());
+//    error3.SetSecondVect3(swappedError3.GetFirstVect3());
+//    logger.writeCmatMatrix(error3, "errorStereoR");
+
+//    vpDisplay::displayText(imageL_vp, 30, 10, "A click to exit.", vpColor::red);
+//    vpDisplay::flush(imageL_vp);
+//    vpDisplay::flush(imageR_vp);
+
+
+
     if (vpDisplay::getClick(imageL_vp, false)) {
       return 1;
     }
@@ -876,7 +910,7 @@ void MatchingMethod(int match_method, cv::Mat img, cv::Mat templ,
  * Also with this, difficult to select the right rectangle.
  *
  * global vvar required:
- * cv::Mat src;
+cv::Mat src;
 int thresh = 10;
 int thresh2 = 30;
 int thresh_poly = 3;
@@ -908,8 +942,8 @@ void thresh_callback(int, void* );
 //  for( size_t i = 0; i< contours.size(); i++ )
 //  {
 //      Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
-//      //drawContours( drawing, contours_poly, (int)i, color );
-//      rectangle( drawing, boundRect[i].tl(), boundRect[i].br(), color, 2 );
+//      drawContours( drawing, contours_poly, (int)i, color );
+//      //rectangle( drawing, boundRect[i].tl(), boundRect[i].br(), color, 2 );
 //  }
 //  imshow( "Contours", drawing );
 
@@ -932,120 +966,122 @@ void goodFeaturesToTrack_Demo( int, void* );
  */
 //void goodFeaturesToTrack_Demo( int, void* )
 //{
-//    maxCorners = MAX(maxCorners, 1);
-//    std::vector<cv::Point2f> corners;
-//    double qualityLevel = 0.018;
-//    double minDistance = 50;
-//    int blockSize = 3, gradientSize = 3;
-//    bool useHarrisDetector = false;
-//    double k = 0.04;
-//    cv::Mat copy = src.clone();
-//    cv::goodFeaturesToTrack( src,
-//                         corners,
-//                         maxCorners,
-//                         qualityLevel,
-//                         minDistance,
-//                         cv::Mat(),
-//                         blockSize,
-//                         gradientSize,
-//                         useHarrisDetector,
-//                         k );
-//    std::cout << "** Number of corners detected: " << corners.size() << std::endl;
-//    int radius = 4;
-//    for( size_t i = 0; i < corners.size(); i++ )
-//    {
-//        cv::circle( copy, corners[i], radius, cv::Scalar(
-//                      rng.uniform(0,255), rng.uniform(0, 256), rng.uniform(0, 256)), cv::FILLED );
-//    }
-//    cv::namedWindow( source_window );
-//    cv::imshow( source_window, copy );
+//  maxCorners = MAX(maxCorners, 1);
+//  std::vector<cv::Point2f> corners;
+//  double qualityLevel = 0.018;
+//  double minDistance = 50;
+//  int blockSize = 3, gradientSize = 3;
+//  bool useHarrisDetector = false;
+//  double k = 0.04;
+//  cv::Mat copy = src.clone();
+//  cv::goodFeaturesToTrack( src,
+//                           corners,
+//                           maxCorners,
+//                           qualityLevel,
+//                           minDistance,
+//                           cv::Mat(),
+//                           blockSize,
+//                           gradientSize,
+//                           useHarrisDetector,
+//                           k );
+//  std::cout << "** Number of corners detected: " << corners.size() << std::endl;
+//  int radius = 4;
+//  for( size_t i = 0; i < corners.size(); i++ )
+//  {
+//    cv::circle( copy, corners[i], radius, cv::Scalar(
+//                  rng.uniform(0,255), rng.uniform(0, 256), rng.uniform(0, 256)), cv::FILLED );
+//  }
+//  cv::namedWindow( source_window );
+//  cv::imshow( source_window, copy );
 //}
 
-//int objDetectionInit(vpImage<unsigned char> I, vpMbGenericTracker *tracker){
-
-//  try {
-
-//  vpCameraParameters cam;
-//  vpHomogeneousMatrix cMo;
-
-//  vpDisplayX display;
-
-//  display.init(I, 300, 300, "Model-based edge tracker");
-
-//  tracker->getCameraParameters(cam);
-
-//  tracker->track(I);
-
-//  vpKeyPoint keypoint_learning;
-//  keypoint_learning.loadConfigFile(configFileDetector);
-
-//  std::vector<cv::KeyPoint> trainKeyPoints;
-//  double elapsedTime;
-//  keypoint_learning.detect(I, trainKeyPoints, elapsedTime);
-//  // display found points
-//  vpDisplay::display(I);
-//  for (std::vector<cv::KeyPoint>::const_iterator it = trainKeyPoints.begin(); it != trainKeyPoints.end(); ++it) {
-//    vpDisplay::displayCross(I, (int)it->pt.y, (int)it->pt.x, 4, vpColor::red);
-//  }
-//  vpDisplay::displayText(I, 10, 10, "All Keypoints...", vpColor::red);
-//  vpDisplay::displayText(I, 30, 10, "Click to continue with detection...", vpColor::red);
-//  vpDisplay::flush(I);
-//  vpDisplay::getClick(I, true);
-
-//  std::vector<vpPolygon> polygons;
-//  std::vector<std::vector<vpPoint> > roisPt;
-//  std::pair<std::vector<vpPolygon>, std::vector<std::vector<vpPoint> > > pair
-//      = tracker->getPolygonFaces(false);
-//  polygons = pair.first;
-//  roisPt = pair.second;
-//  std::vector<cv::Point3f> points3f;
-//  tracker->getPose(cMo);
-//  vpKeyPoint::compute3DForPointsInPolygons(cMo, cam, trainKeyPoints,
-//                                           polygons, roisPt, points3f);
-//  keypoint_learning.buildReference(I, trainKeyPoints, points3f);
-//  keypoint_learning.saveLearningData(learnData, true);
-
-//  // display found points
-//  vpDisplay::display(I);
-//  for (std::vector<cv::KeyPoint>::const_iterator it = trainKeyPoints.begin(); it != trainKeyPoints.end(); ++it) {
-//    vpDisplay::displayCross(I, (int)it->pt.y, (int)it->pt.x, 4, vpColor::red);
-//  }
-//  vpDisplay::displayText(I, 10, 10, "Keypoints only on block...", vpColor::red);
-//  vpDisplay::displayText(I, 30, 10, "Click to continue with detection...", vpColor::red);
-//  vpDisplay::flush(I);
-//  vpDisplay::getClick(I, true);
 
 
-//  } catch (vpException &e) {
-//    std::cout << "Catch an exception: " << e << std::endl;
-//  }
+int objDetectionInit(vpImage<unsigned char> I, vpMbGenericTracker *tracker){
 
-//  return 0;
-//}
+  try {
+
+  vpCameraParameters cam;
+  vpHomogeneousMatrix cMo;
+
+  vpDisplayX display;
+
+  display.init(I, 300, 300, "Model-based edge tracker");
+
+  tracker->getCameraParameters(cam);
+
+  tracker->track(I);
+
+  vpKeyPoint keypoint_learning;
+  keypoint_learning.loadConfigFile(configFileDetector);
+
+  std::vector<cv::KeyPoint> trainKeyPoints;
+  double elapsedTime;
+  keypoint_learning.detect(I, trainKeyPoints, elapsedTime);
+  // display found points
+  vpDisplay::display(I);
+  for (std::vector<cv::KeyPoint>::const_iterator it = trainKeyPoints.begin(); it != trainKeyPoints.end(); ++it) {
+    vpDisplay::displayCross(I, (int)it->pt.y, (int)it->pt.x, 4, vpColor::red);
+  }
+  vpDisplay::displayText(I, 10, 10, "All Keypoints...", vpColor::red);
+  vpDisplay::displayText(I, 30, 10, "Click to continue with detection...", vpColor::red);
+  vpDisplay::flush(I);
+  vpDisplay::getClick(I, true);
+
+  std::vector<vpPolygon> polygons;
+  std::vector<std::vector<vpPoint> > roisPt;
+  std::pair<std::vector<vpPolygon>, std::vector<std::vector<vpPoint> > > pair
+      = tracker->getPolygonFaces(false);
+  polygons = pair.first;
+  roisPt = pair.second;
+  std::vector<cv::Point3f> points3f;
+  tracker->getPose(cMo);
+  vpKeyPoint::compute3DForPointsInPolygons(cMo, cam, trainKeyPoints,
+                                           polygons, roisPt, points3f);
+  keypoint_learning.buildReference(I, trainKeyPoints, points3f);
+  keypoint_learning.saveLearningData(learnData, true);
+
+  // display found points
+  vpDisplay::display(I);
+  for (std::vector<cv::KeyPoint>::const_iterator it = trainKeyPoints.begin(); it != trainKeyPoints.end(); ++it) {
+    vpDisplay::displayCross(I, (int)it->pt.y, (int)it->pt.x, 4, vpColor::red);
+  }
+  vpDisplay::displayText(I, 10, 10, "Keypoints only on block...", vpColor::red);
+  vpDisplay::displayText(I, 30, 10, "Click to continue with detection...", vpColor::red);
+  vpDisplay::flush(I);
+  vpDisplay::getClick(I, true);
+
+
+  } catch (vpException &e) {
+    std::cout << "Catch an exception: " << e << std::endl;
+  }
+
+  return 0;
+}
 
 
 /////OBJECT DETECTIONN
-//int objDetection(vpImage<unsigned char> I, vpMbGenericTracker *tracker,
-//                 vpKeyPoint *keypoint_detection, vpHomogeneousMatrix *cMo,
-//                 double *error, double* elapsedTime){
+int objDetection(vpImage<unsigned char> I, vpMbGenericTracker *tracker,
+                 vpKeyPoint *keypoint_detection, vpHomogeneousMatrix *cMo,
+                 double *error, double* elapsedTime){
 
-//  try {
+  try {
 
-//    vpCameraParameters cam;
-//    tracker->getCameraParameters(cam);
+    vpCameraParameters cam;
+    tracker->getCameraParameters(cam);
 
-//    if (keypoint_detection->matchPoint(I, cam, *cMo, *error, *elapsedTime)) {
-//      tracker->setPose(I, *cMo);
-//      tracker->display(I, *cMo, cam, vpColor::red, 2);
-//    }
+    if (keypoint_detection->matchPoint(I, cam, *cMo, *error, *elapsedTime)) {
+      tracker->setPose(I, *cMo);
+      tracker->display(I, *cMo, cam, vpColor::red, 2);
+    }
 
-//  } catch (vpException &e) {
-//    std::cout << "Catch an exception: " << e << std::endl;
-//  }
+  } catch (vpException &e) {
+    std::cout << "Catch an exception: " << e << std::endl;
+  }
 
-//  return 0;
+  return 0;
 
-//}
+}
 
 
 
@@ -1103,100 +1139,7 @@ void goodFeaturesToTrack_Demo( int, void* );
 
 
 
-   ///KEYPOINT TRACKER
-   /// IT WORKS!
 
-//  try {
-//    bool opt_init_by_click = false;
-
-//    vpImage<unsigned char> I;
-
-//    cv::Mat cvI = imageCVL.get()->image;
-//    cvI.convertTo(cvI, CV_8U);
-
-//    vpImageConvert::convert(cvI, I);
-
-//    vpDisplayOpenCV d(I, 0, 0, "Klt tracking");
-//    vpDisplay::display(I);
-//    vpDisplay::flush(I);
-//    vpKltOpencv tracker;
-//    tracker.setMaxFeatures(200);
-//    tracker.setWindowSize(10);
-//    tracker.setQuality(0.01);
-//    tracker.setMinDistance(15);
-//    tracker.setHarrisFreeParameter(0.04);
-//    tracker.setBlockSize(9);
-//    tracker.setUseHarris(1);
-//    tracker.setPyramidLevels(3);
-//    // Initialise the tracking
-//    if (opt_init_by_click) {
-//      vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
-
-//      std::vector<cv::Point2f> feature;
-
-//      vpImagePoint ip;
-//      do {
-//        vpDisplay::displayText(I, 10, 10, "Left click to select a point, right to start tracking", vpColor::red);
-//        if (vpDisplay::getClick(I, ip, button, false)) {
-//          if (button == vpMouseButton::button1) {
-//            feature.push_back(cv::Point2f((float)ip.get_u(), (float)ip.get_v()));
-//            vpDisplay::displayCross(I, ip, 12, vpColor::green);
-//          }
-//        }
-//        vpDisplay::flush(I);
-//        vpTime::wait(20);
-//      } while (button != vpMouseButton::button3);
-
-//      tracker.initTracking(cvI, feature);
-
-//    } else {
-//      tracker.initTracking(cvI);
-//    }
-//    std::cout << "Tracker initialized with " << tracker.getNbFeatures() << " features" << std::endl;
-
-//    while (ros::ok()) {
-
-//      //(src, dest)
-//      cvI = imageCVL.get()->image;
-//      cvI.convertTo(cvI, CV_8U);
-//      vpImageConvert::convert(cvI, I);
-//      vpDisplay::display(I);
-//      vpDisplay::flush(I);
-
-
-////      if (opt_init_by_click) {
-////        vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
-
-////        std::vector<cv::Point2f> feature;
-////        vpImagePoint ip;
-////        do {
-////          vpDisplay::displayText(I, 10, 10, "Left click to select a point, right to start tracking", vpColor::red);
-////          if (vpDisplay::getClick(I, ip, button, false)) {
-////            if (button == vpMouseButton::button1) {
-////              feature.push_back(cv::Point2f((float)ip.get_u(), (float)ip.get_v()));
-////              vpDisplay::displayCross(I, ip, 12, vpColor::green);
-////            }
-////          }
-////          vpDisplay::flush(I);
-////          vpTime::wait(20);
-////        } while (button != vpMouseButton::button3);
-
-////        tracker.initTracking(cvI, feature);
-////      }
-//      tracker.track(cvI);
-//      tracker.display(I, vpColor::red);
-//      vpDisplay::flush(I);
-
-//      ros::spinOnce();
-//      loop_rate.sleep();
-
-//    }
-//    vpDisplay::getClick(I);
-
-//    return 0;
-//  } catch (const vpException &e) {
-//    std::cout << "Catch an exception: " << e << std::endl;
-//  }
 
 
 
@@ -1310,9 +1253,83 @@ void MatchingMethod( int, void* );
 
 
 
+/// METOD 1.1 KEYPOINT TRACKING EASY *********************************++
+/// init part
+/// method to track keypoint but tracker dont have (cant?) give a pose
+
+//bool opt_init_by_click = true;
+
+//vpDisplayOpenCV d(imageL_vp, 0, 0, "Klt tracking");
+//vpDisplay::display(imageL_vp);
+//vpDisplay::flush(imageL_vp);
+//vpKltOpencv trackerEasy;
+//trackerEasy.setMaxFeatures(200);
+//trackerEasy.setWindowSize(10);
+//trackerEasy.setQuality(0.01);
+//trackerEasy.setMinDistance(15);
+//trackerEasy.setHarrisFreeParameter(0.04);
+//trackerEasy.setBlockSize(9);
+//trackerEasy.setUseHarris(1);
+//trackerEasy.setPyramidLevels(3);
+//// Initialise the tracking
+//if (opt_init_by_click) {
+//  vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
+
+//  std::vector<cv::Point2f> feature;
+
+//  vpImagePoint ip;
+//  do {
+//    vpDisplay::displayText(imageL_vp, 10, 10, "Left click to select a point, right to start tracking", vpColor::red);
+//    if (vpDisplay::getClick(imageL_vp, ip, button, false)) {
+//      if (button == vpMouseButton::button1) {
+//        feature.push_back(cv::Point2f((float)ip.get_u(), (float)ip.get_v()));
+//        vpDisplay::displayCross(imageL_vp, ip, 12, vpColor::green);
+//      }
+//    }
+//    vpDisplay::flush(imageL_vp);
+//    vpTime::wait(20);
+//  } while (button != vpMouseButton::button3);
+
+//  trackerEasy.initTracking(imageL_cv, feature);
+
+//} else {
+//  std::cout << "BEFORE: " << imageL_cv.size << "\n";
+//  trackerEasy.initTracking(imageL_cv);
+//}
+//std::cout << "Tracker initialized with " << trackerEasy.getNbFeatures() << " features" << std::endl;
+
+
+/// METHOD 1.1 SIMPLE TRACKING KEYPOINT WhILE PART
+
+//    if (opt_init_by_click) { /// SERVE PER REINIZIALIZZARE
+//      vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
+
+//      std::vector<cv::Point2f> feature;
+//      vpImagePoint ip;
+//      do {
+//        vpDisplay::displayText(I, 10, 10, "Left click to select a point, right to start tracking", vpColor::red);
+//        if (vpDisplay::getClick(I, ip, button, false)) {
+//          if (button == vpMouseButton::button1) {
+//            feature.push_back(cv::Point2f((float)ip.get_u(), (float)ip.get_v()));
+//            vpDisplay::displayCross(I, ip, 12, vpColor::green);
+//          }
+//        }
+//        vpDisplay::flush(I);
+//        vpTime::wait(20);
+//      } while (button != vpMouseButton::button3);
+
+//      tracker.initTracking(cvI, feature);
+//    }
+
+
+// trackerEasy.track(imageL_cv);
+// trackerEasy.display(imageL_vp, vpColor::red);
+// vpDisplay::flush(imageL_vp);
 
 
 
+
+/** other things
 //      keypoint_detection.setDetector(detectorName);
 //      keypoint_detection.setExtractor(extractorName);
 //      keypoint_detection.setMatcher(matcherName);
@@ -1341,3 +1358,4 @@ void MatchingMethod( int, void* );
 //tracker.setNearClippingDistance(0.1);
 //tracker.setFarClippingDistance(100.0);
 //tracker.setClipping(tracker.getClipping() | vpMbtPolygon::FOV_CLIPPING);
+*/
