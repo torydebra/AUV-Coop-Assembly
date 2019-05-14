@@ -318,14 +318,14 @@ int main(int argc, char **argv)
 
     ///Log things
     if (pathLog.size() != 0){
-      logger.writeAllForTasks(tasksTPIK1);
+      logger.logAllForTasks(tasksTPIK1);
       //TODO flag LOGGED to not print same thing twice
       //or maybe another list with ALL task only to log here and create folder for log
       //for the moment, yDot are exactly how vehicle and arm are moving
-      logger.writeYDot(yDotTPIK1, "yDotTPIK1");
-      logger.writeYDot(yDotFinal, "yDotFinal");
-      //logger.writeEigenMatrix(admisVelTool_eigen, "JJsharp");
-      logger.writeEigenMatrix(robInfo.robotState.w_Jtool_robot
+      logger.logNumbers(yDotTPIK1, "yDotTPIK1");
+      logger.logNumbers(yDotFinal, "yDotFinal");
+      //logger.logNumbers(admisVelTool_eigen, "JJsharp");
+      logger.logNumbers(robInfo.robotState.w_Jtool_robot
                               * CONV::vector_std2Eigen(yDotOnlyVeh), "toolCartVelCoop");
     }
 

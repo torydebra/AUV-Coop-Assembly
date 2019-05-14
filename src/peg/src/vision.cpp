@@ -568,7 +568,7 @@ int main(int argc, char** argv){
         CMAT::Vect6 error;
         error.SetFirstVect3(swappedError.GetSecondVect3());
         error.SetSecondVect3(swappedError.GetFirstVect3());
-        logger.writeCmatMatrix(error, "error");
+        logger.logNumbers(error, "error");
 
 
     /// method TRACKING DETECTION VISP ***********************************************************
@@ -611,7 +611,7 @@ int main(int argc, char** argv){
 //    CMAT::Vect6 error2;
 //    error2.SetFirstVect3(swappedError2.GetSecondVect3());
 //    error2.SetSecondVect3(swappedError2.GetFirstVect3());
-//    logger.writeCmatMatrix(error2, "errorStereoL");
+//    logger.logNumbers(error2, "errorStereoL");
 
 //    /// TODO check if error l and r are same, they must are when stereo method is used
 //    CMAT::Vect6 swappedError3 =
@@ -619,7 +619,7 @@ int main(int argc, char** argv){
 //    CMAT::Vect6 error3;
 //    error3.SetFirstVect3(swappedError3.GetSecondVect3());
 //    error3.SetSecondVect3(swappedError3.GetFirstVect3());
-//    logger.writeCmatMatrix(error3, "errorStereoR");
+//    logger.logNumbers(error3, "errorStereoR");
 
 //    vpDisplay::displayText(imageL_vp, 30, 10, "A click to exit.", vpColor::red);
 //    vpDisplay::flush(imageL_vp);

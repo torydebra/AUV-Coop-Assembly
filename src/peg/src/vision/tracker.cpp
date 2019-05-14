@@ -16,7 +16,8 @@ MonoTracker::MonoTracker(std::string callerName, std::string cameraName,
 
   tracker.loadConfigFile(sourcePath + configFile + cameraName + ".xml");
 
-  tracker.loadModel(sourcePath + caoModel);
+  //WARNING: Cannot set pose when model contains cylinder(s). This feature is not implemented yet.
+  tracker.loadModel(sourcePath + caoModelNoCil);
   tracker.setOgreVisibilityTest(false);
   tracker.setDisplayFeatures(true);
 
@@ -38,7 +39,7 @@ int MonoTracker::initTrackingByClick(vpImage<unsigned char> *I){
 
   MonoTracker::monoTrackInit_priv(I);
   keypoint_detection.loadConfigFile(sourcePath+configFileDetector);
-  keypoint_detection.loadLearningData(sourcePath+learnData, true);
+  keypoint_detection.loadLearningData(sourcePath+learnData+cameraName+".bin", true);
 
   std::cout << "[" << callerName << "][MONOTRACKER " << cameraName << "]"
             << " init by Click done\n";
@@ -51,7 +52,7 @@ int MonoTracker::initTrackingByPoint(vpImage<unsigned char> *I){
 
   MonoTracker::monoTrackInit_priv(I);
   keypoint_detection.loadConfigFile(sourcePath+configFileDetector);
-  keypoint_detection.loadLearningData(sourcePath+learnData, true);
+  keypoint_detection.loadLearningData(sourcePath+learnData+cameraName+".bin", true);
 
   std::cout << "[" << callerName << "][MONOTRACKER " << cameraName << "]"
             << " init by Point done\n";
@@ -75,7 +76,7 @@ int MonoTracker::monoTrackInit_priv(vpImage<unsigned char> *I){
   tracker.track(*I);
 
   vpKeyPoint keypoint_learning;
-  keypoint_learning.loadConfigFile(configFileDetector);
+  keypoint_learning.loadConfigFile(sourcePath+configFileDetector);
 
   std::vector<cv::KeyPoint> trainKeyPoints;
   double elapsedTime;
@@ -101,7 +102,7 @@ int MonoTracker::monoTrackInit_priv(vpImage<unsigned char> *I){
   vpKeyPoint::compute3DForPointsInPolygons(cMo, cam, trainKeyPoints,
                                            polygons, roisPt, points3f);
   keypoint_learning.buildReference(*I, trainKeyPoints, points3f);
-  keypoint_learning.saveLearningData(learnData, true);
+  keypoint_learning.saveLearningData(sourcePath+learnData+cameraName+".bin", true);
 
   // display found points
   vpDisplay::display(*I);
@@ -116,7 +117,7 @@ int MonoTracker::monoTrackInit_priv(vpImage<unsigned char> *I){
 
   } catch (vpException &e) {
     std::cout << "[" << callerName << "][MONOTRACKER " << cameraName << "]"
-              << "Init priv exception: " << e << std::endl;
+              << "Init_priv exception: " << e << std::endl;
   }
 
   return 0;

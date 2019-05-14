@@ -400,7 +400,7 @@ int Detector::templateMatching(cv::Mat img, cv::Mat templ,
                                                 minMaxValue.begin() + lastScale));
   }
 
-  std::cout << "[DETECTOR] BEST ITERATION: scaling factor " << scaleFactors[indexBest]
+  std::cout << "[DETECTOR][TEMPLATE_MATCHING] BEST ITERATION: scaling factor " << scaleFactors[indexBest]
                <<"\n \t with value: " << minMaxValue.at(indexBest) << "\n";
 
   cv::Point topLeft, bottomRight;

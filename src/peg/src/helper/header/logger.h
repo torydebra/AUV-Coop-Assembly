@@ -20,18 +20,19 @@ public:
   Logger(std::string robotName, std::string pathLog);
   void createDirectoryForNode();
   int createTasksListDirectories(std::vector<Task*>);
-  int writeActivation(std::vector<Task*>);
-  int writeReference(std::vector<Task*>);
-  int writeError(std::vector<Task*>);
-  int writeAllForTasks(std::vector <Task*> tasksList);
-  void writeYDot(std::vector<double> yDot, std::string yDotString);
-  void writeNonCoopVel(Eigen::VectorXd nonCoopVel, std::string);
-  void writeCoopVel(Eigen::VectorXd coopVel);
-  void writeScalar(double scalar, std::string fileName);
-  void writeEigenMatrix(Eigen::MatrixXd mat, std::string fileName);
-  void writeCmatMatrix(CMAT::Matrix mat, std::string fileName);
-  void writeStressTool(Eigen::Matrix4d wTt, Eigen::Matrix4d wTt2);
+  int logTasksActivation(std::vector<Task*>);
+  int logTasksReference(std::vector<Task*>);
+  int logTasksError(std::vector<Task*>);
+  int logAllForTasks(std::vector <Task*> tasksList);
 
+  //log matrices, veector, scalar...
+  void logNumbers(std::vector<double> matrix, std::string fileName);
+  void logNumbers(Eigen::MatrixXd matrix, std::string fileName);
+  void logNumbers(double scalar, std::string fileName);
+  void logNumbers(CMAT::Matrix matrix, std::string fileName);
+
+  void logCartError(Eigen::Matrix4d goal, Eigen::Matrix4d base, std::string fileName);
+  void logCartError(CMAT::TransfMatrix goal, CMAT::TransfMatrix base, std::string fileName);
 
 
 

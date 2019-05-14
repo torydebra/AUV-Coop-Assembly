@@ -17,11 +17,12 @@
 //relative to source (tracker.cpp) path to config file and images used in algos
 const std::string relative = "/data/";
 const std::string configFile = relative + "camera_";
+const std::string caoModelNoCil = relative + "blockHole.cao";
 const std::string caoModel = relative + "blockHoleCilinder.cao";
-const std::string configFileDetector = relative + "detection-config-SIFT.xml";
+const std::string configFileDetector = relative + "detection-config-MONO.xml";
 const std::string initFileClick = relative + "3DPointSquareFace4_";
 const std::string initFile_w2D = relative + "3DPointSquareFace4_w2d_";
-const std::string learnData = relative + "blockHole_learning_data.bin";
+const std::string learnData = relative + "blockHole_learning_data_";
 //const std::string transfcameraLtoR = relative + "lTr.txt";
 
 class MonoTracker

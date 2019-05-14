@@ -15,7 +15,7 @@
 #include <visp3/io/vpImageIo.h>
 
 const std::string relativeMissMan = "/vision/data/";
-const std::string templName = relativeMissMan + "templateSideLittle.png";
+const std::string templName = relativeMissMan + "templateSideLittle.jpg";
 
 
 

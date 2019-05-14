@@ -149,7 +149,7 @@ int main(int argc, char **argv){
         Eigen::Matrix4d wTt2;
         worldInterface.getwT(&wTt2, toolName2);
 
-        logger.writeStressTool(wTt, wTt2);
+        logger.logCartError(wTt, wTt2, "stressTool");
 
       }
 
@@ -197,13 +197,13 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> execCoordAlgo(
       * coopVelTool;
 
   if (logger != NULL){
-    logger->writeScalar(muA, "weightA");
-    logger->writeScalar(muB, "weightB");
-    logger->writeEigenMatrix(coopVelTool, "notFeasibleCoopVel");
-    logger->writeNonCoopVel(nonCoopCartVelA_eigen, "g500_A");
-    logger->writeNonCoopVel(nonCoopCartVelB_eigen, "g500_B");
-    logger->writeCoopVel(coopVelToolFeasible);
-    logger->writeEigenMatrix(refTool, "idealTool");
+    logger->logNumbers(muA, "weightA");
+    logger->logNumbers(muB, "weightB");
+    logger->logNumbers(coopVelTool, "notFeasibleCoopVel");
+    logger->logNumbers(nonCoopCartVelA_eigen, "nonCoopVelg500_A");
+    logger->logNumbers(nonCoopCartVelB_eigen, "nonCoopVelg500_B");
+    logger->logNumbers(coopVelToolFeasible, "coopVel");
+    logger->logNumbers(refTool, "idealTool");
   }
 
   return coopVelToolFeasible;

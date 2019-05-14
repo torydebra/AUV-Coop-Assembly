@@ -17,7 +17,7 @@ V1
 # Faces from 3D lines
 0                  # Number of faces
 # Faces from 3D points
-6                  # Number of faces [number of points] [index of the 3D p oints]... COUNTERCLOCKWISE so normal is outside face
+6                  # Number of faces [number of points] [index of the 3D points]... COUNTERCLOCKWISE so normal is outside face
 4 1 4 3 2 name="FrontFace"              # Face 0 FRONT FACE
 4 1 5 8 4 name="SideLeftFace"           # left side face
 4 2 3 7 6 name="SideRightFace"          # right side face

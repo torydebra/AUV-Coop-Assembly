@@ -109,14 +109,10 @@ int main(int argc, char** argv){
   cameraNames.at(0) = "left";
   cameraNames.at(1) = "right";
 
-  /// Mono
-  MonoTracker monoTrackerL(robotName, cameraNames.at(0),
-          vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
-
-  MonoTracker monoTrackerR(robotName, cameraNames.at(1),
-          vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
-
-  /// Stereo
+  bool stereo = false;
+  MonoTracker* monoTrackerL;
+  MonoTracker* monoTrackerR;
+  StereoTracker* stereoTracker;
   std::map<std::string, vpHomogeneousMatrix> mapCameraTransf;
   // note: here it must be putted the transf from RIGTH to LEFT and not viceversa
   mapCameraTransf[cameraNames.at(0)] = vpHomogeneousMatrix();  //identity
@@ -131,52 +127,86 @@ int main(int argc, char** argv){
   mapOfcameraToObj[cameraNames.at(0)] = vpHomogeneousMatrix();
   mapOfcameraToObj[cameraNames.at(1)] = vpHomogeneousMatrix();
 
-  StereoTracker stereoTracker(robotName, cameraNames, mapCameraTransf,
-                vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+  if (stereo==false){/// Mono
+    monoTrackerL = new MonoTracker(robotName, cameraNames.at(0),
+                     vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+    monoTrackerR = new MonoTracker(robotName, cameraNames.at(1),
+                     vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
+  } else {/// Stereo
+    stereoTracker = new StereoTracker (robotName, cameraNames, mapCameraTransf,
+                      vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+  }
 
   /// INIT TRACKERS
   bool initByClick = false;
   std::vector<std::vector<cv::Point>> found4CornersVectorL, found4CornersVectorR; //used if initclick false
   if (initByClick){
-      //monoTrackerL.initTrackingByClick(&imageL_vp);
-      //monoTrackerR.initTrackingByClick(&imageR_vp);
+    if (stereo == false){
+      monoTrackerL->initTrackingByClick(&imageL_vp);
+      monoTrackerR->initTrackingByClick(&imageR_vp);
+    } else {
+      stereoTracker->initTrackingByClick(mapOfImages);
+    }
 
-    stereoTracker.initTrackingByClick(mapOfImages);
 
   } else { //find point without click //TODO, parla anche di altri metodi provati
 
     /// FIND SQUARE METHOD
       // https://docs.opencv.org/3.4/db/d00/samples_2cpp_2squares_8cpp-example.html#a20
-    Detector::findSquare(imageL_cv, &found4CornersVectorL);
-    Detector::findSquare(imageR_cv, &found4CornersVectorR);
-    //Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
-    //Detector::drawSquares(imageR_cv, found4CornersVectorR, "right");
+//    Detector::findSquare(imageL_cv, &found4CornersVectorL);
+//    Detector::findSquare(imageR_cv, &found4CornersVectorR);
+//    Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
+//    Detector::drawSquares(imageR_cv, found4CornersVectorR, "right");
 
     /// TEMPLATE MATCHING OPENCV
      // https://docs.opencv.org/3.4.6/de/da9/tutorial_template_matching.html
-//    cv::Mat templL1 = cv::imread(sourcePath + templName);
-//    cv::Mat templR1 = cv::imread(sourcePath + templName);
-//    found4CornersVectorL.resize(1);
-//    found4CornersVectorR.resize(1);
-//    Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL).at(0));
-//    Detector::templateMatching(imageR_cv, templR1, &(found4CornersVectorR).at(0));
-
+    //TODO usare diversi template da diverse angolazioni...
+    // scrivi che template va anche bene però se simoa storti rispetto
+    // al hole non riusciamo a fare un buon contorno perchè la regione visibile
+    // non è un quadrato giusto e non possiamo sapere le dimensioni dei lati
+    // in pixel nella immagine che si vede dalle camere... ci vorrebbe homography
+    // per rectify immagini...
+    //TODO rectify?
+    cv::Mat templL1 = cv::imread(sourcePath + templName);
+    cv::Mat templR1 = cv::imread(sourcePath + templName);
+    found4CornersVectorL.resize(1);
+    found4CornersVectorR.resize(1);
+    Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL.at(0)));
+    Detector::templateMatching(imageR_cv, templR1, &(found4CornersVectorR.at(0)));
 
 
     //TODO  if found4CornersVector contain more than one element, pick the best...
     append2Dto3Dfile(found4CornersVectorL.at(0), found4CornersVectorR.at(0), sourcePath);
 
-    //monoTrackerL.initTrackingByPoint(&imageL_vp);
-   // monoTrackerR.initTrackingByPoint(&imageR_vp);
+    if (stereo == false){
+      monoTrackerL->initTrackingByPoint(&imageL_vp);
+      monoTrackerR->initTrackingByPoint(&imageR_vp);
 
-    stereoTracker.initTrackingByPoint(mapOfImages);
-  }
+    }else {
+      stereoTracker->initTrackingByPoint(mapOfImages);
+
+    }
+  } // END INIT
 
 
 /** *********************************************************************************************************+*********
                                    MAIN VISION LOOP
 *******************************************************************************************************************/
+
+  //get camera param for display purpose
+  vpCameraParameters cam_left, cam_right;
+  if(stereo == false){
+    monoTrackerL->getCameraParams(&cam_left);
+    monoTrackerR->getCameraParams(&cam_right);
+
+  } else {
+    std::map<std::string, vpCameraParameters> mapOfCamParams;
+    stereoTracker->getCamerasParams(&mapOfCamParams);
+    cam_left = mapOfCamParams.at(cameraNames.at(0));
+    cam_right = mapOfCamParams.at(cameraNames.at(1));
+  }
+
   ros::Rate loop_rate(10);
   while (ros::ok()) {
     robotVisInterface.getwTv(&(robVisInfo.robotState.wTv_eigen));
@@ -194,58 +224,55 @@ int main(int argc, char** argv){
     vpDisplay::display(imageL_vp);
     vpDisplay::display(imageR_vp);
 
-    //updats map of img, used for stereo methods
-    mapOfImages.at(cameraNames.at(0)) = &imageL_vp;
-    mapOfImages.at(cameraNames.at(1)) = &imageR_vp;
+    vpHomogeneousMatrix cLThole, cRThole;
+    if (stereo == false){/// METHOD 1 MONO CAMERAS
+
+    double ransacErrorL = 0.0;
+    double elapsedTimeL = 0.0;
+    double ransacErrorR = 0.0;
+    double elapsedTimeR = 0.0;
+
+    monoTrackerL->monoTrack(&imageL_vp, &cLThole, &ransacErrorL, &elapsedTimeL);
+    monoTrackerR->monoTrack(&imageR_vp, &cRThole, &ransacErrorR, &elapsedTimeR);
+
+    monoTrackerL->display(&imageL_vp);
+    monoTrackerR->display(&imageR_vp);
 
 
-    /// METHOD 1 MONO CAMERAS
-//      vpHomogeneousMatrix cLThole, cRThole;
-//      double ransacErrorL = 0.0;
-//      double elapsedTimeL = 0.0;
-//      double ransacErrorR = 0.0;
-//      double elapsedTimeR = 0.0;
-//      vpCameraParameters cam_left, cam_right;
+    }else{    /// METHOD 2 STEREO
+      //updats map of img
+      mapOfImages.at(cameraNames.at(0)) = &imageL_vp;
+      mapOfImages.at(cameraNames.at(1)) = &imageR_vp;
 
-//      monoTrackerL.monoTrack(&imageL_vp, &cLThole, &ransacErrorL, &elapsedTimeL);
-//      monoTrackerR.monoTrack(&imageR_vp, &cRThole, &ransacErrorR, &elapsedTimeR);
-//      monoTrackerL.getCameraParams(&cam_left);
-//      monoTrackerR.getCameraParams(&cam_right);
+      stereoTracker->stereoTrack(mapOfImages, &mapOfcameraToObj);
+      cLThole = mapOfcameraToObj.at(cameraNames.at(0));
+      cRThole = mapOfcameraToObj.at(cameraNames.at(1));
 
-//      monoTrackerL.display(&imageL_vp);
-//      monoTrackerR.display(&imageR_vp);
-//      vpDisplay::displayFrame(imageL_vp, cLThole, cam_left, 0.25, vpColor::none, 3);
-//      vpDisplay::displayFrame(imageR_vp, cRThole, cam_right, 0.25, vpColor::none, 3);
-
-//    robVisInfo.transforms.wTh_estimated_eigen =
-//        robVisInfo.robotState.wTv_eigen *
-//        robVisInfo.robotStruct.vTcameraL *
-//        CONV::matrix_visp2eigen(cLThole);
-
+      stereoTracker->display(mapOfImages);
+    }
 
     /// method TRACKING DETECTION VISP ***********************************************************
                     ///TODO
     /// method TRACKING DETECTION VISP ***********************************************************
 
 
+    vpDisplay::displayFrame(imageL_vp, cLThole, cam_left, 0.25, vpColor::none, 2);
+    vpDisplay::displayFrame(imageR_vp, cRThole, cam_right, 0.25, vpColor::none, 2);
 
-    /// METHOD 2 STEREO
-    stereoTracker.stereoTrack(mapOfImages, &mapOfcameraToObj);
-    vpHomogeneousMatrix cLThole_st = mapOfcameraToObj.at(cameraNames.at(0));
-    vpHomogeneousMatrix cRThole_st = mapOfcameraToObj.at(cameraNames.at(1));
+    // store estimation in struct, TODO mean tra right e left?
+    robVisInfo.transforms.wTh_estimated_eigen =
+        robVisInfo.robotState.wTv_eigen *
+        robVisInfo.robotStruct.vTcameraL *
+        CONV::matrix_visp2eigen(cLThole);
 
-    // display
-    vpCameraParameters cam_left_st, cam_right_st;
-    std::map<std::string, vpCameraParameters> mapOfCamParams;
-
-    stereoTracker.getCamerasParams(&mapOfCamParams);
-    cam_left_st = mapOfCamParams.at(cameraNames.at(0));
-    cam_right_st = mapOfCamParams.at(cameraNames.at(1));
-
-
-    stereoTracker.display(mapOfImages);
-    vpDisplay::displayFrame(imageL_vp, cLThole_st, cam_left_st, 0.25, vpColor::none, 2);
-    vpDisplay::displayFrame(imageR_vp, cRThole_st, cam_right_st, 0.25, vpColor::none, 2);
+    Eigen::Matrix4d wTh_estimated_left =
+        robVisInfo.robotState.wTv_eigen *
+        robVisInfo.robotStruct.vTcameraL *
+        CONV::matrix_visp2eigen(cLThole);
+    Eigen::Matrix4d wTh_estimated_right =
+        robVisInfo.robotState.wTv_eigen *
+        robVisInfo.robotStruct.vTcameraL *
+        CONV::matrix_visp2eigen(cRThole);
 
 
     vpDisplay::displayText(imageL_vp, 30, 10, "A click to exit.", vpColor::red);
@@ -257,45 +284,26 @@ int main(int argc, char** argv){
 
 
     if (pathLog.size() != 0){
-
       worldInterface.getwT(&(robVisInfo.transforms.wTh_eigen), holeName);
       CMAT::TransfMatrix wThole_cmat =
           CONV::matrix_eigen2cmat(robVisInfo.transforms.wTh_eigen);
 
-      Eigen::Matrix4d wTh_estimated_stereo_left =
-          robVisInfo.robotState.wTv_eigen *
-          robVisInfo.robotStruct.vTcameraL *
-          CONV::matrix_visp2eigen(cLThole_st);
+      if (stereo == false){
 
-      Eigen::Matrix4d wTh_estimated_stereo_right =
-          robVisInfo.robotState.wTv_eigen *
-          robVisInfo.robotStruct.vTcameraR *
-          CONV::matrix_visp2eigen(cRThole_st);
+        logger.logCartError(robVisInfo.transforms.wTh_eigen,
+                               wTh_estimated_left, "errorMonoL");
+        logger.logCartError(robVisInfo.transforms.wTh_eigen,
+                               wTh_estimated_right, "errorMonoR");
 
+      } else{
 
-      CMAT::TransfMatrix wTholeEstimated_stereoL_cmat =
-          CONV::matrix_eigen2cmat(wTh_estimated_stereo_left);
-      CMAT::TransfMatrix wTholeEstimated_stereoR_cmat =
-          CONV::matrix_eigen2cmat(wTh_estimated_stereo_right);
-
-      CMAT::Vect6 swappedError =
-          CMAT::CartError(wThole_cmat, wTholeEstimated_stereoL_cmat);
-      CMAT::Vect6 error;
-      error.SetFirstVect3(swappedError.GetSecondVect3());
-      error.SetSecondVect3(swappedError.GetFirstVect3());
-      logger.writeCmatMatrix(error, "errorStereoL");
-
-
-      /// TODO check if error l and r are same, they must are when stereo method is used
-      CMAT::Vect6 swappedError3 =
-          CMAT::CartError(wThole_cmat, wTholeEstimated_stereoR_cmat);
-      CMAT::Vect6 error3;
-      error3.SetFirstVect3(swappedError3.GetSecondVect3());
-      error3.SetSecondVect3(swappedError3.GetFirstVect3());
-      logger.writeCmatMatrix(error3, "errorStereoR");
-
+        logger.logCartError(robVisInfo.transforms.wTh_eigen,
+                            wTh_estimated_left, "errorStereoL");
+        /// TODO check if error l and r are same, they must are when stereo method is used
+        logger.logCartError(robVisInfo.transforms.wTh_eigen,
+                            wTh_estimated_right, "errorStereoR");
+      }
     } //END LOGGING
-
 
 
     ros::spinOnce();
@@ -303,7 +311,14 @@ int main(int argc, char** argv){
   }
 
 
-   return 0;
+  if (stereo == false){
+    delete monoTrackerL;
+    delete monoTrackerR;
+  } else {
+    delete stereoTracker;
+  }
+
+  return 0;
 }
 
 
