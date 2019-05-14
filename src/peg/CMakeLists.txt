@@ -220,6 +220,8 @@ add_dependencies(CoordInterfaceCoord
 add_executable(MissionManagerA src/missionManager.cpp)
 add_executable(MissionManagerB src/missionManager.cpp)
 add_executable(Coordinator src/coordinator.cpp)
+add_executable(MissionManagerVision src/missionManagerVision.cpp)
+#old TRY files
 add_executable(Vision_old src/vision_old.cpp)
 add_executable(Vision src/vision.cpp)
 
@@ -299,6 +301,17 @@ target_link_libraries(MissionManagerB
     PipeReachTask
     ArmShapeTask
     CoopTask
+)
+
+target_link_libraries(MissionManagerVision
+    ${catkin_LIBRARIES}
+    RobotVisionInterface
+    WorldInterface
+    linuxcmat
+    Logger
+    Tracker
+    Detector
+
 )
 
 target_link_libraries(Vision_old

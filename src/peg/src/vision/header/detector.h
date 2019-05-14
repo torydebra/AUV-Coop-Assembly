@@ -32,7 +32,7 @@ public:
                            const char* wndname = "Square Detection Demo");
 
 
-  static int findSquare(cv::Mat image, std::vector<std::vector<cv::Point>> *found4CornersVector,
+  static int findSquare(cv::Mat &image, std::vector<std::vector<cv::Point>> *found4CornersVector,
                            int threshLevels = 11, int cannyThresh = 50);
 
 private:

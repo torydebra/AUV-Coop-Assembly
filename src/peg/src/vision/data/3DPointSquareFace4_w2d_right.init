@@ -4,8 +4,9 @@
 0      0.4      -0.4     # top left
 0      0.4     0.4     # bottom left
 0      -0.4    0.4     # bottom right
-
-#Generate by code append 2D points
+#Generate by code: append 2D points
 4
-asdasdasdsa
-
+19 41
+19 178
+160 177
+157 40

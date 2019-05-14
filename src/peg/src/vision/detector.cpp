@@ -24,12 +24,16 @@ Detector::Detector(){} //private costructor not to be used
  * channel.
  * @todo various parameters are hardcoded in _findSquares. Maybe they can be setted from external caller.
  */
-int Detector::findSquare(cv::Mat image, std::vector<std::vector<cv::Point>> *found4CornersVector,
+int Detector::findSquare(cv::Mat &image, std::vector<std::vector<cv::Point>> *found4CornersVector,
                          int threshLevels, int cannyThresh){
 
     std::vector<std::vector<cv::Point> > squares;
 
+    //cv::cvtColor(image, image, cv::COLOR_GRAY2BGR); //actually not real conv in colors
+
     Detector::_findSquares(image, squares, threshLevels, cannyThresh);
+
+    //Detector::drawSquares(image, squares, "asdasd");
 
     found4CornersVector->resize(squares.size());
     Detector::orderAngles(squares, found4CornersVector);
@@ -56,7 +60,7 @@ void Detector::drawSquares( cv::Mat image, const std::vector<std::vector<cv::Poi
         const Point* p = &squares[i][0];
         int n = (int)squares[i].size();
        // std::cout << "number of point:" << n << "\n";
-        polylines(image, &p, &n, 1, true, Scalar(0,255,0), 3, LINE_AA);
+        polylines(image, &p, &n, 1, true, Scalar(0,255,0), 2, LINE_AA);
         circle(image, squares[i][0], 5, Scalar(0,0,0), FILLED);
         circle(image, squares[i][1], 5, Scalar(255,255,0), FILLED);
         circle(image, squares[i][2], 5, Scalar(0,255,255), FILLED);
@@ -183,8 +187,8 @@ int Detector::orderAngles(std::vector<cv::Point> angles, std::vector<cv::Point> 
     return -1;
   }
 
-  cv::Point center = getCenter(angles);
 
+  cv::Point center = getCenter(angles);
   orderedAngles->resize(4);
   for (int i=0; i<4; i++){
 
@@ -198,20 +202,22 @@ int Detector::orderAngles(std::vector<cv::Point> angles, std::vector<cv::Point> 
     } else {
       if (angles.at(i).y < center.y){ //top right corner
         orderedAngles->at(1) = angles.at(i);
+
       } else { // bottom rigth corner
         orderedAngles->at(2) = angles.at(i);
       }
     }
   }
 
+
 }
 
 cv::Point Detector::getCenter(std::vector<cv::Point> points){
 
     cv::Point A = points.at(0);
-    cv::Point B = points.at(1);
-    cv::Point C = points.at(2);
-    cv::Point D = points.at(3);
+    cv::Point B = points.at(2);
+    cv::Point C = points.at(3);
+    cv::Point D = points.at(1);
 
     // Line AB represented as a1x + b1y = c1
     double a1 = A.x - A.y;

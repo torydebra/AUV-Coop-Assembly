@@ -17,8 +17,9 @@ int main(int argc, char** argv){
   }
 
   /// path of source to find images and config files for vision  //TODO REMOVE
-  boost::filesystem::path sourcePath(__FILE__);
-  sourcePath.remove_filename();
+  boost::filesystem::path path(__FILE__);
+  path.remove_filename();
+  std::string sourcePath = path.string();
 
   std::string robotName = argv[1];
   std::string pathLog;
@@ -89,7 +90,7 @@ int main(int argc, char** argv){
   imageR_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
   //cut top part of image where a piece of auv is visible and can distract cv algos
   imageL_cv = imageL_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
-  imageR_cv = imageR_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
+  imageR_cv = imageR_cv(cv::Rect(0, 60, imageR_cv.cols, imageR_cv.rows-60));
 
   vpImageConvert::convert(imageL_cv, imageL_vp);
   vpImageConvert::convert(imageR_cv, imageR_vp);
@@ -103,45 +104,45 @@ int main(int argc, char** argv){
   display_right.init(imageR_vp, 110 + (int)imageL_vp.getWidth(), 100,
                      "Model-based tracker (Right)");
 
-  /// init trackers
-
-  std::vector<std::string> cameraNames(2);
+  /// CREATE TRACKERS
+  std::vector<std::string> cameraNames(2); //for config files
   cameraNames.at(0) = "left";
   cameraNames.at(1) = "right";
 
   /// Mono
   MonoTracker monoTrackerL(robotName, cameraNames.at(0),
           vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+
   MonoTracker monoTrackerR(robotName, cameraNames.at(1),
           vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
   /// Stereo
   std::map<std::string, vpHomogeneousMatrix> mapCameraTransf;
   // note: here it must be putted the transf from RIGTH to LEFT and not viceversa
-  mapCameraTransf.insert({cameraNames.at(0), vpHomogeneousMatrix()});  //identity
-  mapCameraTransf.insert({cameraNames.at(1), robVisInfo.robotStruct.cRTcL});
+  mapCameraTransf[cameraNames.at(0)] = vpHomogeneousMatrix();  //identity
+  mapCameraTransf[cameraNames.at(1)] =
+      CONV::transfMatrix_eigen2visp(robVisInfo.robotStruct.cRTcL);
 
-  std::map<std::string, const vpImage<unsigned char>*> mapOfImages;
-  mapOfImages.insert({cameraNames.at(0), &imageL_vp});
-  mapOfImages.insert({cameraNames.at(1), &imageR_vp});
+  std::map<std::string, const vpImage<unsigned char> *> mapOfImages;
+  mapOfImages[cameraNames.at(0)] = &imageL_vp;
+  mapOfImages[cameraNames.at(1)] = &imageR_vp;
 
   std::map<std::string, vpHomogeneousMatrix> mapOfcameraToObj;
-  mapOfcameraToObj.insert({cameraNames.at(0), vpHomogeneousMatrix()});
-  mapOfcameraToObj.insert({cameraNames.at(1), vpHomogeneousMatrix()});
+  mapOfcameraToObj[cameraNames.at(0)] = vpHomogeneousMatrix();
+  mapOfcameraToObj[cameraNames.at(1)] = vpHomogeneousMatrix();
 
   StereoTracker stereoTracker(robotName, cameraNames, mapCameraTransf,
                 vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
 
+  /// INIT TRACKERS
   bool initByClick = false;
   std::vector<std::vector<cv::Point>> found4CornersVectorL, found4CornersVectorR; //used if initclick false
   if (initByClick){
-      monoTrackerL.initTrackingByClick(imageL_vp);
-      monoTrackerR.initTrackingByClick(imageR_vp);
+      //monoTrackerL.initTrackingByClick(&imageL_vp);
+      //monoTrackerR.initTrackingByClick(&imageR_vp);
 
-
-      stereoTracker.initTrackingByClick(mapOfImages);
-
+    stereoTracker.initTrackingByClick(mapOfImages);
 
   } else { //find point without click //TODO, parla anche di altri metodi provati
 
@@ -149,24 +150,27 @@ int main(int argc, char** argv){
       // https://docs.opencv.org/3.4/db/d00/samples_2cpp_2squares_8cpp-example.html#a20
     Detector::findSquare(imageL_cv, &found4CornersVectorL);
     Detector::findSquare(imageR_cv, &found4CornersVectorR);
+    //Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
+    //Detector::drawSquares(imageR_cv, found4CornersVectorR, "right");
 
     /// TEMPLATE MATCHING OPENCV
      // https://docs.opencv.org/3.4.6/de/da9/tutorial_template_matching.html
-    cv::Mat templL1 = cv::imread(sourcePath + templName);
-    cv::Mat templR1 = cv::imread(sourcePath + templName);
-    found4CornersVectorL.resize(1);
-    found4CornersVectorR.resize(1);
-    Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL).at(0));
-    Detector::templateMatching(imageR_cv, templR1, &(found4CornersVectorR).at(0));
+//    cv::Mat templL1 = cv::imread(sourcePath + templName);
+//    cv::Mat templR1 = cv::imread(sourcePath + templName);
+//    found4CornersVectorL.resize(1);
+//    found4CornersVectorR.resize(1);
+//    Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL).at(0));
+//    Detector::templateMatching(imageR_cv, templR1, &(found4CornersVectorR).at(0));
+
+
 
     //TODO  if found4CornersVector contain more than one element, pick the best...
     append2Dto3Dfile(found4CornersVectorL.at(0), found4CornersVectorR.at(0), sourcePath);
 
-    monoTrackerL.initTrackingByPoint(imageL_vp);
-    monoTrackerR.initTrackingByPoint(imageR_vp);
+    //monoTrackerL.initTrackingByPoint(&imageL_vp);
+   // monoTrackerR.initTrackingByPoint(&imageR_vp);
 
     stereoTracker.initTrackingByPoint(mapOfImages);
-
   }
 
 
@@ -181,6 +185,9 @@ int main(int argc, char** argv){
     robotVisInterface.getRightImage(&imageR_cv);
     imageL_cv.convertTo(imageL_cv, CV_8U); //TODO check if necessary convert in 8U
     imageR_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
+    //cut top part of image where a piece of auv is visible and can distract cv algos
+    imageL_cv = imageL_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
+    imageR_cv = imageR_cv(cv::Rect(0, 60, imageR_cv.cols, imageR_cv.rows-60));
     vpImageConvert::convert(imageL_cv, imageL_vp);
     vpImageConvert::convert(imageR_cv, imageR_vp);
 
@@ -188,20 +195,27 @@ int main(int argc, char** argv){
     vpDisplay::display(imageR_vp);
 
     //updats map of img, used for stereo methods
-    mapOfImages.at(cameraNames.at(0)) =  &imageL_vp;
+    mapOfImages.at(cameraNames.at(0)) = &imageL_vp;
     mapOfImages.at(cameraNames.at(1)) = &imageR_vp;
 
 
-    /// METHOD 1 OBJECT DETECTION
-//    vpDisplay::displayText(imageL_vp, 10, 10, "Detection and localization in process...", vpColor::red);
-//    vpHomogeneousMatrix cLThole;
-//    double ransacError = 0.0;
-//    double elapsedTime = 0.0;
-//    objDetection(imageL_vp, &tracker, &keypoint_detection, &cLThole,
-//                 &ransacError, &elapsedTime);
+    /// METHOD 1 MONO CAMERAS
+//      vpHomogeneousMatrix cLThole, cRThole;
+//      double ransacErrorL = 0.0;
+//      double elapsedTimeL = 0.0;
+//      double ransacErrorR = 0.0;
+//      double elapsedTimeR = 0.0;
+//      vpCameraParameters cam_left, cam_right;
 
-//    vpDisplay::displayFrame(imageL_vp, cLThole, cam_left, 0.25, vpColor::none, 3);
+//      monoTrackerL.monoTrack(&imageL_vp, &cLThole, &ransacErrorL, &elapsedTimeL);
+//      monoTrackerR.monoTrack(&imageR_vp, &cRThole, &ransacErrorR, &elapsedTimeR);
+//      monoTrackerL.getCameraParams(&cam_left);
+//      monoTrackerR.getCameraParams(&cam_right);
 
+//      monoTrackerL.display(&imageL_vp);
+//      monoTrackerR.display(&imageR_vp);
+//      vpDisplay::displayFrame(imageL_vp, cLThole, cam_left, 0.25, vpColor::none, 3);
+//      vpDisplay::displayFrame(imageR_vp, cRThole, cam_right, 0.25, vpColor::none, 3);
 
 //    robVisInfo.transforms.wTh_estimated_eigen =
 //        robVisInfo.robotState.wTv_eigen *
@@ -209,39 +223,29 @@ int main(int argc, char** argv){
 //        CONV::matrix_visp2eigen(cLThole);
 
 
-
-
     /// method TRACKING DETECTION VISP ***********************************************************
                     ///TODO
     /// method TRACKING DETECTION VISP ***********************************************************
 
 
+
     /// METHOD 2 STEREO
-
-
-
-
     stereoTracker.stereoTrack(mapOfImages, &mapOfcameraToObj);
     vpHomogeneousMatrix cLThole_st = mapOfcameraToObj.at(cameraNames.at(0));
     vpHomogeneousMatrix cRThole_st = mapOfcameraToObj.at(cameraNames.at(1));
 
     // display
-    vpCameraParameters cam_left, cam_right;
-    StereoTracker.getCameraParameters(cam_left, cam_right);
-    //tracker.display(imageL_vp, imageR_vp, cLThole_st, cRThole_st, cam_left, cam_right, vpColor::red, 2);
-    vpDisplay::displayFrame(imageL_vp, cLThole_st, cam_left, 0.25, vpColor::none, 2);
-    vpDisplay::displayFrame(imageR_vp, cRThole_st, cam_right, 0.25, vpColor::none, 2);
+    vpCameraParameters cam_left_st, cam_right_st;
+    std::map<std::string, vpCameraParameters> mapOfCamParams;
+
+    stereoTracker.getCamerasParams(&mapOfCamParams);
+    cam_left_st = mapOfCamParams.at(cameraNames.at(0));
+    cam_right_st = mapOfCamParams.at(cameraNames.at(1));
 
 
-    Eigen::Matrix4d wTh_estimated_stereo_left =
-        robVisInfo.robotState.wTv_eigen *
-        robVisInfo.robotStruct.vTcameraL *
-        CONV::matrix_visp2eigen(cLThole_st);
-
-    Eigen::Matrix4d wTh_estimated_stereo_right =
-        robVisInfo.robotState.wTv_eigen *
-        robVisInfo.robotStruct.vTcameraR *
-        CONV::matrix_visp2eigen(cRThole_st);
+    stereoTracker.display(mapOfImages);
+    vpDisplay::displayFrame(imageL_vp, cLThole_st, cam_left_st, 0.25, vpColor::none, 2);
+    vpDisplay::displayFrame(imageR_vp, cRThole_st, cam_right_st, 0.25, vpColor::none, 2);
 
 
     vpDisplay::displayText(imageL_vp, 30, 10, "A click to exit.", vpColor::red);
@@ -257,6 +261,16 @@ int main(int argc, char** argv){
       worldInterface.getwT(&(robVisInfo.transforms.wTh_eigen), holeName);
       CMAT::TransfMatrix wThole_cmat =
           CONV::matrix_eigen2cmat(robVisInfo.transforms.wTh_eigen);
+
+      Eigen::Matrix4d wTh_estimated_stereo_left =
+          robVisInfo.robotState.wTv_eigen *
+          robVisInfo.robotStruct.vTcameraL *
+          CONV::matrix_visp2eigen(cLThole_st);
+
+      Eigen::Matrix4d wTh_estimated_stereo_right =
+          robVisInfo.robotState.wTv_eigen *
+          robVisInfo.robotStruct.vTcameraR *
+          CONV::matrix_visp2eigen(cRThole_st);
 
 
       CMAT::TransfMatrix wTholeEstimated_stereoL_cmat =
@@ -288,9 +302,7 @@ int main(int argc, char** argv){
     loop_rate.sleep();
   }
 
-   //To clean up memory allocated by the xml library,
-   //the user has to call this before the exit().
-   vpXmlParser::cleanup();
+
    return 0;
 }
 
@@ -309,35 +321,36 @@ int main(int argc, char** argv){
  *                                                 const vpImage< unsigned char > &  	I2,
  *                                               const std::string &  	initFile1,
  *                                               const std::string &  	initFile2 )
+ * @warning Visp want switched x and y coord for the 2D point. SO this funtion print point as y, x coord
  */
 void append2Dto3Dfile(std::vector<cv::Point> found4CornersL, std::vector<cv::Point> found4CornersR,
                       std::string sourcePath){
 
   // copy original files, if destination exist, it will be overwrite (that is what we want)
-  std::ifstream  srcL(sourcePath+initFileClick+"left.init", std::ios::binary);
-  std::ofstream  dstL(sourcePath+initFile_w2D+"left.init",  std::ios::binary);
+  std::ifstream  srcL(sourcePath+"/vision/"+initFileClick+"left.init", std::ios::binary);
+  std::ofstream  dstL(sourcePath+"/vision/"+initFile_w2D+"left.init",  std::ios::binary);
   dstL << srcL.rdbuf();
   srcL.close();
 
-  std::ifstream  srcR(sourcePath+initFileClick+"right.init", std::ios::binary);
-  std::ofstream  dstR(sourcePath+initFileClick_w2D+"right.init",   std::ios::binary);
+  std::ifstream  srcR(sourcePath+"/vision/"+initFileClick+"right.init", std::ios::binary);
+  std::ofstream  dstR(sourcePath+"/vision/"+initFile_w2D+"right.init",   std::ios::binary);
   dstR << srcR.rdbuf();
   srcR.close();
 
   //write on the new file
-  dstL << std::endl << "#Generate by code: append 2D points" << std::endl
+  dstL << "#Generate by code: append 2D points" << std::endl
        << "4" << std::endl // number of points
-       << found4CornersL.at(0).x << " " << found4CornersL.at(0).y << std::endl
-       << found4CornersL.at(1).x << " " << found4CornersL.at(1).y << std::endl
-       << found4CornersL.at(2).x << " " << found4CornersL.at(2).y << std::endl
-       << found4CornersL.at(3).x << " " << found4CornersL.at(3).y << std::endl ;
+       << found4CornersL.at(0).y << " " << found4CornersL.at(0).x << std::endl
+       << found4CornersL.at(1).y << " " << found4CornersL.at(1).x << std::endl
+       << found4CornersL.at(2).y << " " << found4CornersL.at(2).x << std::endl
+       << found4CornersL.at(3).y << " " << found4CornersL.at(3).x << std::endl ;
   dstL.close();
-  dstR << std::endl << "#Generate by code: append 2D points" << std::endl
+  dstR << "#Generate by code: append 2D points" << std::endl
        << "4" << std::endl // number of points
-       << found4CornersR.at(0).x << " " << found4CornersR.at(0).y << std::endl
-       << found4CornersR.at(1).x << " " << found4CornersR.at(1).y << std::endl
-       << found4CornersR.at(2).x << " " << found4CornersR.at(2).y << std::endl
-       << found4CornersR.at(3).x << " " << found4CornersR.at(3).y << std::endl ;
+       << found4CornersR.at(0).y << " " << found4CornersR.at(0).x << std::endl
+       << found4CornersR.at(1).y << " " << found4CornersR.at(1).x << std::endl
+       << found4CornersR.at(2).y << " " << found4CornersR.at(2).x << std::endl
+       << found4CornersR.at(3).y << " " << found4CornersR.at(3).x << std::endl ;
   dstR.close();
 
   return;

@@ -28,12 +28,16 @@ class MonoTracker
 {
 public:
   MonoTracker(std::string callerName, std::string cameraName,
-              vpMbGenericTracker::vpTrackerType trackerType);
-  int initTrackingByClick(vpImage<unsigned char> I);
-  int initTrackingByPoint(vpImage<unsigned char> I);
-  int monoTrack(vpImage<unsigned char> I,
+              int trackerType);
+  ~MonoTracker();
+
+  int initTrackingByClick(vpImage<unsigned char> *I);
+  int initTrackingByPoint(vpImage<unsigned char> *I);
+  int monoTrack(vpImage<unsigned char> *I,
                 vpHomogeneousMatrix *cMo,
                 double *error, double* elapsedTime);
+  void getCameraParams(vpCameraParameters *param);
+  void display(vpImage<unsigned char> *I);
 
 private:
   vpMbGenericTracker tracker;
@@ -43,7 +47,7 @@ private:
   vpKeyPoint keypoint_detection;
 
 
-  int monoTrackInit_priv(vpImage<unsigned char> I);
+  int monoTrackInit_priv(vpImage<unsigned char> *I);
 
 };
 
@@ -53,17 +57,22 @@ class StereoTracker
 public:
   StereoTracker(std::string callerName, std::vector<std::string> cameraNames,
                 std::map<std::string, vpHomogeneousMatrix> mapCameraTransf,
-                vpMbGenericTracker::vpTrackerType trackerType);
+                int trackerType);
+  ~StereoTracker();
 
   int initTrackingByClick( std::map<std::string, const vpImage<unsigned char>*> mapOfImages);
   int initTrackingByPoint(std::map<std::string, const vpImage<unsigned char>*> mapOfImages);
   int stereoTrack(std::map<std::string, const vpImage<unsigned char>*> mapOfImages,
                   std::map<std::string, vpHomogeneousMatrix> *mapOfCameraPoses);
+  void getCamerasParams(std::map<std::string, vpCameraParameters> *mapOfCameraParams);
+  void display(std::map<std::string, const vpImage<unsigned char>*> mapOfImages);
 
 private:
-  vpMbGenericTracker tracker;
+  vpMbGenericTracker *tracker;
+
   std::string callerName;
   std::vector<std::string> cameraNames;
+
   std::string sourcePath;
 
 
