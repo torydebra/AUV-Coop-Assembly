@@ -32,6 +32,7 @@ public:
   int getwTv(Eigen::Matrix4d* wTv_eigen);
   int sendyDot(std::vector<double> yDot);
 
+
   int getLeftImage(cv::Mat *imageCV);
   int getRightImage(cv::Mat *imageCV);
   void imageLeftCallback(const sensor_msgs::ImageConstPtr& msg);

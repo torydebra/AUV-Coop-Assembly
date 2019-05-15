@@ -18,11 +18,11 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  std_srvs
   topic_tools
   roscpp
   rospy
   std_msgs
+  geometry_msgs
   sensor_msgs
   peg_msgs
   tf
@@ -137,7 +137,6 @@ catkin_package(
      roscpp 
      rospy 
      std_msgs
-     std_srvs
      topic_tools
      tf
      tf_conversions
@@ -173,6 +172,8 @@ add_library(RobotVisionInterface src/rosInterfaces/robotVisionInterface.cpp)
 add_library(WorldInterface src/rosInterfaces/worldInterface.cpp)
 add_library(CoordInterfaceMissMan src/rosInterfaces/coordInterfaceMissMan.cpp)
 add_library(CoordInterfaceCoord src/rosInterfaces/coordInterfaceCoord.cpp)
+add_library(VisionInterfaceMissMan src/rosInterfaces/visionInterfaceMissMan.cpp)
+add_library(VisionInterfaceVision src/rosInterfaces/visionInterfaceVision.cpp)
 
 add_library(KdlHelper src/helper/kdlHelper.cpp)
 add_library(JacobianHelper src/helper/jacobianHelper.cpp)
@@ -256,6 +257,7 @@ target_link_libraries(MissionManagerA
     RobotInterface
     WorldInterface
     CoordInterfaceMissMan
+    VisionInterfaceMissMan
     Logger
     Controller
     Formulas
@@ -282,6 +284,7 @@ target_link_libraries(MissionManagerB
     RobotInterface
     WorldInterface
     CoordInterfaceMissMan
+    VisionInterfaceMissMan
     Logger
     Controller
     Formulas
@@ -307,6 +310,7 @@ target_link_libraries(MissionManagerVision
     ${catkin_LIBRARIES}
     RobotVisionInterface
     WorldInterface
+    VisionInterfaceVision
     linuxcmat
     Logger
     Tracker
@@ -342,6 +346,7 @@ target_link_libraries(Tracker
 target_link_libraries(Conversions
     ${OpenCV_LIBS}
     ${VISP_LIBRARIES}
+    ${catkin_LIBRARIES}
     tf_conversions
     linuxcmat
 )
@@ -388,6 +393,15 @@ target_link_libraries(CoordInterfaceCoord
 target_link_libraries(WorldInterface
     tf
 )
+
+target_link_libraries(VisionInterfaceMissMan
+    Conversions
+)
+target_link_libraries(VisionInterfaceVision
+    Conversions
+)
+
+
 
 target_link_libraries(KdlHelper
     ${catkin_LIBRARIES}

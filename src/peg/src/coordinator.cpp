@@ -140,7 +140,6 @@ int main(int argc, char **argv){
 
       std::cout << "Calculated coop vel:\n" << coopVelToolFeasible << "\n\n";
 
-
       publishCoopVel(coopVelPub, coopVelToolFeasible);
 
 
@@ -148,11 +147,8 @@ int main(int argc, char **argv){
       if (pathLog.size() != 0){
         Eigen::Matrix4d wTt2;
         worldInterface.getwT(&wTt2, toolName2);
-
         logger.logCartError(wTt, wTt2, "stressTool");
-
       }
-
 
       ros::spinOnce();
       loopRater.wait();

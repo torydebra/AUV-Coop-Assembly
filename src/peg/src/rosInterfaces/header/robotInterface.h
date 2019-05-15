@@ -23,7 +23,7 @@ public:
   int getJointState(std::vector<double>* jState);
   int sendyDot(std::vector<double> yDot);
 
-  int getwTjoints(std::vector<Eigen::Matrix4d> *wTjoints);
+  //int getwTjoints(std::vector<Eigen::Matrix4d> *wTjoints);
 
 
 private:

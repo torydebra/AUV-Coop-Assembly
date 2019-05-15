@@ -92,6 +92,7 @@ int RobotInterface::getJointState(std::vector<double> *jState){
 }
 
 
+
 int RobotInterface::sendyDot(std::vector<double> yDot){
 
   if(!ros::ok()){
@@ -122,36 +123,36 @@ int RobotInterface::sendyDot(std::vector<double> yDot){
 
 
 
-int RobotInterface::getwTjoints(std::vector<Eigen::Matrix4d> *wTjoints) {
-  if(!ros::ok()){
-    return -1;
-  }
+//int RobotInterface::getwTjoints(std::vector<Eigen::Matrix4d> *wTjoints) {
+//  if(!ros::ok()){
+//    return -1;
+//  }
 
-  std::vector<tf::StampedTransform> wTJoints_tf(ARM_DOF);
+//  std::vector<tf::StampedTransform> wTJoints_tf(ARM_DOF);
 
-  try {
-    for(int i=0; i<ARM_DOF; i++){
-      std::ostringstream s;
-      s << (i+1);
-      const std::string si(s.str());
-      std::string topic = "/" + robotName +"/part" + si;
-      if (i==3){
-        topic += "_base";
-      }
-      tfListener.lookupTransform("world", topic, ros::Time(0), wTJoints_tf[i]);
-    }
-
-
-  } catch (tf::TransformException &ex) {
-    ROS_ERROR("%s",ex.what());
-    ros::Duration(1.0).sleep();
-  }
-
-  for(int i=0; i<ARM_DOF; i++){
-    wTjoints->push_back(CONV::transfMatrix_tf2eigen(wTJoints_tf[i]));
-  }
+//  try {
+//    for(int i=0; i<ARM_DOF; i++){
+//      std::ostringstream s;
+//      s << (i+1);
+//      const std::string si(s.str());
+//      std::string topic = "/" + robotName +"/part" + si;
+//      if (i==3){
+//        topic += "_base";
+//      }
+//      tfListener.lookupTransform("world", topic, ros::Time(0), wTJoints_tf[i]);
+//    }
 
 
-  return 0;
-}
+//  } catch (tf::TransformException &ex) {
+//    ROS_ERROR("%s",ex.what());
+//    ros::Duration(1.0).sleep();
+//  }
+
+//  for(int i=0; i<ARM_DOF; i++){
+//    wTjoints->push_back(CONV::transfMatrix_tf2eigen(wTJoints_tf[i]));
+//  }
+
+
+//  return 0;
+//}
 

@@ -249,3 +249,44 @@ vpHomogeneousMatrix CONV::transfMatrix_eigen2visp(Eigen::MatrixXd mat_eigen){
 //}
 
 
+geometry_msgs::Transform CONV::transfMatrix_eigen2geomMsgs(Eigen::Matrix4d mat_eigen){
+
+  geometry_msgs::Transform transf_ros;
+
+
+  transf_ros.translation.x = mat_eigen(0,3);
+  transf_ros.translation.y = mat_eigen(1,3);
+  transf_ros.translation.z = mat_eigen(2,3);
+
+  Eigen::Quaterniond quat_eigen(mat_eigen.topLeftCorner<3,3>());
+  transf_ros.rotation.x = quat_eigen.x();
+  transf_ros.rotation.y = quat_eigen.y();
+  transf_ros.rotation.z = quat_eigen.z();
+  transf_ros.rotation.w = quat_eigen.w();
+
+  return transf_ros;
+
+}
+
+Eigen::Matrix4d CONV::transfMatrix_geomMsgs2Eigen(geometry_msgs::Transform mat_msgs){
+
+  Eigen::Matrix4d mat_eigen = Eigen::Matrix4d::Identity();
+
+  mat_eigen(0,3) = mat_msgs.translation.x;
+  mat_eigen(1,3) = mat_msgs.translation.y;
+  mat_eigen(2,3) = mat_msgs.translation.z;
+
+  Eigen::Quaterniond quat_eigen;
+  quat_eigen.x() = mat_msgs.rotation.x;
+  quat_eigen.y() = mat_msgs.rotation.y;
+  quat_eigen.z() = mat_msgs.rotation.z;
+  quat_eigen.w() = mat_msgs.rotation.w;
+
+  //The quaternion is required to be normalized, otherwise the result is undefined.
+  mat_eigen.topLeftCorner<3,3>() = quat_eigen.normalized().toRotationMatrix();
+
+  return mat_eigen;
+
+}
+
+

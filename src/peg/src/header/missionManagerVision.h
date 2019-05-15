@@ -5,6 +5,7 @@
 #include <fstream>
 #include "../rosInterfaces/header/robotVisionInterface.h"
 #include "../rosInterfaces/header/worldInterface.h"
+#include "../rosInterfaces/header/visionInterfaceVision.h"
 #include "../helper/header/infosVision.h"
 #include "../helper/header/logger.h"
 

@@ -102,6 +102,8 @@ int RobotVisionInterface::sendyDot(std::vector<double> yDot){
   return 0;
 }
 
+
+
 /**
  * @brief RobotVisionInterface::getLeftImage for now convert in 8bit grayscale image
  * @param imageCV

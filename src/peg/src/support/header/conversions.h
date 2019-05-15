@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cmat/cmat.h>
 #include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <geometry_msgs/Transform.h>
 #include <tf_conversions/tf_eigen.h>
 #include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
@@ -55,6 +57,10 @@ namespace CONV{
     //visp ~ eigen
     Eigen::MatrixXd matrix_visp2eigen(vpMatrix mat_visp);
     vpHomogeneousMatrix transfMatrix_eigen2visp(Eigen::MatrixXd mat_eigen);
+
+    //eigen ~ geometry_msgs
+    Eigen::Matrix4d transfMatrix_geomMsgs2Eigen(geometry_msgs::Transform mat_msgs);
+    geometry_msgs::Transform transfMatrix_eigen2geomMsgs(Eigen::Matrix4d mat_eigen);
 
 
 }

@@ -49,6 +49,8 @@ int main(int argc, char** argv){
   WorldInterface worldInterface(robotName);
   worldInterface.waitReady(holeName);
 
+  VisionInterfaceVision visionInterface(nh, robotName);
+
 
   /// Set initial state
   robotVisInterface.getwTv(&(robVisInfo.robotState.wTv_eigen));
@@ -109,7 +111,7 @@ int main(int argc, char** argv){
   cameraNames.at(0) = "left";
   cameraNames.at(1) = "right";
 
-  bool stereo = false;
+  bool stereo = true;
   MonoTracker* monoTrackerL;
   MonoTracker* monoTrackerR;
   StereoTracker* stereoTracker;
@@ -139,7 +141,7 @@ int main(int argc, char** argv){
   }
 
   /// INIT TRACKERS
-  bool initByClick = false;
+  bool initByClick = true;
   std::vector<std::vector<cv::Point>> found4CornersVectorL, found4CornersVectorR; //used if initclick false
   if (initByClick){
     if (stereo == false){
@@ -154,10 +156,10 @@ int main(int argc, char** argv){
 
     /// FIND SQUARE METHOD
       // https://docs.opencv.org/3.4/db/d00/samples_2cpp_2squares_8cpp-example.html#a20
-//    Detector::findSquare(imageL_cv, &found4CornersVectorL);
-//    Detector::findSquare(imageR_cv, &found4CornersVectorR);
-//    Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
-//    Detector::drawSquares(imageR_cv, found4CornersVectorR, "right");
+    Detector::findSquare(imageL_cv, &found4CornersVectorL);
+    Detector::findSquare(imageR_cv, &found4CornersVectorR);
+    Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
+    Detector::drawSquares(imageR_cv, found4CornersVectorR, "right");
 
     /// TEMPLATE MATCHING OPENCV
      // https://docs.opencv.org/3.4.6/de/da9/tutorial_template_matching.html
@@ -168,12 +170,12 @@ int main(int argc, char** argv){
     // in pixel nella immagine che si vede dalle camere... ci vorrebbe homography
     // per rectify immagini...
     //TODO rectify?
-    cv::Mat templL1 = cv::imread(sourcePath + templName);
-    cv::Mat templR1 = cv::imread(sourcePath + templName);
-    found4CornersVectorL.resize(1);
-    found4CornersVectorR.resize(1);
-    Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL.at(0)));
-    Detector::templateMatching(imageR_cv, templR1, &(found4CornersVectorR.at(0)));
+//    cv::Mat templL1 = cv::imread(sourcePath + templName);
+//    cv::Mat templR1 = cv::imread(sourcePath + templName);
+//    found4CornersVectorL.resize(1);
+//    found4CornersVectorR.resize(1);
+//    Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL.at(0)));
+//    Detector::templateMatching(imageR_cv, templR1, &(found4CornersVectorR.at(0)));
 
 
     //TODO  if found4CornersVector contain more than one element, pick the best...
@@ -224,6 +226,8 @@ int main(int argc, char** argv){
     vpDisplay::display(imageL_vp);
     vpDisplay::display(imageR_vp);
 
+
+
     vpHomogeneousMatrix cLThole, cRThole;
     if (stereo == false){/// METHOD 1 MONO CAMERAS
 
@@ -260,11 +264,6 @@ int main(int argc, char** argv){
     vpDisplay::displayFrame(imageR_vp, cRThole, cam_right, 0.25, vpColor::none, 2);
 
     // store estimation in struct, TODO mean tra right e left?
-    robVisInfo.transforms.wTh_estimated_eigen =
-        robVisInfo.robotState.wTv_eigen *
-        robVisInfo.robotStruct.vTcameraL *
-        CONV::matrix_visp2eigen(cLThole);
-
     Eigen::Matrix4d wTh_estimated_left =
         robVisInfo.robotState.wTv_eigen *
         robVisInfo.robotStruct.vTcameraL *
@@ -275,9 +274,20 @@ int main(int argc, char** argv){
         CONV::matrix_visp2eigen(cRThole);
 
 
+    robVisInfo.transforms.wTh_estimated_eigen =
+        robVisInfo.robotState.wTv_eigen *
+        robVisInfo.robotStruct.vTcameraL *
+        CONV::matrix_visp2eigen(cLThole);
+
+    ///debug
+    std::cout << "PUBLISHING:\n" << robVisInfo.transforms.wTh_estimated_eigen <<"\n";
+    visionInterface.publishHoleTransform(robVisInfo.transforms.wTh_estimated_eigen);
+
+
     vpDisplay::displayText(imageL_vp, 30, 10, "A click to exit.", vpColor::red);
     vpDisplay::flush(imageL_vp);
     vpDisplay::flush(imageR_vp);
+    //vpDisplay::getKeyboardEvent(imageL_vp, 'd');
     if (vpDisplay::getClick(imageL_vp, false)) {
       return 1;
     }

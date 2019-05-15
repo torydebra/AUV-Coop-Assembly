@@ -126,6 +126,8 @@ int main(int argc, char **argv)
   worldInterface.waitReady(toolName);
   CoordInterfaceMissMan coordInterface(nh, robotName);
 
+  VisionInterfaceMissMan visionInterface(nh, robotName);
+
 
   /// KDL parser to after( in the control loop )get jacobian from joint position
   //std::string filename = "/home/tori/UWsim/Peg/model/g500ARM5.urdf";
@@ -151,11 +153,15 @@ int main(int argc, char **argv)
   /// Set initial state (todo, same as in control loop, make a function?)
   robotInterface.getJointState(&(robInfo.robotState.jState));
   robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-  //DEBUGG
-  robotInterface.getwTjoints(&(robInfo.robotState.wTjoints));
+
   worldInterface.getwT(&(robInfo.transforms.wTt_eigen), toolName);
   //robInfo.transforms.wTgoalTool_eigen.topLeftCorner<3,3>() = robInfo.transforms.wTt_eigen.topLeftCorner<3,3>();
   worldInterface.getwPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
+
+  //DEBUGG
+  //robotInterface.getwTjoints(&(robInfo.robotState.wTjoints));
+
+
 
   //get ee pose RESPECT LINK 0
   kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
@@ -248,6 +254,10 @@ int main(int argc, char **argv)
     robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
     worldInterface.getwT(&(robInfo.transforms.wTt_eigen), toolName);
     worldInterface.getwPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
+    visionInterface.getHoleTransform(&(robInfo.transforms.wTholeEstimated_eigen));
+
+    //DEBUG
+    std::cout <<"ARRIVED wThole" << robInfo.transforms.wTholeEstimated_eigen << "\n\n";
 
     //get ee pose RESPECT LINK 0
     kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
@@ -487,13 +497,6 @@ void deleteTasks(std::vector<Task*> *tasks){
     }
     tasks->clear();
 }
-
-
-
-
-
-
-
 
 
 

@@ -17,6 +17,7 @@ struct Transforms {
   Eigen::Matrix4d wTgoalTool_eigen; //goal for tool (tool frame is in the center of pipe)
 
   Eigen::Matrix4d wTt_eigen; //tool in the world
+  Eigen::Matrix4d wTholeEstimated_eigen;
 
 };
 

@@ -27,6 +27,7 @@
 #include "../rosInterfaces/header/robotInterface.h"
 #include "../rosInterfaces/header/worldInterface.h"
 #include "../rosInterfaces/header/coordInterfaceMissMan.h"
+#include "../rosInterfaces/header/visionInterfaceMissMan.h"
 
 
 #include "../tasks/header/lastTask.h"

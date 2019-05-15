@@ -21,6 +21,9 @@ MonoTracker::MonoTracker(std::string callerName, std::string cameraName,
   tracker.setOgreVisibilityTest(false);
   tracker.setDisplayFeatures(true);
 
+  // Tells if the tracker has to compute the projection error
+  tracker.setProjectionErrorComputation(true);
+
   std::cout << "[" << callerName << "][MONOTRACKER " << cameraName << "]"
             << " created\n";
 
@@ -135,8 +138,15 @@ int MonoTracker::monoTrack(vpImage<unsigned char> *I,
 
     if (keypoint_detection.matchPoint(*I, cam, *cMo, *error, *elapsedTime)) {
       tracker.setPose(*I, *cMo);
-      //tracker.display(*I, *cMo, cam, vpColor::red, 2);
+
+      std::cout << "keypoint erro: " << *error << std::endl;
+      std::cout << "projectERRO: " << tracker.getProjectionError() << "\n";
+      std::cout << "Residual: " << sqrt( (tracker.getError()).sumSquare()) << std::endl;
+      std::cout << "Residual normalized: "
+                << sqrt( (tracker.getError()).sumSquare())/tracker.getError().size() << std::endl;
     }
+
+
 
   } catch (vpException &e) {
     std::cout << "[" << callerName << "][MONOTRACKER " << cameraName << "]"
