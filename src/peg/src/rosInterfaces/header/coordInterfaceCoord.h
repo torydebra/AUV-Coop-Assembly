@@ -16,22 +16,57 @@
 class CoordInterfaceCoord
 {
 public:
-  CoordInterfaceCoord(ros::NodeHandle nh, std::string robotName);
-  bool getReadyRob();
-  int getNonCoopCartVel(Eigen::Matrix<double, VEHICLE_DOF, 1> *nonCoopCartVel_eigen);
-  int getJJsharp(Eigen::Matrix<double, VEHICLE_DOF, VEHICLE_DOF> *admisVelTool_eigen);
+  CoordInterfaceCoord(ros::NodeHandle nh, std::string robotNameA,
+                      std::string robotNameB);
+  bool getReadyBothRob();
+
+  int getMatricesFromRobs(Eigen::Matrix<double, VEHICLE_DOF, 1> *nonCoopCartVelA,
+                          Eigen::Matrix<double, VEHICLE_DOF, 1> *nonCoopCartVelB,
+                          Eigen::Matrix<double, VEHICLE_DOF, VEHICLE_DOF> *admisVelToolA,
+                          Eigen::Matrix<double, VEHICLE_DOF, VEHICLE_DOF> *admisVelToolB);
+
+  void publishCoopVel(Eigen::Matrix<double, VEHICLE_DOF, 1> coopVel);
+  void publishStartBoth(bool start);
+
 
 private:
-  std::string robotName;
-  bool readyRob;
-  ros::Subscriber readyRobSub;
-  ros::Subscriber subCoordFromMM;
+  bool getReadyRobA();
+  bool getReadyRobB();
+  int getNonCoopCartVel(Eigen::Matrix<double, VEHICLE_DOF, 1> *nonCoopCartVel_eigen,
+                        std::string robotName);
+  int getJJsharp(Eigen::Matrix<double, VEHICLE_DOF, VEHICLE_DOF> *admisVelTool_eigen,
+                 std::string robotName);
 
-  std::vector<double> tempXdot;
-  std::vector<double> tempJJsharp;
 
-  void readyRobSubCallback(const std_msgs::Bool::ConstPtr& start);
-  void subCoordFromMMCallBack(const peg_msgs::toCoord::ConstPtr& msg);
+  std::string robotNameA;
+  std::string robotNameB;
+  bool readyRobA;
+  bool readyRobB;
+  ros::Subscriber readyRobASub;
+  ros::Subscriber readyRobBSub;
+  ros::Subscriber subCoordFromMMA;
+  ros::Subscriber subCoordFromMMB;
+
+  ros::Publisher startBothPub;
+  ros::Publisher coopVelPub;
+
+
+  std::vector<double> tempXdotA;
+  std::vector<double> tempJJsharpA;
+  std::vector<double> tempXdotB;
+  std::vector<double> tempJJsharpB;
+
+  bool readxDotA;
+  bool readxDotB;
+  bool readJJsharpA;
+  bool readJJsharpB;
+
+
+
+  void readyRobASubCallback(const std_msgs::Bool::ConstPtr& start);
+  void subCoordFromMMACallBack(const peg_msgs::toCoord::ConstPtr& msg);
+  void readyRobBSubCallback(const std_msgs::Bool::ConstPtr& start);
+  void subCoordFromMMBCallBack(const peg_msgs::toCoord::ConstPtr& msg);
 
 
 };

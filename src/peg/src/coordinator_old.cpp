@@ -8,14 +8,15 @@ int main(int argc, char **argv){
               << std::endl;
     return -1;
   }
-  std::string robotNameA = argv[1];
-  std::string robotNameB = argv[2];
+  std::string robotName1 = argv[1];
+  std::string robotName2 = argv[2];
   std::string pathLog;
   if (LOG && (argc > 3)){   //if flag log setted to 1 and path log is given
     pathLog = argv[3];
   }
 
-  bool readyBothRob = false;
+  bool readyRob1 = false;
+  bool readyRob2 = false;
 
   ros::init (argc, argv, "Coordinator");
   std::cout << "[COORDINATOR] Start" << std::endl;
@@ -28,8 +29,8 @@ int main(int argc, char **argv){
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
 
    //rot part
-  wTgoalTool_eigen.topLeftCorner<3,3>() << 0, 1,  0,
-                                           -1,  0,  0,
+  wTgoalTool_eigen.topLeftCorner<3,3>() << 0, -1,  0,
+                                           1,  0,  0,
                                            0,  0,  1;
 
   //wTgoalTool_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
@@ -41,6 +42,16 @@ int main(int argc, char **argv){
 
 
   //TODO put these in interfaces ? this should be a single publisher...
+  std::string topicStart = "/uwsim/Coord/StartStopBoth";
+  ros::Publisher startBothPub = nh.advertise<std_msgs::Bool>(topicStart, 1);
+
+  std::string topicCoopVel = "/uwsim/Coord/CoopVel";
+  ros::Publisher coopVelPub = nh.advertise<geometry_msgs::TwistStamped>(topicCoopVel, 1);
+
+
+
+  std_msgs::Bool start;
+  start.data = false;
 
 
   /// Interfaces
@@ -52,7 +63,8 @@ int main(int argc, char **argv){
   worldInterface.waitReady(toolName2);
 
 
-  CoordInterfaceCoord coordInterface(nh, robotNameA, robotNameB);
+  CoordInterfaceCoord coordInterfaceA(nh, robotName1);
+  CoordInterfaceCoord coordInterfaceB(nh, robotName2);
   Eigen::Matrix<double, VEHICLE_DOF, 1> nonCoopCartVelA_eigen;
   Eigen::Matrix<double, VEHICLE_DOF, VEHICLE_DOF> admisVelToolA_eigen;
   Eigen::Matrix<double, VEHICLE_DOF, 1> nonCoopCartVelB_eigen;
@@ -74,32 +86,39 @@ int main(int argc, char **argv){
 
   while(ros::ok()){
 
-    while(!(readyBothRob)){ //wait until both ready, meanwhile publish false to make no robot start
+    start.data = false;
+    while(!(readyRob1 && readyRob2)){
       boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
-      coordInterface.publishStartBoth(false);
+      startBothPub.publish(start);
 
-      readyBothRob = coordInterface.getReadyBothRob();
+      readyRob1 = coordInterfaceA.getReadyRob();
+      readyRob2 = coordInterfaceB.getReadyRob();
       ros::spinOnce();
       loopRater.wait();
     }
 
     std::cout << "[COORDINATOR] Now both robot are ready" << std::endl;
 
-    while(readyBothRob){
-      boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
-      coordInterface.publishStartBoth(true);
 
-      //if at least one did not arrive, repeat loop, but call each get only once (this is done inside methods class interface)
-      int returned = 1;
-      while (returned > 0){
-        returned = coordInterface.getMatricesFromRobs(&nonCoopCartVelA_eigen, &nonCoopCartVelB_eigen, &admisVelToolA_eigen, &admisVelToolB_eigen);
-        if (returned == -1){
-          std::cout << "[COORDINATOR] ERROR in the dimension of mesage arrived from robots" << std::endl;
-          return -1;
+    start.data = true;
+    while(readyRob1 && readyRob2){
+      boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
+      startBothPub.publish(start); //TODO publish once? but first mess always lost...
+
+      bool arrived[4] = {false, false, false, false};
+      //if at least one did not arrive, repeat loop, but call each get only once
+      while (arrived[0] == false || arrived[1] == false || arrived[2] == false || arrived[3] == false){
+        if (arrived[0] == false){
+          arrived[0] = (coordInterfaceA.getNonCoopCartVel(&nonCoopCartVelA_eigen)  == 0) ? true : false;
         }
-        if (returned == -2){
-          std::cout << "[COORDINATOR] ERROR in the name of robots" << std::endl;
-          return -1;
+        if (arrived[1] == false){
+          arrived[1] = (coordInterfaceA.getJJsharp(&admisVelToolA_eigen) == 0) ? true : false;
+        }
+        if (arrived[2] == false){
+          arrived[2] = (coordInterfaceB.getNonCoopCartVel(&nonCoopCartVelB_eigen)  == 0) ? true : false;
+        }
+        if (arrived[3] == false){
+          arrived[3] = (coordInterfaceB.getJJsharp(&admisVelToolB_eigen) == 0) ? true : false;
         }
 
         boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(1));
@@ -121,7 +140,7 @@ int main(int argc, char **argv){
 
       std::cout << "Calculated coop vel:\n" << coopVelToolFeasible << "\n\n";
 
-      coordInterface.publishCoopVel(coopVelToolFeasible);
+      publishCoopVel(coopVelPub, coopVelToolFeasible);
 
 
       ///LOGGING
@@ -131,7 +150,6 @@ int main(int argc, char **argv){
         logger.logCartError(wTt, wTt2, "stressTool");
       }
 
-      readyBothRob = coordInterface.getReadyBothRob();
       ros::spinOnce();
       loopRater.wait();
     }
@@ -214,5 +232,19 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> calculateRefTool(Eigen::Matrix4d wTgoaltoo
 
 
   return reference;
+
+}
+
+void publishCoopVel(ros::Publisher coopVelPub, Eigen::Matrix<double, VEHICLE_DOF, 1> coopVel){
+
+  geometry_msgs::TwistStamped msg;
+  msg.twist.linear.x = coopVel(0);
+  msg.twist.linear.y = coopVel(1);
+  msg.twist.linear.z = coopVel(2);
+  msg.twist.angular.x = coopVel(3);
+  msg.twist.angular.y = coopVel(4);
+  msg.twist.angular.z = coopVel(5);
+
+  coopVelPub.publish(msg);
 
 }

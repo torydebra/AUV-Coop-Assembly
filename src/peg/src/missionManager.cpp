@@ -84,8 +84,8 @@ int main(int argc, char **argv)
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
 
    //rot part
-  wTgoalTool_eigen.topLeftCorner<3,3>() << 0, -1,  0,
-                                           1,  0,  0,
+  wTgoalTool_eigen.topLeftCorner<3,3>() << 0, 1,  0,
+                                           -1,  0,  0,
                                            0,  0,  1;
 
  // wTgoalTool_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();

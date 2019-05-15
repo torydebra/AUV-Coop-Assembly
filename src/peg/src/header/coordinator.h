@@ -4,7 +4,6 @@
 #include <ros/ros.h>
 #include <Eigen/Core>
 #include <cmat/cmat.h>
-#include <std_msgs/Bool.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
