@@ -119,7 +119,7 @@ int main(int argc, char** argv){
   imageR_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
   //cut top part of image where a piece of auv is visible and can distract cv algos
   imageL_cv = imageL_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
-  imageR_cv = imageR_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
+  imageR_cv = imageR_cv(cv::Rect(0, 60, imageR_cv.cols, imageR_cv.rows-60));
 
   vpImageConvert::convert(imageL_cv, imageL_vp);
   vpImageConvert::convert(imageR_cv, imageR_vp);
@@ -128,10 +128,10 @@ int main(int argc, char** argv){
   std::vector<int> trackerTypes;
 //  trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER);
 //  trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER);
-  trackerTypes.push_back(vpMbGenericTracker::KLT_TRACKER );
+  //trackerTypes.push_back(vpMbGenericTracker::KLT_TRACKER );
 //  trackerTypes.push_back(vpMbGenericTracker::KLT_TRACKER );
- // trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
-  //trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+  trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+  trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
 
   vpMbGenericTracker tracker(trackerTypes);
@@ -531,7 +531,7 @@ int main(int argc, char** argv){
     imageR_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
     //cut top part of image where a piece of auv is visible and can distract cv algos
     imageL_cv = imageL_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
-    imageR_cv = imageR_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
+    imageR_cv = imageR_cv(cv::Rect(0, 60, imageR_cv.cols, imageR_cv.rows-60));
     vpImageConvert::convert(imageL_cv, imageL_vp);
     vpImageConvert::convert(imageR_cv, imageR_vp);
 
@@ -542,33 +542,33 @@ int main(int argc, char** argv){
         CONV::matrix_eigen2cmat(robVisInfo.transforms.wTh_eigen);
 
     /// METHOD 1 OBJECT DETECTION
-        vpDisplay::displayText(imageL_vp, 10, 10, "Detection and localization in process...", vpColor::red);
-        vpHomogeneousMatrix cLThole;
-        double ransacError = 0.0;
-        double elapsedTime = 0.0;
-        objDetection(imageL_vp, &tracker, &keypoint_detection, &cLThole,
-                     &ransacError, &elapsedTime);
+//        vpDisplay::displayText(imageL_vp, 10, 10, "Detection and localization in process...", vpColor::red);
+//        vpHomogeneousMatrix cLThole;
+//        double ransacError = 0.0;
+//        double elapsedTime = 0.0;
+//        objDetection(imageL_vp, &tracker, &keypoint_detection, &cLThole,
+//                     &ransacError, &elapsedTime);
 
-        vpCameraParameters cam_left;
-        tracker.getCameraParameters(cam_left);
+//        vpCameraParameters cam_left;
+//        tracker.getCameraParameters(cam_left);
 
-        vpDisplay::displayFrame(imageL_vp, cLThole, cam_left, 0.25, vpColor::none, 3);
+//        vpDisplay::displayFrame(imageL_vp, cLThole, cam_left, 0.25, vpColor::none, 3);
 
 
-        robVisInfo.transforms.wTh_estimated_eigen =
-            robVisInfo.robotState.wTv_eigen *
-            robVisInfo.robotStruct.vTcameraL *
-            CONV::matrix_visp2eigen(cLThole);
+//        robVisInfo.transforms.wTh_estimated_eigen =
+//            robVisInfo.robotState.wTv_eigen *
+//            robVisInfo.robotStruct.vTcameraL *
+//            CONV::matrix_visp2eigen(cLThole);
 
-        CMAT::TransfMatrix wTholeEstimated_cmat =
-            CONV::matrix_eigen2cmat(robVisInfo.transforms.wTh_estimated_eigen);
+//        CMAT::TransfMatrix wTholeEstimated_cmat =
+//            CONV::matrix_eigen2cmat(robVisInfo.transforms.wTh_estimated_eigen);
 
-        CMAT::Vect6 swappedError =
-            CMAT::CartError(wThole_cmat, wTholeEstimated_cmat);
-        CMAT::Vect6 error;
-        error.SetFirstVect3(swappedError.GetSecondVect3());
-        error.SetSecondVect3(swappedError.GetFirstVect3());
-        logger.logNumbers(error, "error");
+//        CMAT::Vect6 swappedError =
+//            CMAT::CartError(wThole_cmat, wTholeEstimated_cmat);
+//        CMAT::Vect6 error;
+//        error.SetFirstVect3(swappedError.GetSecondVect3());
+//        error.SetSecondVect3(swappedError.GetFirstVect3());
+//        logger.logNumbers(error, "error");
 
 
     /// method TRACKING DETECTION VISP ***********************************************************
@@ -578,52 +578,52 @@ int main(int argc, char** argv){
 
     /// METHOD 2 STEREO
 
-//    vpHomogeneousMatrix cLThole_st, cRThole_st;
-//    stereoTracking(imageL_vp, imageR_vp, &tracker, &cLThole_st, &cRThole_st);
+    vpHomogeneousMatrix cLThole_st, cRThole_st;
+    stereoTracking(imageL_vp, imageR_vp, &tracker, &cLThole_st, &cRThole_st);
 
-//    // display
-//    vpCameraParameters cam_left, cam_right;
-//    tracker.getCameraParameters(cam_left, cam_right);
-//    tracker.display(imageL_vp, imageR_vp, cLThole_st, cRThole_st, cam_left, cam_right, vpColor::red, 2);
-//    vpDisplay::displayFrame(imageL_vp, cLThole_st, cam_left, 0.25, vpColor::none, 2);
-//    vpDisplay::displayFrame(imageR_vp, cRThole_st, cam_right, 0.25, vpColor::none, 2);
-
-
-//    Eigen::Matrix4d wTh_estimated_stereo_left =
-//        robVisInfo.robotState.wTv_eigen *
-//        robVisInfo.robotStruct.vTcameraL *
-//        CONV::matrix_visp2eigen(cLThole_st);
-
-//    Eigen::Matrix4d wTh_estimated_stereo_right =
-//        robVisInfo.robotState.wTv_eigen *
-//        robVisInfo.robotStruct.vTcameraR *
-//        CONV::matrix_visp2eigen(cRThole_st);
+    // display
+    vpCameraParameters cam_left, cam_right;
+    tracker.getCameraParameters(cam_left, cam_right);
+    tracker.display(imageL_vp, imageR_vp, cLThole_st, cRThole_st, cam_left, cam_right, vpColor::red, 2);
+    vpDisplay::displayFrame(imageL_vp, cLThole_st, cam_left, 0.25, vpColor::none, 2);
+    vpDisplay::displayFrame(imageR_vp, cRThole_st, cam_right, 0.25, vpColor::none, 2);
 
 
-//    CMAT::TransfMatrix wTholeEstimated_stereoL_cmat =
-//        CONV::matrix_eigen2cmat(wTh_estimated_stereo_left);
-//    CMAT::TransfMatrix wTholeEstimated_stereoR_cmat =
-//        CONV::matrix_eigen2cmat(wTh_estimated_stereo_right);
+    Eigen::Matrix4d wTh_estimated_stereo_left =
+        robVisInfo.robotState.wTv_eigen *
+        robVisInfo.robotStruct.vTcameraL *
+        CONV::matrix_visp2eigen(cLThole_st);
+
+    Eigen::Matrix4d wTh_estimated_stereo_right =
+        robVisInfo.robotState.wTv_eigen *
+        robVisInfo.robotStruct.vTcameraR *
+        CONV::matrix_visp2eigen(cRThole_st);
 
 
-//    CMAT::Vect6 swappedError2 =
-//        CMAT::CartError(wThole_cmat, wTholeEstimated_stereoL_cmat);
-//    CMAT::Vect6 error2;
-//    error2.SetFirstVect3(swappedError2.GetSecondVect3());
-//    error2.SetSecondVect3(swappedError2.GetFirstVect3());
-//    logger.logNumbers(error2, "errorStereoL");
+    CMAT::TransfMatrix wTholeEstimated_stereoL_cmat =
+        CONV::matrix_eigen2cmat(wTh_estimated_stereo_left);
+    CMAT::TransfMatrix wTholeEstimated_stereoR_cmat =
+        CONV::matrix_eigen2cmat(wTh_estimated_stereo_right);
 
-//    /// TODO check if error l and r are same, they must are when stereo method is used
-//    CMAT::Vect6 swappedError3 =
-//        CMAT::CartError(wThole_cmat, wTholeEstimated_stereoR_cmat);
-//    CMAT::Vect6 error3;
-//    error3.SetFirstVect3(swappedError3.GetSecondVect3());
-//    error3.SetSecondVect3(swappedError3.GetFirstVect3());
-//    logger.logNumbers(error3, "errorStereoR");
 
-//    vpDisplay::displayText(imageL_vp, 30, 10, "A click to exit.", vpColor::red);
-//    vpDisplay::flush(imageL_vp);
-//    vpDisplay::flush(imageR_vp);
+    CMAT::Vect6 swappedError2 =
+        CMAT::CartError(wThole_cmat, wTholeEstimated_stereoL_cmat);
+    CMAT::Vect6 error2;
+    error2.SetFirstVect3(swappedError2.GetSecondVect3());
+    error2.SetSecondVect3(swappedError2.GetFirstVect3());
+    logger.logNumbers(error2, "errorStereoL");
+
+    /// TODO check if error l and r are same, they must are when stereo method is used
+    CMAT::Vect6 swappedError3 =
+        CMAT::CartError(wThole_cmat, wTholeEstimated_stereoR_cmat);
+    CMAT::Vect6 error3;
+    error3.SetFirstVect3(swappedError3.GetSecondVect3());
+    error3.SetSecondVect3(swappedError3.GetFirstVect3());
+    logger.logNumbers(error3, "errorStereoR");
+
+    vpDisplay::displayText(imageL_vp, 30, 10, "A click to exit.", vpColor::red);
+    vpDisplay::flush(imageL_vp);
+    vpDisplay::flush(imageR_vp);
 
 
 

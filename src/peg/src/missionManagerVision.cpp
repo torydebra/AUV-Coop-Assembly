@@ -8,6 +8,7 @@
  * @return
  * @todo racconta del init by click, che lo setti perfetto tanto è facile cliccare sui 4 angoli zoomando con il
  * display di opencv. E cmq è da fare solo una volta, poi salva i file .pos
+ * @todo color images considerations?
  */
 int main(int argc, char** argv){
 
@@ -90,9 +91,6 @@ int main(int argc, char** argv){
   robotVisInterface.getRightImage(&imageR_cv);
   imageL_cv.convertTo(imageL_cv, CV_8U); //TODO check if necessary convert in 8U
   imageR_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
-  //cut top part of image where a piece of auv is visible and can distract cv algos
-  imageL_cv = imageL_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
-  imageR_cv = imageR_cv(cv::Rect(0, 60, imageR_cv.cols, imageR_cv.rows-60));
 
   vpImageConvert::convert(imageL_cv, imageL_vp);
   vpImageConvert::convert(imageR_cv, imageR_vp);
@@ -217,9 +215,6 @@ int main(int argc, char** argv){
     robotVisInterface.getRightImage(&imageR_cv);
     imageL_cv.convertTo(imageL_cv, CV_8U); //TODO check if necessary convert in 8U
     imageR_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
-    //cut top part of image where a piece of auv is visible and can distract cv algos
-    imageL_cv = imageL_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
-    imageR_cv = imageR_cv(cv::Rect(0, 60, imageR_cv.cols, imageR_cv.rows-60));
     vpImageConvert::convert(imageL_cv, imageL_vp);
     vpImageConvert::convert(imageR_cv, imageR_vp);
 

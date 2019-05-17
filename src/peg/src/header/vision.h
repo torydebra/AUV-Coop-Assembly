@@ -34,7 +34,7 @@
 const std::string configFileL = "/home/tori/UWsim/Peg/src/peg/src/vision/data/camera_left.xml";
 const std::string configFileR = configFileL; //ONLY because instrinsic param of cameras L and R are the same
 const std::string caoModel = "/home/tori/UWsim/Peg/src/peg/src/vision/data/blockHoleCilinder.cao";
-const std::string configFileDetector = "/home/tori/UWsim/Peg/src/peg/src/vision/data/detection-config-SIFT.xml";
+const std::string configFileDetector = "/home/tori/UWsim/Peg/src/peg/src/vision/data/detection-config-MONO.xml";
 const std::string initFileClickLeft = "/home/tori/UWsim/Peg/src/peg/src/vision/data/3DPointSquareFace4_left.init";
 const std::string initFileClickRight = "/home/tori/UWsim/Peg/src/peg/src/vision/data/3DPointSquareFace4_right.init";
 const std::string initFileClickLeft_w2D = "/home/tori/UWsim/Peg/src/peg/src/vision/data/3DPointSquareFace4_w2d_left.init";

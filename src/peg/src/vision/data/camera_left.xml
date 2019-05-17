@@ -29,7 +29,7 @@
   </klt>
   <camera>
     <u0>160.0</u0>
-    <v0>120.0</v0>
+    <v0>60.0</v0>  <!--original 120, but we cropped away 60 pixel which contain vehicle part and distract detection algos-->
     <px>257.34082279179285</px>
     <py>257.34083046114705</py>
   </camera>

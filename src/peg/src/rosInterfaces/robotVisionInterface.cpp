@@ -108,6 +108,8 @@ int RobotVisionInterface::sendyDot(std::vector<double> yDot){
  * @brief RobotVisionInterface::getLeftImage for now convert in 8bit grayscale image
  * @param imageCV
  * @return
+ * @warning cropped image!
+ * @todo return in color which can be useful for some algos
  */
 int RobotVisionInterface::getLeftImage(cv::Mat *imageCV){
 
@@ -115,6 +117,9 @@ int RobotVisionInterface::getLeftImage(cv::Mat *imageCV){
   cv_bridge::CvImagePtr imageCVPtr =
       cv_bridge::toCvCopy(leftImage, sensor_msgs::image_encodings::MONO8);
   *imageCV = imageCVPtr.get()->image;
+  //cut top part of image where a piece of auv is visible and can distract cv algos
+  //note: doing this camera param are changed: -60px for v0 element
+  (*imageCV) = (*imageCV)(cv::Rect(0, 60, (*imageCV).cols, (*imageCV).rows-60));
   return 0;
 
 }
@@ -124,6 +129,9 @@ int RobotVisionInterface::getRightImage(cv::Mat *imageCV){
   cv_bridge::CvImagePtr imageCVPtr =
       cv_bridge::toCvCopy(rightImage, sensor_msgs::image_encodings::MONO8);
   *imageCV = imageCVPtr.get()->image;
+  //cut top part of image where a piece of auv is visible and can distract cv algos
+  //note: doing this camera param are changed: -60px for v0 element
+  (*imageCV) = (*imageCV)(cv::Rect(0, 60, (*imageCV).cols, (*imageCV).rows-60));
   return 0;
 
 }

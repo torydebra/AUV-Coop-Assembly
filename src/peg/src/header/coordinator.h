@@ -26,7 +26,5 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> execCoordAlgo(Eigen::Matrix<double, VEHICL
 Eigen::Matrix<double, VEHICLE_DOF, 1> calculateRefTool(Eigen::Matrix4d wTgoaltool_eigen,
                                                        Eigen::Matrix4d wTtool_eigen);
 
-void publishCoopVel(ros::Publisher coopVelPub, Eigen::Matrix<double, VEHICLE_DOF, 1> coopVel);
-
 
 #endif // COORDINATOR_H

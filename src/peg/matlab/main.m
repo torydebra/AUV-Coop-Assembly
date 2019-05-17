@@ -61,5 +61,5 @@ sControlLoop = 0.1;
 
 
 %% Vision
-pathName ="~/LogPegVision/03/g500_C/errorStereoL.txt";
+pathName ="~/LogPegVision/today222/g500_C/errorStereoL.txt";
 plotGenericErrorDivided(pathName)

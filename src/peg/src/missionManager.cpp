@@ -147,8 +147,7 @@ int main(int argc, char **argv)
   // KDL parse for fixed things (e.g. vehicle and one of his sensor)
   //TODO Maybe exist an easier method to parse fixed frame from urdf without needed of kdl solver
   kdlHelper.getFixedFrame(vehicle, link0, &(robInfo.robotStruct.vTlink0));
-
-
+ // TODO vT0 non serve più?
 
   /// Set initial state (todo, same as in control loop, make a function?)
   robotInterface.getJointState(&(robInfo.robotState.jState));
@@ -257,7 +256,8 @@ int main(int argc, char **argv)
     visionInterface.getHoleTransform(&(robInfo.transforms.wTholeEstimated_eigen));
 
     //DEBUG
-    std::cout <<"ARRIVED wThole" << robInfo.transforms.wTholeEstimated_eigen << "\n\n";
+    //std::cout <<"ARRIVED wThole" << robInfo.transforms.wTholeEstimated_eigen << "\n\n";
+    robInfo.transforms.wTgoalTool_eigen = robInfo.transforms.wTholeEstimated_eigen;
 
     //get ee pose RESPECT LINK 0
     kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
@@ -278,8 +278,6 @@ int main(int argc, char **argv)
     /// Pass state to controller which deal with tpik
     controller.updateMultipleTasksMatrices(tasksTPIK1, &robInfo);
     std::vector<double> yDotTPIK1 = controller.execAlgorithm(tasksTPIK1);
-
-
 
     std::vector<double> yDotFinal(TOT_DOF);
 
