@@ -1,0 +1,12 @@
+4              # Number of points
+#xyz with x going in, y on the right, z down
+0      -0.4     -0.4   # top rigth corner
+0      0.4      -0.4     # top left
+0      0.4     0.4     # bottom left
+0      -0.4    0.4     # bottom right
+#Generate by code: append 2D points
+4
+19 41
+19 178
+160 177
+157 40

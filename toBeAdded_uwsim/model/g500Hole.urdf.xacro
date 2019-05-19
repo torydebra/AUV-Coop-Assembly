@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="girona500" >
+	
+  <xacro:property name="pi" value="3.141592654" />
+  <xacro:property name="robot_parts_path" value="robot/ARM5E/ARM5E" />  
+  <xacro:property name="ext" value="osg" />
+  
+  <xacro:property name="theta1" value="0.139277274" />
+  <xacro:property name="theta2" value="1.972222055" />
+  
+  <xacro:property name="cosTheta1" value="0.990316589" />  
+  <xacro:property name="sinTheta1" value="0.138827424" />
+  
+  <xacro:property name="cos180minusTheta2" value="0.390731128" />  
+  <xacro:property name="sin180minusTheta2" value="0.920504853" />
+  
+  
+
+
+  <link name="base_link">
+    <inertial>
+      <mass value="95" />
+      <inertia ixx="100"  ixy="0"  ixz="0" iyy="100" iyz="0" izz="100" />
+    </inertial>
+    <visual>
+      <origin rpy="-${pi/2} 0 ${pi}" xyz="-0.2 0 0.75"/>
+      <geometry>
+        <mesh filename="robot/GIRONA500/g500_March11.${ext}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="part0">
+    <visual>
+      <origin rpy="${pi} 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="${robot_parts_path}_part0.${ext}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="baselink_to_part0" type="fixed">
+    <parent link="base_link"/>
+    <child link="part0"/>
+    <origin rpy="0 0 ${pi}" xyz="0 0 0.95"/>
+  </joint>
+  
+  <link name="kinematic_base"> <!-- kinematic base of the robot -->
+  </link>
+  
+  <joint name="part0_to_kinematic_base" type="fixed">
+    <parent link="part0"/>
+    <child link="kinematic_base"/>
+    <origin rpy="0 0 0" xyz="0 0 0.13"/>
+  </joint>
+  
+  <link name="hole">
+  </link>
+  
+  <joint name="base_to_hole" type="fixed">
+  	<parent link="base_link" />
+  	<child link="hole" />
+  	<origin rpy="0 0 0.12761101961530957" xyz="1.6470000000000002 -0.052999999999998604 0.9518403009774534" />
+  </joint>
+
+</robot>

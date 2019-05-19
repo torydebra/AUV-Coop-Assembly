@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="paused" default="true"/>
+    <arg name="uwsim" default="false"/>
+
+    <!-- Launch Gazebo with underwater world -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="gui" value="false" if="$(arg uwsim)"/>
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="world_name" value="$(find freefloating_gazebo)/world/underwater.world"/>
+    </include>
+    
+    <!-- add 100 x 100 m turquoise water -->
+    <node name="surface" pkg="freefloating_gazebo" type="surface.py"
+          args="-x 100 -y 100 -g 0.2 -b 1 -a 0.2"
+          />
+  
+    <!-- include gazebo spawner (generated while parsing uwsim launcher) -->
+    <include file="$(find freefloating_gazebo_demo)/launch/pegCoop_spawner.launch"/>
+  
+    <group ns="g500_A">
+        <!-- Load controller configurations (vehicle and arm) from YAML file to parameter server -->
+        <rosparam file="$(find freefloating_gazebo_demo)/config/g500_control.yaml" command="load"/>
+        <rosparam file="$(find freefloating_gazebo_demo)/config/arm5e_control.yaml" command="load"/>
+  
+        <!-- Launch low-level PID control for body and arm -->
+        <node name="pid_control" pkg="freefloating_gazebo" type="pid_control" output="screen"/>
+    </group>
+    
+    <group ns="g500_B">
+
+        <rosparam file="$(find freefloating_gazebo_demo)/config/g500_control.yaml" command="load"/>
+        <rosparam file="$(find freefloating_gazebo_demo)/config/arm5e_control.yaml" command="load"/>
+  
+        <node name="pid_control" pkg="freefloating_gazebo" type="pid_control" output="screen"/>
+    </group>
+    
+    <group ns="g500_C">
+
+        <rosparam file="$(find freefloating_gazebo_demo)/config/g500_control.yaml" command="load"/>
+  
+        <node name="pid_control" pkg="freefloating_gazebo" type="pid_control" output="screen"/>
+    </group>
+</launch>

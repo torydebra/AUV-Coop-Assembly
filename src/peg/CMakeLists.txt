@@ -163,53 +163,53 @@ link_directories(
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/peg_pkg.cpp
 # )
-add_library(Conversions src/support/conversions.cpp)
-add_library(Formulas src/support/formulas.cpp)
-add_library(Prints src/support/prints.cpp)
-add_library(Controller src/controller/controller.cpp)
-add_library(RobotInterface src/rosInterfaces/robotInterface.cpp)
-add_library(RobotVisionInterface src/rosInterfaces/robotVisionInterface.cpp)
-add_library(WorldInterface src/rosInterfaces/worldInterface.cpp)
-add_library(CoordInterfaceMissMan src/rosInterfaces/coordInterfaceMissMan.cpp)
-add_library(CoordInterfaceCoord src/rosInterfaces/coordInterfaceCoord.cpp)
-add_library(VisionInterfaceMissMan src/rosInterfaces/visionInterfaceMissMan.cpp)
-add_library(VisionInterfaceVision src/rosInterfaces/visionInterfaceVision.cpp)
+add_library(${PROJECT_NAME}_Conversions src/support/conversions.cpp)
+add_library(${PROJECT_NAME}_Formulas src/support/formulas.cpp)
+add_library(${PROJECT_NAME}_Prints src/support/prints.cpp)
+add_library(${PROJECT_NAME}_Controller src/controller/controller.cpp)
+add_library(${PROJECT_NAME}_RobotInterface src/rosInterfaces/robotInterface.cpp)
+add_library(${PROJECT_NAME}_RobotVisionInterface src/rosInterfaces/robotVisionInterface.cpp)
+add_library(${PROJECT_NAME}_WorldInterface src/rosInterfaces/worldInterface.cpp)
+add_library(${PROJECT_NAME}_CoordInterfaceMissMan src/rosInterfaces/coordInterfaceMissMan.cpp)
+add_library(${PROJECT_NAME}_CoordInterfaceCoord src/rosInterfaces/coordInterfaceCoord.cpp)
+add_library(${PROJECT_NAME}_VisionInterfaceMissMan src/rosInterfaces/visionInterfaceMissMan.cpp)
+add_library(${PROJECT_NAME}_VisionInterfaceVision src/rosInterfaces/visionInterfaceVision.cpp)
 
-add_library(KdlHelper src/helper/kdlHelper.cpp)
-add_library(JacobianHelper src/helper/jacobianHelper.cpp)
-add_library(Logger src/helper/logger.cpp)
+add_library(${PROJECT_NAME}_KdlHelper src/helper/kdlHelper.cpp)
+add_library(${PROJECT_NAME}_JacobianHelper src/helper/jacobianHelper.cpp)
+add_library(${PROJECT_NAME}_Logger src/helper/logger.cpp)
 
-add_library(Detector src/vision/detector.cpp)
-add_library(Tracker src/vision/tracker.cpp)
+add_library(${PROJECT_NAME}_Detector src/vision/detector.cpp)
+add_library(${PROJECT_NAME}_Tracker src/vision/tracker.cpp)
 
 
 
 ## ADD library new task here
 
-add_library(Task src/tasks/task.cpp)
-add_library(LastTask src/tasks/lastTask.cpp)
-add_library(VehicleReachTask src/tasks/vehicleReachTask.cpp)
-add_library(VehicleNullVelTask src/tasks/vehicleNullVelTask.cpp)
-add_library(EEReachTask src/tasks/endEffectorReachTask.cpp)
-add_library(JointLimitsTask src/tasks/jointLimitTask.cpp)
-add_library(HorizontalAttitudeTask src/tasks/horizontalAttitudeTask.cpp)
-add_library(FovEEToToolTask src/tasks/fovEEToToolTask.cpp)
-add_library(VehicleConstrVelTask src/tasks/vehicleConstrainVelTask.cpp)
-add_library(ObstacleAvoidVehicleTask src/tasks/obstacleAvoidVehicleTask.cpp)
-add_library(ObstacleAvoidEETask src/tasks/obstacleAvoidEETask.cpp)
-add_library(PipeReachTask src/tasks/pipeReachTask.cpp)
-add_library(ArmShapeTask src/tasks/armShapeTask.cpp)
-add_library(CoopTask src/tasks/coopTask.cpp)
+add_library(${PROJECT_NAME}_Task src/tasks/task.cpp)
+add_library(${PROJECT_NAME}_LastTask src/tasks/lastTask.cpp)
+add_library(${PROJECT_NAME}_VehicleReachTask src/tasks/vehicleReachTask.cpp)
+add_library(${PROJECT_NAME}_VehicleNullVelTask src/tasks/vehicleNullVelTask.cpp)
+add_library(${PROJECT_NAME}_EEReachTask src/tasks/endEffectorReachTask.cpp)
+add_library(${PROJECT_NAME}_JointLimitsTask src/tasks/jointLimitTask.cpp)
+add_library(${PROJECT_NAME}_HorizontalAttitudeTask src/tasks/horizontalAttitudeTask.cpp)
+add_library(${PROJECT_NAME}_FovEEToToolTask src/tasks/fovEEToToolTask.cpp)
+add_library(${PROJECT_NAME}_VehicleConstrVelTask src/tasks/vehicleConstrainVelTask.cpp)
+add_library(${PROJECT_NAME}_ObstacleAvoidVehicleTask src/tasks/obstacleAvoidVehicleTask.cpp)
+add_library(${PROJECT_NAME}_ObstacleAvoidEETask src/tasks/obstacleAvoidEETask.cpp)
+add_library(${PROJECT_NAME}_PipeReachTask src/tasks/pipeReachTask.cpp)
+add_library(${PROJECT_NAME}_ArmShapeTask src/tasks/armShapeTask.cpp)
+add_library(${PROJECT_NAME}_CoopTask src/tasks/coopTask.cpp)
 
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(CoordInterfaceMissMan
+add_dependencies(${PROJECT_NAME}_CoordInterfaceMissMan
     ${catkin_EXPORTED_TARGETS}
 )
-add_dependencies(CoordInterfaceCoord 
+add_dependencies(${PROJECT_NAME}_CoordInterfaceCoord
     ${catkin_EXPORTED_TARGETS}
 )
 
@@ -218,13 +218,19 @@ add_dependencies(CoordInterfaceCoord
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/peg_pkg_node.cpp)
-add_executable(MissionManagerA src/missionManager.cpp)
-add_executable(MissionManagerB src/missionManager.cpp)
-add_executable(Coordinator src/coordinator.cpp)
-add_executable(MissionManagerVision src/missionManagerVision.cpp)
+#set target propr is for call the nome as rosrun pkg_name missManagerA and not pkg_name_missManagerA
+add_executable(${PROJECT_NAME}_MissionManagerA src/missionManager.cpp)
+set_target_properties(${PROJECT_NAME}_MissionManagerA PROPERTIES OUTPUT_NAME "MissionManagerA")
+add_executable(${PROJECT_NAME}_MissionManagerB src/missionManager.cpp)
+set_target_properties(${PROJECT_NAME}_MissionManagerB PROPERTIES OUTPUT_NAME "MissionManagerB")
+add_executable(${PROJECT_NAME}_Coordinator src/coordinator.cpp)
+set_target_properties(${PROJECT_NAME}_Coordinator PROPERTIES OUTPUT_NAME "Coordinator")
+add_executable(${PROJECT_NAME}_MissionManagerVision src/missionManagerVision.cpp)
+set_target_properties(${PROJECT_NAME}_MissionManagerVision PROPERTIES OUTPUT_NAME "MissionManagerVision")
 #old TRY files
-add_executable(Vision_old src/vision_old.cpp)
-add_executable(Vision src/vision.cpp)
+add_executable(${PROJECT_NAME}_Vision src/vision.cpp)
+set_target_properties(${PROJECT_NAME}_Vision PROPERTIES OUTPUT_NAME "Vision")
+
 
 
 ## Rename C++ executable without prefix
@@ -242,108 +248,103 @@ add_executable(Vision src/vision.cpp)
 #   ${catkin_LIBRARIES}
 # )
 
-target_link_libraries(Coordinator
+target_link_libraries(${PROJECT_NAME}_Coordinator
     ${catkin_LIBRARIES}
-    WorldInterface
-    CoordInterfaceCoord
+    ${PROJECT_NAME}_WorldInterface
+    ${PROJECT_NAME}_CoordInterfaceCoord
     linuxcmat
-    Formulas
-    Conversions
-    Logger
+    ${PROJECT_NAME}_Formulas
+    ${PROJECT_NAME}_Conversions
+    ${PROJECT_NAME}_Logger
 )
 
-target_link_libraries(MissionManagerA
+target_link_libraries(${PROJECT_NAME}_MissionManagerA
     ${catkin_LIBRARIES}
-    RobotInterface
-    WorldInterface
-    CoordInterfaceMissMan
-    VisionInterfaceMissMan
-    Logger
-    Controller
-    Formulas
-    KdlHelper
-    JacobianHelper
+    ${PROJECT_NAME}_RobotInterface
+    ${PROJECT_NAME}_WorldInterface
+    ${PROJECT_NAME}_CoordInterfaceMissMan
+    ${PROJECT_NAME}_VisionInterfaceMissMan
+    ${PROJECT_NAME}_Logger
+    ${PROJECT_NAME}_Controller
+    ${PROJECT_NAME}_Formulas
+    ${PROJECT_NAME}_KdlHelper
+    ${PROJECT_NAME}_JacobianHelper
     #put below new task (is it necessary? YES)
-    LastTask
-    VehicleReachTask
-    EEReachTask
-    JointLimitsTask
-    HorizontalAttitudeTask
-    FovEEToToolTask
-    VehicleNullVelTask
-    VehicleConstrVelTask
-    ObstacleAvoidVehicleTask
-    ObstacleAvoidEETask
-    PipeReachTask
-    ArmShapeTask
-    CoopTask
+    ${PROJECT_NAME}_LastTask
+    ${PROJECT_NAME}_VehicleReachTask
+    ${PROJECT_NAME}_EEReachTask
+    ${PROJECT_NAME}_JointLimitsTask
+    ${PROJECT_NAME}_HorizontalAttitudeTask
+    ${PROJECT_NAME}_FovEEToToolTask
+    ${PROJECT_NAME}_VehicleNullVelTask
+    ${PROJECT_NAME}_VehicleConstrVelTask
+    ${PROJECT_NAME}_ObstacleAvoidVehicleTask
+    ${PROJECT_NAME}_ObstacleAvoidEETask
+    ${PROJECT_NAME}_PipeReachTask
+    ${PROJECT_NAME}_ArmShapeTask
+    ${PROJECT_NAME}_CoopTask
 )
 
-target_link_libraries(MissionManagerB
+target_link_libraries(${PROJECT_NAME}_MissionManagerB
     ${catkin_LIBRARIES}
-    RobotInterface
-    WorldInterface
-    CoordInterfaceMissMan
-    VisionInterfaceMissMan
-    Logger
-    Controller
-    Formulas
-    KdlHelper
-    JacobianHelper
+    ${PROJECT_NAME}_RobotInterface
+    ${PROJECT_NAME}_WorldInterface
+    ${PROJECT_NAME}_CoordInterfaceMissMan
+    ${PROJECT_NAME}_VisionInterfaceMissMan
+    ${PROJECT_NAME}_Logger
+    ${PROJECT_NAME}_Controller
+    ${PROJECT_NAME}_Formulas
+    ${PROJECT_NAME}_KdlHelper
+    ${PROJECT_NAME}_JacobianHelper
     #put below new task (is it necessary? YES)
-    LastTask
-    VehicleReachTask
-    EEReachTask
-    JointLimitsTask
-    HorizontalAttitudeTask
-    FovEEToToolTask
-    VehicleNullVelTask
-    VehicleConstrVelTask
-    ObstacleAvoidVehicleTask
-    ObstacleAvoidEETask
-    PipeReachTask
-    ArmShapeTask
-    CoopTask
+    ${PROJECT_NAME}_LastTask
+    ${PROJECT_NAME}_VehicleReachTask
+    ${PROJECT_NAME}_EEReachTask
+    ${PROJECT_NAME}_JointLimitsTask
+    ${PROJECT_NAME}_HorizontalAttitudeTask
+    ${PROJECT_NAME}_FovEEToToolTask
+    ${PROJECT_NAME}_VehicleNullVelTask
+    ${PROJECT_NAME}_VehicleConstrVelTask
+    ${PROJECT_NAME}_ObstacleAvoidVehicleTask
+    ${PROJECT_NAME}_ObstacleAvoidEETask
+    ${PROJECT_NAME}_PipeReachTask
+    ${PROJECT_NAME}_ArmShapeTask
+    ${PROJECT_NAME}_CoopTask
 )
 
-target_link_libraries(MissionManagerVision
+target_link_libraries(${PROJECT_NAME}_MissionManagerVision
     ${catkin_LIBRARIES}
-    RobotVisionInterface
-    WorldInterface
-    VisionInterfaceVision
+    ${PROJECT_NAME}_RobotVisionInterface
+    ${PROJECT_NAME}_WorldInterface
+    ${PROJECT_NAME}_VisionInterfaceVision
     linuxcmat
-    Logger
-    Tracker
-    Detector
+    ${PROJECT_NAME}_Logger
+    ${PROJECT_NAME}_Tracker
+    ${PROJECT_NAME}_Detector
 
 )
 
-target_link_libraries(Vision_old
-    ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
-)
-
-target_link_libraries(Vision
+target_link_libraries(${PROJECT_NAME}_Vision
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
     ${VISP_LIBRARIES}
     cv_bridge
-    RobotVisionInterface
+    ${PROJECT_NAME}_RobotVisionInterface
     linuxcmat
-    WorldInterface
-    Logger
+    ${PROJECT_NAME}_WorldInterface
+    ${PROJECT_NAME}_Logger
 )
 
-target_link_libraries(Detector
+target_link_libraries(${PROJECT_NAME}_Detector
     ${OpenCV_LIBS}
 )
 
-target_link_libraries(Tracker
+target_link_libraries(${PROJECT_NAME}_Tracker
     ${VISP_LIBRARIES}
-    Conversions
+    ${PROJECT_NAME}_Conversions
 )
 
-target_link_libraries(Conversions
+target_link_libraries(${PROJECT_NAME}_Conversions
     ${OpenCV_LIBS}
     ${VISP_LIBRARIES}
     ${catkin_LIBRARIES}
@@ -351,69 +352,69 @@ target_link_libraries(Conversions
     linuxcmat
 )
 
-target_link_libraries(Formulas
+target_link_libraries(${PROJECT_NAME}_Formulas
     m #it is math.h for atan2
     linuxcmat
 )
 
-target_link_libraries(Prints
+target_link_libraries(${PROJECT_NAME}_Prints
     linuxcmat
 )
 
-target_link_libraries(Logger
+target_link_libraries(${PROJECT_NAME}_Logger
     linuxcmat
-    Task
-    Prints
+    ${PROJECT_NAME}_Task
+    ${PROJECT_NAME}_Prints
 )
 
-target_link_libraries(Controller
+target_link_libraries(${PROJECT_NAME}_Controller
     linuxcmat
-    Prints
-    Task
+    ${PROJECT_NAME}_Prints
+    ${PROJECT_NAME}_Task
 )
 
-target_link_libraries(RobotInterface
+target_link_libraries(${PROJECT_NAME}_RobotInterface
     tf
-    Conversions
+    ${PROJECT_NAME}_Conversions
 )
 
-target_link_libraries(RobotVisionInterface
+target_link_libraries(${PROJECT_NAME}_RobotVisionInterface
     ${catkin_LIBRARIES}
     tf
-    Conversions
+    ${PROJECT_NAME}_Conversions
 )
 
-target_link_libraries(CoordInterfaceMissMan
+target_link_libraries(${PROJECT_NAME}_CoordInterfaceMissMan
 
 )
 
-target_link_libraries(CoordInterfaceCoord
+target_link_libraries(${PROJECT_NAME}_CoordInterfaceCoord
 )
 
-target_link_libraries(WorldInterface
+target_link_libraries(${PROJECT_NAME}_WorldInterface
     tf
 )
 
-target_link_libraries(VisionInterfaceMissMan
-    Conversions
+target_link_libraries(${PROJECT_NAME}_VisionInterfaceMissMan
+    ${PROJECT_NAME}_Conversions
 )
-target_link_libraries(VisionInterfaceVision
-    Conversions
+target_link_libraries(${PROJECT_NAME}_VisionInterfaceVision
+    ${PROJECT_NAME}_Conversions
 )
 
 
 
-target_link_libraries(KdlHelper
+target_link_libraries(${PROJECT_NAME}_KdlHelper
     ${catkin_LIBRARIES}
 )
 
-target_link_libraries(JacobianHelper
-  Conversions
-  Formulas
+target_link_libraries(${PROJECT_NAME}_JacobianHelper
+  ${PROJECT_NAME}_Conversions
+  ${PROJECT_NAME}_Formulas
 )
 
-target_link_libraries(LastTask
-    Task
+target_link_libraries(${PROJECT_NAME}_LastTask
+    ${PROJECT_NAME}_Task
     linuxcmat
 )
 
@@ -426,74 +427,74 @@ target_link_libraries(LastTask
 
 ### ADD lik libraries for new task here
 #NOTE:: eigen e tf not to include, they are already include for all above
-target_link_libraries(VehicleReachTask
-    Task
+target_link_libraries(${PROJECT_NAME}_VehicleReachTask
+    ${PROJECT_NAME}_Task
     linuxcmat
-    Conversions
+    ${PROJECT_NAME}_Conversions
 )
-target_link_libraries(EEReachTask
-    Task
+target_link_libraries(${PROJECT_NAME}_EEReachTask
+    ${PROJECT_NAME}_Task
     linuxcmat
-    Conversions
-    Formulas
-)
-
-target_link_libraries(JointLimitsTask
-    Task
-    linuxcmat
+    ${PROJECT_NAME}_Conversions
+    ${PROJECT_NAME}_Formulas
 )
 
-target_link_libraries(HorizontalAttitudeTask
-    Task
-    linuxcmat
-    Formulas
-)
-
-target_link_libraries(FovEEToToolTask
-    Task
-    linuxcmat
-    Formulas
-    Conversions
-)
-target_link_libraries(VehicleNullVelTask
-    Task
-    linuxcmat
-    Conversions
-)
-target_link_libraries(VehicleConstrVelTask
-    Task
-    linuxcmat
-    Conversions
-)
-
-target_link_libraries(ObstacleAvoidVehicleTask
-    Task
-    linuxcmat
-    Conversions
-)
-
-target_link_libraries(ObstacleAvoidEETask
-    Task
-    linuxcmat
-    Conversions
-)
-
-target_link_libraries(PipeReachTask
-    Task
-    linuxcmat
-    Conversions
-    Formulas
-)
-
-target_link_libraries(ArmShapeTask
-    Task
+target_link_libraries(${PROJECT_NAME}_JointLimitsTask
+    ${PROJECT_NAME}_Task
     linuxcmat
 )
 
-target_link_libraries(CoopTask
-    Task
+target_link_libraries(${PROJECT_NAME}_HorizontalAttitudeTask
+    ${PROJECT_NAME}_Task
     linuxcmat
-    Conversions
+    ${PROJECT_NAME}_Formulas
+)
+
+target_link_libraries(${PROJECT_NAME}_FovEEToToolTask
+    ${PROJECT_NAME}_Task
+    linuxcmat
+    ${PROJECT_NAME}_Formulas
+    ${PROJECT_NAME}_Conversions
+)
+target_link_libraries(${PROJECT_NAME}_VehicleNullVelTask
+    ${PROJECT_NAME}_Task
+    linuxcmat
+    ${PROJECT_NAME}_Conversions
+)
+target_link_libraries(${PROJECT_NAME}_VehicleConstrVelTask
+    ${PROJECT_NAME}_Task
+    linuxcmat
+    ${PROJECT_NAME}_Conversions
+)
+
+target_link_libraries(${PROJECT_NAME}_ObstacleAvoidVehicleTask
+    ${PROJECT_NAME}_Task
+    linuxcmat
+    ${PROJECT_NAME}_Conversions
+)
+
+target_link_libraries(${PROJECT_NAME}_ObstacleAvoidEETask
+    ${PROJECT_NAME}_Task
+    linuxcmat
+    ${PROJECT_NAME}_Conversions
+)
+
+target_link_libraries(${PROJECT_NAME}_PipeReachTask
+    ${PROJECT_NAME}_Task
+    linuxcmat
+    ${PROJECT_NAME}_Conversions
+    ${PROJECT_NAME}_Formulas
+)
+
+target_link_libraries(${PROJECT_NAME}_ArmShapeTask
+    ${PROJECT_NAME}_Task
+    linuxcmat
+)
+
+target_link_libraries(${PROJECT_NAME}_CoopTask
+    ${PROJECT_NAME}_Task
+    linuxcmat
+    ${PROJECT_NAME}_Conversions
 )
 
 # to add compiler flags (-Wall -pedantic)

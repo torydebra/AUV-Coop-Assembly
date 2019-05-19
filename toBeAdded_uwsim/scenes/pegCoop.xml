@@ -1,0 +1,826 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE UWSimScene SYSTEM "UWSimScene.dtd" >
+
+<UWSimScene>
+  <oceanState>
+    <windx> 0.0 </windx>
+    <windy> 0.0 </windy>
+    <windSpeed> 0 </windSpeed>
+    <depth> 1000 </depth>
+    <reflectionDamping> 0.35 </reflectionDamping>
+    <waveScale> 0 </waveScale>
+    <isNotChoppy> 0 </isNotChoppy>
+    <choppyFactor> 2.5 </choppyFactor>
+    <crestFoamHeight> 0 </crestFoamHeight>
+    <oceanSurfaceHeight> 0 </oceanSurfaceHeight>
+    <fog>
+      <density> 0.01 </density>
+      <color>
+				<r>0.0</r>
+				<g>0.05</g>
+				<b>0.03</b>
+      </color>
+    </fog>
+    <color>
+			<r>0.0</r>
+			<g>0.05</g>
+			<b>0.3</b>
+    </color>
+    <attenuation>
+      <r>0.015</r>
+      <g>0.0075 </g>
+      <b>0.005</b>
+    </attenuation>
+  </oceanState>
+
+  <simParams>
+    <disableShaders> 0 </disableShaders>
+    <resw> 800 </resw>
+    <resh> 600 </resh>
+		<offsetp>
+			<x>0</x>
+			<y>0</y>
+			<z>0</z>
+		</offsetp>
+		<offsetr>
+			<x> 3.14</x>
+			<y> 0</y>
+			<z> -1.57 </z>
+		</offsetr>
+		<enablePhysics> 1 </enablePhysics>
+	<!--    <showTrajectory>
+				<target>girona500</target>
+			</showTrajectory> -->
+<!--
+		<showTrajectory>
+			<target>end_effector</target>
+		</showTrajectory>
+-->
+  </simParams>
+
+  <camera>
+    <freeMotion> 1 </freeMotion>
+    <objectToTrack>g500_A/base_link</objectToTrack>
+    <fov> 60 </fov>
+    <aspectRatio> 1.33 </aspectRatio>
+    <near> 1 </near>
+    <far> 10000 </far>
+    <position>
+      <x>-5</x>
+      <y>-5</y>
+      <z>8 </z>
+    </position>
+    <lookAt>
+      <x>0</x>
+      <y>0 </y>
+      <z>0 </z>
+    </lookAt>
+  </camera>
+
+ <vehicle>
+	<name>g500_A</name>
+    <file>data/scenes/g500ARM5.urdf</file>
+    <jointValues>
+      <joint> 0 </joint>
+      <joint> M_PI_4</joint>
+      <joint> M_PI_4 </joint>
+      <joint> 0 </joint>
+      <joint>1.5 </joint>
+    </jointValues>
+    <position>
+      <x> 2.698 </x>
+      <y> 0.107 </y>
+      <z> 7.235 </z>
+    </position>
+    <orientation>
+      <r>0</r>
+      <p>0 </p>
+      <y>0 </y>
+    </orientation>
+
+    <virtualCamera>
+      <name>bowtech1_A</name>
+      <relativeTo>part0</relativeTo>
+      <resw> 320 </resw>
+      <resh> 240 </resh>
+      <position>
+        <x>-0.2</x>
+        <y> -0.1 </y>
+        <z> 0 </z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>3.14</p>
+        <y>1.57 </y>
+      </orientation>
+      <!-- draws the FOV of the camera projected on the scene each 2 seconds -->
+      <!-- <showpath>2</showpath>  -->
+    </virtualCamera>
+
+    <virtualCamera>
+      <name>bowtech2_A</name>
+      <relativeTo>part0</relativeTo>
+      <resw> 320</resw>
+      <resh> 240 </resh>
+      <position>
+        <x>-0.2</x>
+        <y> 0.1 </y>
+        <z> 0 </z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>3.14</p>
+        <y>1.57 </y>
+      </orientation>
+    </virtualCamera>
+
+    <rangeSensor>
+      <name>sonar_A</name>
+      <relativeTo>part0</relativeTo>
+      <range>10</range>
+      <visible>0</visible>
+      <position>
+        <x>-0.3</x>
+        <y>0</y>
+        <z>0</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>-1.57</p>
+        <y>0</y>
+      </orientation>
+    </rangeSensor>
+
+    <objectPicker>
+      <name>picker_A</name>
+      <relativeTo>part4_base</relativeTo>
+      <range>0.2</range>
+      <position>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>0</p>
+        <y>0</y>
+      </orientation>
+    </objectPicker>
+
+    <imu>
+      <name>imu_A</name>
+      <relativeTo>base_link</relativeTo>
+      <position>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>0</p>
+        <y>3.1415</y>
+      </orientation>
+      <std>0.00000001</std>
+    </imu>
+
+<!--     <pressureSensor>
+      <name>pressureSensor_A</name>
+      <relativeTo>base_link</relativeTo>
+      <position>
+        <x>0</x>
+        <y>0</y>
+        <z>0.2</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>0</p>
+        <y>0</y>
+      </orientation>
+      <std>0.02</std>
+    </pressureSensor> -->
+
+<!--     <gpsSensor>
+      <name>GPSSensor_A</name>
+      <relativeTo>base_link</relativeTo>
+      <position>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>0</p>
+        <y>0</y>
+      </orientation>
+      <std>0.00005</std>
+    </gpsSensor> -->
+
+<!--     <dvlSensor>
+      <name>DVLSensor_A</name>
+      <relativeTo>base_link</relativeTo>
+      <position>
+        <x>-0.75</x>
+        <y>0</y>
+        <z>0</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>0</p>
+        <y>M_PI</y>
+      </orientation>
+      <std>0.0015</std>
+    </dvlSensor> -->
+
+    <virtualRangeImage>
+      <name>rangeImage_A</name>
+      <relativeTo>part0</relativeTo>
+      <resw> 320</resw>
+      <resh> 240 </resh>
+      <position>
+        <x>-0.2</x>
+        <y> 0.1 </y>
+        <z> 0 </z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>3.14</p>
+        <y>1.57 </y>
+      </orientation>
+      <parameters>
+        <fx>257.986</fx>
+        <fy>257.341</fy>
+        <x0>120</x0>
+        <y0>160</y0>
+        <f>10</f>
+        <n>0.8</n>
+        <k>0</k>
+      </parameters>
+    </virtualRangeImage>
+
+<!--     <multibeamSensor>
+      <name>multibeam_A</name>
+      <relativeTo>part0</relativeTo>
+      <position>
+        <x>-0.2</x>
+        <y> 0.1 </y>
+        <z> 0 </z>
+      </position>
+      <orientation>
+        <r>3.14</r>
+        <p>0</p>
+        <y>3.14 </y>
+      </orientation>
+      <initAngle>-60</initAngle>
+      <finalAngle>60</finalAngle>
+      <angleIncr>0.1</angleIncr>
+      <range>10</range>
+    </multibeamSensor> -->
+
+<!--     <simulatedDevices>
+      <echo>
+        <name>g500_echo1_A</name>
+        <info>Echo example 1</info>
+      </echo>
+    </simulatedDevices>
+
+	<echo>
+		<name>g500_echo2_A</name>
+		<info>Echo example 2</info>
+	</echo>
+ -->
+
+    <ForceSensor>
+      <name>ForceG500</name>
+      <target>base_link</target>
+      <offsetp>
+        <x>-0.2</x>
+        <y>0.75</y>
+        <z>0</z>
+      </offsetp>
+      <offsetr>
+        <x>-1.57</x>
+        <y>0</y>
+        <z>3.14</z>
+      </offsetr>
+    </ForceSensor>
+
+  </vehicle>
+
+
+  <vehicle>
+    <name>g500_B</name>
+    <file>data/scenes/g500ARM5.urdf</file>
+    <jointValues>
+      <joint> 0 </joint>
+      <joint> M_PI_4</joint>
+      <joint> M_PI_4 </joint>
+      <joint> 0 </joint>
+      <joint>-0.3 </joint>
+    </jointValues>
+    <position>
+      <x> 4</x>
+      <y> 6 </y>
+      <z> 7.2 </z>
+    </position>
+    <orientation>
+      <r>0</r>
+      <p>0 </p>
+      <y>1.57 </y>
+    </orientation>
+
+    <virtualCamera>
+      <name>bowtech1_B</name>
+      <relativeTo>part0</relativeTo>
+      <resw> 320 </resw>
+      <resh> 240 </resh>
+      <position>
+        <x>-0.2</x>
+        <y> -0.1 </y>
+        <z> 0 </z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>3.14</p>
+        <y>1.57 </y>
+      </orientation>
+    </virtualCamera>
+
+    <virtualCamera>
+      <name>bowtech2_B</name>
+      <relativeTo>part0</relativeTo>
+      <resw> 320</resw>
+      <resh> 240 </resh>
+      <position>
+        <x>-0.2</x>
+        <y> 0.1 </y>
+        <z> 0 </z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>3.14</p>
+        <y>1.57 </y>
+      </orientation>
+    </virtualCamera>
+
+    <rangeSensor>
+      <name>sonar_B</name>
+      <relativeTo>part0</relativeTo>
+      <range>10</range>
+      <visible>0</visible>
+      <position>
+        <x>-0.3</x>
+        <y>0</y>
+        <z>0</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>-1.57</p>
+        <y>0</y>
+      </orientation>
+    </rangeSensor>
+
+
+<!-- OnLY ONE PICKER AT TIME
+    <objectPicker>
+      <name>picker_B</name>
+      <relativeTo>part4_base</relativeTo>
+      <range>0.5</range>
+      <position>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>0</p>
+        <y>0</y>
+      </orientation>
+    </objectPicker>
+-->
+
+
+    <imu>
+      <name>imu_B</name>
+      <relativeTo>base_link</relativeTo>
+      <position>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>0</p>
+        <y>3.1415</y>
+      </orientation>
+      <std>0.00000001</std>
+    </imu>
+
+<!--     <pressureSensor>
+      <name>pressureSensor_B</name>
+      <relativeTo>base_link</relativeTo>
+      <position>
+        <x>0</x>
+        <y>0</y>
+        <z>0.2</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>0</p>
+        <y>0</y>
+      </orientation>
+      <std>0.02</std>
+    </pressureSensor> -->
+
+<!--     <gpsSensor>
+      <name>GPSSensor_B</name>
+      <relativeTo>base_link</relativeTo>
+      <position>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>0</p>
+        <y>0</y>
+      </orientation>
+      <std>0.00005</std>
+    </gpsSensor> -->
+
+<!--     <dvlSensor>
+      <name>DVLSensor_B</name>
+      <relativeTo>base_link</relativeTo>
+      <position>
+        <x>-0.75</x>
+        <y>0</y>
+        <z>0</z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>0</p>
+        <y>M_PI</y>
+      </orientation>
+      <std>0.0015</std>
+    </dvlSensor> -->
+
+    <virtualRangeImage>
+      <name>rangeImage_B</name>
+      <relativeTo>part0</relativeTo>
+      <resw> 320</resw>
+      <resh> 240 </resh>
+      <position>
+        <x>-0.2</x>
+        <y> 0.1 </y>
+        <z> 0 </z>
+      </position>
+      <orientation>
+        <r>0</r>
+        <p>3.14</p>
+        <y>1.57 </y>
+      </orientation>
+      <parameters>
+        <fx>257.986</fx>
+        <fy>257.341</fy>
+        <x0>120</x0>
+        <y0>160</y0>
+        <f>10</f>
+        <n>0.8</n>
+        <k>0</k>
+      </parameters>
+    </virtualRangeImage>
+
+<!--     <multibeamSensor>
+      <name>multibeam_B</name>
+      <relativeTo>part0</relativeTo>
+      <position>
+        <x>-0.2</x>
+        <y> 0.1 </y>
+        <z> 0 </z>
+      </position>
+      <orientation>
+        <r>3.14</r>
+        <p>0</p>
+        <y>3.14 </y>
+      </orientation>
+      <initAngle>-60</initAngle>
+      <finalAngle>60</finalAngle>
+      <angleIncr>0.1</angleIncr>
+      <range>10</range>
+    </multibeamSensor> -->
+
+<!--     <simulatedDevices>
+      <echo>
+        <name>g500_echo1_B</name>
+        <info>Echo example 1</info>
+      </echo>
+    </simulatedDevices>
+
+	<echo>
+		<name>g500_echo2_B</name>
+		<info>Echo example 2</info>
+	</echo> -->
+
+
+    <ForceSensor>
+      <name>ForceSensor_B</name>
+      <target>base_link</target>
+      <offsetp>
+        <x>-0.2</x>
+        <y>0.75</y>
+        <z>0</z>
+      </offsetp>
+      <offsetr>
+        <x>-1.57</x>
+        <y>0</y>
+        <z>3.14</z>
+      </offsetr>
+    </ForceSensor>
+  </vehicle>
+  
+
+  <object>
+    <name> terrain </name>
+    <file> terrain/desert/desert2.3ds </file>
+    <position>
+      <x> 0</x>
+      <y> 0 </y>
+      <z> 10 </z>
+    </position>
+    <orientation>
+      <r>0</r>
+      <p>1.57 </p>
+      <y>0 </y>
+    </orientation>
+    <physics>
+      <mass> 0 </mass>
+      <collisionShapeType> trimesh </collisionShapeType>
+      <isKinematic> no </isKinematic>
+    </physics>
+  </object>
+
+
+  <object>
+    <name> pipe </name>
+    <file> objects/pegaprile.obj </file>
+    <position>
+      <x> 0</x>
+      <y> 0 </y>
+      <z> 9.2</z>
+    </position>
+    <orientation>
+      <r>3.14</r> <!-- so z points down-->  
+      <p>0</p>
+      <y>0</y>
+    </orientation>
+    <physics>
+      <mass> 20 </mass>
+      <inertia>
+    <!-- as rod should be 20*36/12 = 60 -->  
+        <x> 0.01</x>
+        <y> 60 </y>
+        <z> 60 </z>
+      </inertia>
+      <collisionShapeType> box </collisionShapeType>
+      <linearDamping> 0.9 </linearDamping>
+      <angularDamping> 0.9 </angularDamping>
+    </physics>
+  </object>
+  
+  <object>
+    <name> hole </name>
+    <file> objects/holeaprile.obj </file>
+    <position>
+      <x> 1</x>
+      <y> -12 </y>
+      <z> 8</z>
+    </position>
+    <orientation>
+      <r>0</r>
+      <p>0</p>
+      <y>1.7</y>
+    </orientation>
+    <physics>
+      <mass> 1000 </mass>
+      <inertia>
+        <x> 0</x>
+        <y> 0 </y>
+        <z> 0 </z>
+      </inertia>
+      <collisionShapeType> box </collisionShapeType>
+      <isKinematic> no </isKinematic>
+    </physics>
+  </object>
+
+
+  <rosInterfaces>
+  
+    <ROSOdomToPAT>
+      <topic> /uwsim/g500_A/odom_command </topic>
+      <vehicleName> g500_A </vehicleName>
+    </ROSOdomToPAT>
+    <ROSOdomToPAT>
+      <topic> /uwsim/g500_B/odom_command </topic>
+      <vehicleName> g500_B </vehicleName>
+    </ROSOdomToPAT>
+    
+    <PATToROSOdom>
+      <topic> /uwsim/g500_A/odom_state </topic>
+      <vehicleName> g500_A </vehicleName>
+    </PATToROSOdom>
+    <PATToROSOdom>
+      <topic> /uwsim/g500_B/odom_state </topic>
+      <vehicleName> g500_B </vehicleName>
+    </PATToROSOdom>
+    
+    <WorldToROSTF>
+      <rootName> world </rootName>
+      <enableObjects> 1 </enableObjects>
+      <rate>10</rate>
+    </WorldToROSTF>
+
+    <ArmToROSJointState>
+			<topic> /uwsim/g500_A/joint_state</topic>
+			<vehicleName> g500_A </vehicleName>
+    </ArmToROSJointState>
+    <ArmToROSJointState>
+			<topic> /uwsim/g500_B/joint_state</topic>
+			<vehicleName> g500_B </vehicleName>
+    </ArmToROSJointState>
+
+    <ROSJointStateToArm>
+			<topic> /uwsim/g500_A/joint_command</topic>
+			<vehicleName> g500_A </vehicleName>
+    </ROSJointStateToArm>
+    <ROSJointStateToArm>
+			<topic> /uwsim/g500_B/joint_command</topic>
+			<vehicleName> g500_B </vehicleName>
+    </ROSJointStateToArm>
+
+    <VirtualCameraToROSImage>
+      <cameraName>bowtech1_A</cameraName>
+      <imageTopic> /uwsim/g500_A/camera1 </imageTopic>
+      <infoTopic> /uwsim/g500_A/camera1_info </infoTopic>
+    </VirtualCameraToROSImage>
+    <VirtualCameraToROSImage>
+      <cameraName>bowtech1_B</cameraName>
+      <imageTopic> /uwsim/g500_B/camera1 </imageTopic>
+      <infoTopic> /uwsim/g500_B/camera1_info </infoTopic>
+    </VirtualCameraToROSImage>
+
+    <ROSTwistToPAT>
+      <topic> /uwsim/g500_A/twist_command</topic>
+      <vehicleName> g500_A</vehicleName>
+    </ROSTwistToPAT>
+    <ROSTwistToPAT>
+      <topic> /uwsim/g500_B/twist_command</topic>
+      <vehicleName> g500_B</vehicleName>
+    </ROSTwistToPAT>
+
+    <RangeSensorToROSRange>
+      <name>sonar_A</name>
+      <topic> /uwsim/g500_A/range </topic>
+      <rate>10</rate>
+    </RangeSensorToROSRange>
+    <RangeSensorToROSRange>
+      <name>sonar_B</name>
+      <topic> /uwsim/g500_B/range </topic>
+      <rate>10</rate>
+    </RangeSensorToROSRange>
+
+    <ROSPoseToPAT>
+      <topic> /uwsim/g500_A/pose_command</topic>
+      <vehicleName> g500_A </vehicleName>
+    </ROSPoseToPAT>
+    <ROSPoseToPAT>
+      <topic> /uwsim/g500_B/pose_command</topic>
+      <vehicleName> g500_B </vehicleName>
+    </ROSPoseToPAT>
+
+    <ImuToROSImu>
+      <name>imu_A</name>
+      <topic>/uwsim/g500_A/imu</topic>
+      <rate>20</rate>
+    </ImuToROSImu>
+    <ImuToROSImu>
+      <name>imu_B</name>
+      <topic>/uwsim/g500_B/imu</topic>
+      <rate>20</rate>
+    </ImuToROSImu>
+
+<!--
+    <PressureSensorToROS>
+      <name>pressureSensor_A</name>
+      <topic>/uwsim/g500_A/pressure</topic>
+      <rate>5</rate>
+    </PressureSensorToROS>
+    <PressureSensorToROS>
+      <name>pressureSensor_B</name>
+      <topic>/uwsim/g500_B/pressure</topic>
+      <rate>5</rate>
+    </PressureSensorToROS>
+-->
+
+<!--     <GPSSensorToROS>
+      <name>GPSSensor_A</name>
+      <topic>/uwsim/g500_A/gps</topic>
+      <rate>1</rate>
+    </GPSSensorToROS>
+    <GPSSensorToROS>
+      <name>GPSSensor_B</name>
+      <topic>/uwsim/g500_B/gps</topic>
+      <rate>1</rate>
+    </GPSSensorToROS> -->
+
+<!--
+    <DVLSensorToROS>
+      <name>DVLSensor_A</name>
+      <topic>/uwsim/g500_A/dvl</topic>
+      <rate>5</rate>
+    </DVLSensorToROS>
+    <DVLSensorToROS>
+      <name>DVLSensor_B</name>
+      <topic>/uwsim/g500_B/dvl</topic>
+      <rate>5</rate>
+    </DVLSensorToROS>
+-->
+
+<!--    <RangeImageSensorToROSImage>
+      <cameraName>rangeImage_A</cameraName>
+      <imageTopic> /uwsim/g500_A/rangecamera </imageTopic>
+      <infoTopic> /uwsim/g500_A/rangecamera_info </infoTopic>
+    </RangeImageSensorToROSImage>
+    <RangeImageSensorToROSImage>
+      <cameraName>rangeImage_B</cameraName>
+      <imageTopic> /uwsim/g500_B/rangecamera </imageTopic>
+      <infoTopic> /uwsim/g500_B/rangecamera_info </infoTopic>
+    </RangeImageSensorToROSImage>
+-->
+
+<!--
+    <multibeamSensorToLaserScan>
+      <name>multibeam_A</name>
+      <topic>/uwsim/g500_A/multibeam</topic>
+    </multibeamSensorToLaserScan>
+    <multibeamSensorToLaserScan>
+      <name>multibeam_B</name>
+      <topic>/uwsim/g500_B/multibeam</topic>
+    </multibeamSensorToLaserScan>
+-->
+
+<!--
+    <SimulatedDeviceROS>
+      <echoROS>
+        <name>g500_echo1_A</name>
+        <topic>/uwsim/g500_A/echo1</topic>
+        <rate>1</rate>
+      </echoROS>
+    </SimulatedDeviceROS>
+    <SimulatedDeviceROS>
+      <echoROS>
+        <name>g500_echo1_B</name>
+        <topic>/uwsim/g500_B/echo1</topic>
+        <rate>1</rate>
+      </echoROS>
+    </SimulatedDeviceROS>
+-->
+
+    <contactSensorToROS>
+      <name>g500_A</name>
+      <topic>/uwsim/g500_A/contactSensor</topic>
+      <rate> 100 </rate>
+    </contactSensorToROS>
+    <contactSensorToROS>
+      <name>g500_B</name>
+      <topic>/uwsim/g500_B/contactSensor</topic>
+      <rate> 100 </rate>
+    </contactSensorToROS>
+
+<!--
+    <echoROS>
+      <name>g500_echo2_A</name>
+      <topic>/uwsim/g500_A/echo2</topic>
+      <rate>1</rate>
+    </echoROS>
+    <echoROS>
+      <name>g500_echo2_B</name>
+      <topic>/uwsim/g500_B/echo2</topic>
+      <rate>1</rate>
+    </echoROS>
+-->
+
+    <ForceSensorROS>
+      <name>ForceSensor_A</name>
+      <topic>/uwsim/g500_A/ForceSensor</topic>
+      <rate>100</rate>
+    </ForceSensorROS>
+    <ForceSensorROS>
+      <name>ForceSensor_B</name>
+      <topic>/uwsim/g500_B/ForceSensor</topic>
+      <rate>100</rate>
+    </ForceSensorROS>
+
+  </rosInterfaces>
+
+</UWSimScene>
+
