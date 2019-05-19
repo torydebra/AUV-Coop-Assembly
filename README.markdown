@@ -26,8 +26,9 @@ TODO: better put as separate package various support/helper classes that have no
 
 
 
-## Code Scheme (a bit old)
-![Code Scheme](images/CodeScheme_old.png "Code Scheme")
+## Code Schemes
+![Code Scheme](images/CodeScheme_single.png "Code Scheme")
+![Code Scheme](images/CodeScheme.png "Code Scheme")
 
 
 ## Dependencies
