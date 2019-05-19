@@ -1,4 +1,5 @@
-# MASTER THESIS In Development
+# [AUV-Coop-assembly](https://torydebra.github.io/AUV-Coop-Assembly/)
+## MASTER THESIS In Development
 
 <img src="images/uwsim.png" width="700">
 <img src="images/uwsim2.png" width="700">
