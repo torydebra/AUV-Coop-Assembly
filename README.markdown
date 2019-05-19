@@ -1,7 +1,8 @@
 # MASTER THESIS In Development
 ---
-![UWsim Screenshot](images/uwsim.png "UWsim")  
-![UWsim Screenshot](images/uwsim2.png "UWsim")  
+<img src="images/uwsim.png" width="700">
+<img src="images/uwsim2.png" width="700">
+
 ## Workspace folders (all in development)
 ##### src/peg (catkin package)
 The "only kinematic" package, simulated with UWsim.  
