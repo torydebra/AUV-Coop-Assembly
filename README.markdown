@@ -1,27 +1,27 @@
 # MASTER THESIS In Development
----
+
 <img src="images/uwsim.png" width="700">
 <img src="images/uwsim2.png" width="700">
 
 ## Workspace folders (all in development)
-##### src/peg (catkin package)
+#### src/peg (catkin package)
 The "only kinematic" package, simulated with UWsim.  
 Folder "toBeAdded_uwsim":
 * model & scenes subfolders in uwsim/data/scenes (along with default scenes and models)
 * terrain & objects in ~/.uwsim/data  
-##### src/peg_dynamics (catkin package)
+#### src/peg_dynamics (catkin package)
 Package with dynamics of vehicle and arm. The dynamics is provided by FreeFloatingGazebo, a plugin which use Gazebo and UWSim functionalities.  
 Folder "tobeAdded_freeFloatDemo":
 * objects, terrain, scenes, urdf in src folder of freeFloatingGazebo_demo (Maybe also in .uwsim/data?)
 * lauch folder also in src folder of freeFloatingGazebo_demo, but maybe other launches can be written accordingly to peg_dynamics package.
 
-##### matlab folder
+#### matlab folder
 matlab code for plotting test
 
-##### model folder
+#### model folder
 folder needed by kdlHelper (inside the packages) to parse the robot model and build the jacobian (the KDLHelper).
 
-##### Others?
+#### Others?
 TODO: better put as separate package various support/helper classes that have no differences for kineatic and dynamic version.
 
 
@@ -63,14 +63,14 @@ TODO: better put as separate package various support/helper classes that have no
 
 
 ## Solutions for some possible compiling issue:
-##### eigen library not found
+#### eigen library not found
 It may be cause by the fact that eigen is installed in a folder named eigen3 (and not eigen).  
 Solution:
 ```bash
 cd /usr/include     #the folder where is eigen3   
 sudo ln -s /usr/include/eigen3/Eigen Eigen    #create symbolic link
 ```
-##### cmat_defines.h problem
+#### cmat_defines.h problem
 in cmat there is a defined constant `#define PI 3.14xxxx`  
 this is a problem because kdl library has a const int called PI.
 Solution is to change (in cmat_defines.h) :
