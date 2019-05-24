@@ -1,0 +1,16 @@
+V1
+#Peg model
+2                    #number of points
+0       0      0     #0 X Y Z, the center of the hole
+-6      0      0     #point1  center of hole other face
+# 3D lines
+0
+# Faces from 3D lines
+0
+# Faces from 3D points
+0
+# 3D cylinders
+1                  #number cilinders
+0 1 0.05           # cylinder: [1st point on revolution axis] [2nd point on revolution axis] [radius]
+# 3D circles
+0

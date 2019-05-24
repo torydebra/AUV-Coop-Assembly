@@ -30,6 +30,7 @@ find_package(catkin REQUIRED COMPONENTS
   kdl_parser
   cv_bridge
   image_transport
+  pcl_ros
 
 )
 #package not catkin
@@ -38,6 +39,9 @@ find_package(
 )
 find_package(
   VISP REQUIRED
+)
+find_package(
+    PCL REQUIRED
 )
 
 
@@ -181,6 +185,7 @@ add_library(${PROJECT_NAME}_Logger src/helper/logger.cpp)
 
 add_library(${PROJECT_NAME}_Detector src/vision/detector.cpp)
 add_library(${PROJECT_NAME}_Tracker src/vision/tracker.cpp)
+add_library(${PROJECT_NAME}_DepthCameraSupport src/vision/depthCameraSupport.cpp)
 
 
 
@@ -321,6 +326,7 @@ target_link_libraries(${PROJECT_NAME}_MissionManagerVision
     ${PROJECT_NAME}_Logger
     ${PROJECT_NAME}_Tracker
     ${PROJECT_NAME}_Detector
+    ${PROJECT_NAME}_DepthCameraSupport
 
 )
 
@@ -342,6 +348,12 @@ target_link_libraries(${PROJECT_NAME}_Detector
 target_link_libraries(${PROJECT_NAME}_Tracker
     ${VISP_LIBRARIES}
     ${PROJECT_NAME}_Conversions
+    ${catkin_LIBRARIES}
+
+)
+
+target_link_libraries(${PROJECT_NAME}_DepthCameraSupport
+    ${catkin_LIBRARIES}
 )
 
 target_link_libraries(${PROJECT_NAME}_Conversions

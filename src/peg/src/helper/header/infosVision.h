@@ -40,6 +40,8 @@ struct RobotVisioStruct {
  Eigen::Matrix4d  vTcameraR;
  Eigen::Matrix4d  cLTcR; //from camera left to camera right, redundant but useful?? NOT USED NOW
  Eigen::Matrix4d  cRTcL; //from camera right to camera left, redundant but useful for stereo
+ Eigen::Matrix4d  vTcameraRangeR; // camera Range (depth camera)
+ Eigen::Matrix4d  cRangeRTcL;
 
 
 };

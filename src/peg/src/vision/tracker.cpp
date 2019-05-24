@@ -177,7 +177,7 @@ void MonoTracker::display(vpImage<unsigned char> *I){
 
 StereoTracker::StereoTracker(std::string callerName, std::vector<std::string> cameraNames,
                              std::map<std::string, vpHomogeneousMatrix> mapCameraTransf,
-                             int trackerType) {
+                             std::vector<int> trackerTypes) {
 
   this->callerName = callerName;
   this->cameraNames = cameraNames;
@@ -186,12 +186,6 @@ StereoTracker::StereoTracker(std::string callerName, std::vector<std::string> ca
   boost::filesystem::path path(__FILE__);
   path.remove_filename();
   sourcePath = path.string();
-
-  // copy a temp I think it is the only way unless we want tracker as a pointer
-  // and initialize it with new
-  std::vector<int> trackerTypes;
-  trackerTypes.push_back(trackerType);
-  trackerTypes.push_back(trackerType);
 
   tracker = new vpMbGenericTracker(cameraNames, trackerTypes);
 
@@ -229,19 +223,24 @@ int StereoTracker::initTrackingByClick(
 
   std::map<std::string, std::string> mapOfInitFiles;
 
+
   for (int i=0; i< cameraNames.size(); i++){
     std::string initFileName =
         sourcePath+initFileClick+cameraNames.at(i)+".init";
-    std::cout << initFileName << "\n";
-    mapOfInitFiles[cameraNames.at(i)] =  initFileName;
+
+    //dont store init file for depth camera, visp says it is not need
+    if (cameraNames.at(i).compare("rangeRight") != 0) {
+      mapOfInitFiles[cameraNames.at(i)] =  initFileName;
+    }
+
   }
 
   try{
-    tracker->initClick(mapOfImages, mapOfInitFiles, false);
-    //tracker->initClick(*img1, *img2, mapOfInitFiles["Camera1"], mapOfInitFiles["Camera2"]);
+    tracker->initClick(mapOfImages, mapOfInitFiles, true);
   } catch (const vpException &e) {
     std::cerr << "[" << callerName << "][STEREOTRACKER] Catch a ViSP exception: " << e.what() << std::endl;
   }
+
   return 0;
 }
 
@@ -268,6 +267,20 @@ int StereoTracker::stereoTrack(std::map<std::string, const vpImage<unsigned char
   try {
 
     tracker->track(mapOfImages);
+    tracker->getPose(*mapOfcameraToObj);
+
+  } catch (const vpException &e) {
+    std::cerr << "[" << callerName << "][STEREOTRACKER] Catch a ViSP exception: " << e.what() << std::endl;
+  }
+  return 0;
+}
+
+int StereoTracker::stereoTrack(std::map<std::string, const vpImage<unsigned char>*> mapOfImages,
+               std::map<std::string, pcl::PointCloud< pcl::PointXYZ >::ConstPtr> mapOfPointclouds,
+               std::map<std::string, vpHomogeneousMatrix> *mapOfcameraToObj){
+  try {
+
+    tracker->track(mapOfImages, mapOfPointclouds);
     tracker->getPose(*mapOfcameraToObj);
 
   } catch (const vpException &e) {

@@ -46,6 +46,7 @@ int main(int argc, char** argv){
 
   std::string cameraLName = "bowtechL_C";
   std::string cameraRName = "bowtechR_C";
+  std::string cameraRangeRName = "bowtechRangeR_C";
   std::string holeName = "hole";
   WorldInterface worldInterface(robotName);
   worldInterface.waitReady(holeName);
@@ -60,6 +61,8 @@ int main(int argc, char** argv){
   worldInterface.getT(&robVisInfo.robotStruct.vTcameraR, robotName, cameraRName);
   worldInterface.getT(&robVisInfo.robotStruct.cLTcR, cameraLName, cameraRName);
   worldInterface.getT(&robVisInfo.robotStruct.cRTcL, cameraRName, cameraLName);
+  worldInterface.getT(&robVisInfo.robotStruct.vTcameraRangeR, robotName, cameraRangeRName);
+  worldInterface.getT(&robVisInfo.robotStruct.cRangeRTcL, cameraRangeRName, cameraLName);
 
   // real hole pose to log errors of pose estimation
   worldInterface.getwT(&(robVisInfo.transforms.wTh_eigen), holeName);
@@ -83,9 +86,14 @@ int main(int argc, char** argv){
                                   INIT VISION
 *******************************************************************************************************************/
 
+  bool stereo = true;
+  bool initByClick = true;
+  bool useDepth = true;
+
+
   /// Initial images
-  vpImage<unsigned char> imageL_vp, imageR_vp;
-  cv::Mat imageL_cv, imageR_cv;
+  vpImage<unsigned char> imageL_vp, imageR_vp, imageRangeR_vp;
+  cv::Mat imageL_cv, imageR_cv, imageRangeR_cv;
 
   robotVisInterface.getLeftImage(&imageL_cv);
   robotVisInterface.getRightImage(&imageR_cv);
@@ -95,34 +103,76 @@ int main(int argc, char** argv){
   vpImageConvert::convert(imageL_cv, imageL_vp);
   vpImageConvert::convert(imageR_cv, imageR_vp);
 
+  //DEPTH camera
+  pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud(new pcl::PointCloud<pcl::PointXYZ>());
+  if (useDepth){
+
+    robotVisInterface.getRangeRightImage(&imageRangeR_cv);
+    imageRangeR_cv.convertTo(imageRangeR_cv, CV_16UC1);
+    // convert function of visp dont convert from cv to uint16_t visp matrix)
+    vpImage<uint16_t> imageRangeR_vp_raw;
+    imageRangeR_vp_raw.resize(imageRangeR_cv.rows, imageRangeR_cv.cols);
+    for (int i=0; i<imageRangeR_cv.rows; i++){
+      for (int j=0; j<imageRangeR_cv.cols; j++){
+        imageRangeR_vp_raw[i][j] = imageRangeR_cv.at<unsigned short>(i,j);
+      }
+    }
+
+    DCAM::makePointCloud(imageRangeR_vp_raw, pointcloud);
+    vpImageConvert::createDepthHistogram(imageRangeR_vp_raw, imageRangeR_vp);
+  }
+
+
   /// display things
   vpDisplayOpenCV display_left;
   vpDisplayOpenCV display_right;
+  vpDisplayOpenCV display_rangeRight;
   display_left.setDownScalingFactor(vpDisplay::SCALE_AUTO);
   display_right.setDownScalingFactor(vpDisplay::SCALE_AUTO);
+  display_rangeRight.setDownScalingFactor(vpDisplay::SCALE_AUTO);
   display_left.init(imageL_vp, 100, 100, "Model-based tracker (Left)");
   display_right.init(imageR_vp, 110 + (int)imageL_vp.getWidth(), 100,
                      "Model-based tracker (Right)");
+  if (useDepth){
+    display_rangeRight.init(imageRangeR_vp, 120+(int)imageL_vp.getWidth()+(int)imageR_vp.getWidth(),
+                            100, "Model-based tracker (Range Right)");
+    vpDisplay::display(imageRangeR_vp);
+    vpDisplay::flush(imageRangeR_vp);
+  }
 
   /// CREATE TRACKERS
   std::vector<std::string> cameraNames(2); //for config files
   cameraNames.at(0) = "left";
-  cameraNames.at(1) = "right";
+  if (!useDepth){
+    cameraNames.at(1) = "right";
+  } else {
+    cameraNames.at(1) = "rangeRight";
+  }
 
-  bool stereo = true;
   MonoTracker* monoTrackerL;
   MonoTracker* monoTrackerR;
   StereoTracker* stereoTracker;
   std::map<std::string, vpHomogeneousMatrix> mapCameraTransf;
   // note: here it must be putted the transf from RIGTH to LEFT and not viceversa
   mapCameraTransf[cameraNames.at(0)] = vpHomogeneousMatrix();  //identity
-  mapCameraTransf[cameraNames.at(1)] =
+
+  if (!useDepth){
+    mapCameraTransf[cameraNames.at(1)] =
       CONV::transfMatrix_eigen2visp(robVisInfo.robotStruct.cRTcL);
+  } else {
+    mapCameraTransf[cameraNames.at(1)] =
+        CONV::transfMatrix_eigen2visp(robVisInfo.robotStruct.cRangeRTcL);
+  }
 
   std::map<std::string, const vpImage<unsigned char> *> mapOfImages;
   mapOfImages[cameraNames.at(0)] = &imageL_vp;
-  mapOfImages[cameraNames.at(1)] = &imageR_vp;
+  if (!useDepth){
+    mapOfImages[cameraNames.at(1)] = &imageR_vp;
+  } else {
+    mapOfImages[cameraNames.at(1)] = &imageRangeR_vp;
+  }
 
+  // initialize trasformation matrix from camera to object
   std::map<std::string, vpHomogeneousMatrix> mapOfcameraToObj;
   mapOfcameraToObj[cameraNames.at(0)] = vpHomogeneousMatrix();
   mapOfcameraToObj[cameraNames.at(1)] = vpHomogeneousMatrix();
@@ -134,12 +184,19 @@ int main(int argc, char** argv){
                      vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
   } else {/// Stereo
-    stereoTracker = new StereoTracker (robotName, cameraNames, mapCameraTransf,
-                      vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+    std::vector<int> trackerTypes;
+    trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+    if (!useDepth){
+      trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+    } else {
+      trackerTypes.push_back(vpMbGenericTracker::DEPTH_DENSE_TRACKER);
+    }
+
+    stereoTracker = new StereoTracker(robotName, cameraNames, mapCameraTransf, trackerTypes);
   }
 
   /// INIT TRACKERS
-  bool initByClick = true;
+
   std::vector<std::vector<cv::Point>> found4CornersVectorL, found4CornersVectorR; //used if initclick false
   if (initByClick){
     if (stereo == false){
@@ -151,6 +208,12 @@ int main(int argc, char** argv){
 
 
   } else { //find point without click //TODO, parla anche di altri metodi provati
+
+    if (useDepth){
+      ///TODO
+      std::cout << "usedepth with not clickn not still supported\n";
+      return -1;
+    }
 
     /// FIND SQUARE METHOD
       // https://docs.opencv.org/3.4/db/d00/samples_2cpp_2squares_8cpp-example.html#a20
@@ -207,6 +270,7 @@ int main(int argc, char** argv){
     cam_right = mapOfCamParams.at(cameraNames.at(1));
   }
 
+  std::cout << "[" << robotName << "][MISSION_MANAGER] Starting loop" << std::endl;
   ros::Rate loop_rate(10);
   while (ros::ok()) {
     robotVisInterface.getwTv(&(robVisInfo.robotState.wTv_eigen));
@@ -221,30 +285,57 @@ int main(int argc, char** argv){
     vpDisplay::display(imageL_vp);
     vpDisplay::display(imageR_vp);
 
-
+    if (useDepth){
+      robotVisInterface.getRangeRightImage(&imageRangeR_cv);
+      imageRangeR_cv.convertTo(imageRangeR_cv, CV_16UC1);
+      // convert function of visp dont convert from cv to uint16_t visp matrix)
+      vpImage<uint16_t> imageRangeR_vp_raw;
+      imageRangeR_vp_raw.resize(imageRangeR_cv.rows, imageRangeR_cv.cols);
+      for (int i=0; i<imageRangeR_cv.rows; i++){
+        for (int j=0; j<imageRangeR_cv.cols; j++){
+          imageRangeR_vp_raw[i][j] = imageRangeR_cv.at<unsigned short>(i,j);
+        }
+      }
+      DCAM::makePointCloud(imageRangeR_vp_raw, pointcloud);
+      vpImageConvert::createDepthHistogram(imageRangeR_vp_raw, imageRangeR_vp);
+      vpDisplay::display(imageRangeR_vp);
+    }
 
     vpHomogeneousMatrix cLThole, cRThole;
     if (stereo == false){/// METHOD 1 MONO CAMERAS
 
-    double ransacErrorL = 0.0;
-    double elapsedTimeL = 0.0;
-    double ransacErrorR = 0.0;
-    double elapsedTimeR = 0.0;
+      double ransacErrorL = 0.0;
+      double elapsedTimeL = 0.0;
+      double ransacErrorR = 0.0;
+      double elapsedTimeR = 0.0;
 
-    monoTrackerL->monoTrack(&imageL_vp, &cLThole, &ransacErrorL, &elapsedTimeL);
-    monoTrackerR->monoTrack(&imageR_vp, &cRThole, &ransacErrorR, &elapsedTimeR);
+      monoTrackerL->monoTrack(&imageL_vp, &cLThole, &ransacErrorL, &elapsedTimeL);
+      monoTrackerR->monoTrack(&imageR_vp, &cRThole, &ransacErrorR, &elapsedTimeR);
 
-    monoTrackerL->display(&imageL_vp);
-    monoTrackerR->display(&imageR_vp);
+      monoTrackerL->display(&imageL_vp);
+      monoTrackerR->display(&imageR_vp);
 
 
-    }else{    /// METHOD 2 STEREO
-      //updats map of img
+    } else{    /// METHOD 2 STEREO
+
+      //update map of img
       mapOfImages.at(cameraNames.at(0)) = &imageL_vp;
-      mapOfImages.at(cameraNames.at(1)) = &imageR_vp;
 
-      stereoTracker->stereoTrack(mapOfImages, &mapOfcameraToObj);
+      if (!useDepth){
+        mapOfImages.at(cameraNames.at(1)) = &imageR_vp;
+        stereoTracker->stereoTrack(mapOfImages, &mapOfcameraToObj);
+      } else {
+
+        // the image for the second (range) camera is not needed. Instead we
+        // provide the pointcloud
+        std::map<std::string, pcl::PointCloud< pcl::PointXYZ >::ConstPtr> mapOfPointclouds;
+        mapOfPointclouds[cameraNames.at(1)] = pointcloud;
+        stereoTracker->stereoTrack(mapOfImages, mapOfPointclouds, &mapOfcameraToObj);
+      }
       cLThole = mapOfcameraToObj.at(cameraNames.at(0));
+
+      /// TODO if range used, I think that transformation is not provided for the range camera
+      /// (having two different transformation is need only for monotracker?)
       cRThole = mapOfcameraToObj.at(cameraNames.at(1));
 
       stereoTracker->display(mapOfImages);
@@ -256,9 +347,13 @@ int main(int argc, char** argv){
 
 
     vpDisplay::displayFrame(imageL_vp, cLThole, cam_left, 0.25, vpColor::none, 2);
-    vpDisplay::displayFrame(imageR_vp, cRThole, cam_right, 0.25, vpColor::none, 2);
+    if (!useDepth){
+      vpDisplay::displayFrame(imageR_vp, cRThole, cam_right, 0.25, vpColor::none, 2);
+    } else {
+      vpDisplay::displayFrame(imageRangeR_vp, cRThole, cam_right, 0.25, vpColor::none, 2);
+    }
 
-    // store estimation in struct, TODO mean tra right e left?
+    // store estimation in struct, TODO mean tra right e left for monoTracker?
     Eigen::Matrix4d wTh_estimated_left =
         robVisInfo.robotState.wTv_eigen *
         robVisInfo.robotStruct.vTcameraL *
@@ -282,6 +377,9 @@ int main(int argc, char** argv){
     vpDisplay::displayText(imageL_vp, 30, 10, "A click to exit.", vpColor::red);
     vpDisplay::flush(imageL_vp);
     vpDisplay::flush(imageR_vp);
+    if (useDepth){
+      vpDisplay::flush(imageRangeR_vp);
+    }
     //vpDisplay::getKeyboardEvent(imageL_vp, 'd');
     if (vpDisplay::getClick(imageL_vp, false)) {
       return 1;
@@ -321,6 +419,7 @@ int main(int argc, char** argv){
     delete monoTrackerR;
   } else {
     delete stereoTracker;
+
   }
 
   return 0;

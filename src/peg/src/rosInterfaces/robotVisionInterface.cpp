@@ -21,6 +21,7 @@ RobotVisionInterface::RobotVisionInterface(ros::NodeHandle nh, std::string robot
   image_transport::ImageTransport it(nh);
   subLeftImage = it.subscribe(topicRoot + "cameraL", 1, &RobotVisionInterface::imageLeftCallback, this);
   subRightImage = it.subscribe(topicRoot + "cameraR", 1, &RobotVisionInterface::imageRightCallback, this);
+  subRangeRightImage = it.subscribe(topicRoot + "rangeCameraR", 1, &RobotVisionInterface::imageRangeRightCallback, this);
 }
 
 
@@ -113,9 +114,9 @@ int RobotVisionInterface::sendyDot(std::vector<double> yDot){
  */
 int RobotVisionInterface::getLeftImage(cv::Mat *imageCV){
 
-
+//sensor_msgs::image_encodings::MONO8  old second argument of toCvCopy
   cv_bridge::CvImagePtr imageCVPtr =
-      cv_bridge::toCvCopy(leftImage, sensor_msgs::image_encodings::MONO8);
+      cv_bridge::toCvCopy(leftImage);
   *imageCV = imageCVPtr.get()->image;
   //cut top part of image where a piece of auv is visible and can distract cv algos
   //note: doing this camera param are changed: -60px for v0 element
@@ -127,11 +128,21 @@ int RobotVisionInterface::getLeftImage(cv::Mat *imageCV){
 int RobotVisionInterface::getRightImage(cv::Mat *imageCV){
 
   cv_bridge::CvImagePtr imageCVPtr =
-      cv_bridge::toCvCopy(rightImage, sensor_msgs::image_encodings::MONO8);
+      cv_bridge::toCvCopy(rightImage);
   *imageCV = imageCVPtr.get()->image;
   //cut top part of image where a piece of auv is visible and can distract cv algos
   //note: doing this camera param are changed: -60px for v0 element
   (*imageCV) = (*imageCV)(cv::Rect(0, 60, (*imageCV).cols, (*imageCV).rows-60));
+  return 0;
+
+}
+
+int RobotVisionInterface::getRangeRightImage(cv::Mat *imageCV){
+
+  cv_bridge::CvImagePtr imageCVPtr =
+      cv_bridge::toCvCopy(rangeRightImage);
+  *imageCV = imageCVPtr.get()->image;
+
   return 0;
 
 }
@@ -149,4 +160,9 @@ void RobotVisionInterface::imageLeftCallback(const sensor_msgs::ImageConstPtr& m
 void RobotVisionInterface::imageRightCallback(const sensor_msgs::ImageConstPtr& msg)
 {
   rightImage = msg;
+}
+
+void RobotVisionInterface::imageRangeRightCallback(const sensor_msgs::ImageConstPtr& msg)
+{
+  rangeRightImage = msg;
 }

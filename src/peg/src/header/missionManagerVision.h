@@ -11,9 +11,11 @@
 
 #include "../vision/header/detector.h"
 #include "../vision/header/tracker.h"
+#include "../vision/header/depthCameraSupport.h"
 
 #include <visp3/gui/vpDisplayOpenCV.h>
 #include <visp3/io/vpImageIo.h>
+#include <pcl_ros/io/pcd_io.h>
 
 const std::string relativeMissMan = "/vision/data/";
 const std::string templName = relativeMissMan + "templateSideLittle.jpg";

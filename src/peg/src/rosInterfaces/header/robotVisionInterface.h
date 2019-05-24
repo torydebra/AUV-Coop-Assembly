@@ -35,8 +35,10 @@ public:
 
   int getLeftImage(cv::Mat *imageCV);
   int getRightImage(cv::Mat *imageCV);
+  int getRangeRightImage(cv::Mat *imageCV);
   void imageLeftCallback(const sensor_msgs::ImageConstPtr& msg);
   void imageRightCallback(const sensor_msgs::ImageConstPtr& msg);
+  void imageRangeRightCallback(const sensor_msgs::ImageConstPtr& msg);
 
 
 private:
@@ -47,8 +49,13 @@ private:
 
   image_transport::Subscriber subLeftImage;
   image_transport::Subscriber subRightImage;
+  image_transport::Subscriber subRangeRightImage;
+
   sensor_msgs::ImageConstPtr leftImage;
   sensor_msgs::ImageConstPtr rightImage;
+  sensor_msgs::ImageConstPtr rangeRightImage;
+
+
 
 
 };

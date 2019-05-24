@@ -11,6 +11,8 @@
 #include <visp3/vision/vpKeyPoint.h>
 #include <visp3/mbt/vpMbGenericTracker.h>
 
+#include <pcl_ros/io/pcd_io.h>
+
 #include "../../support/header/conversions.h"
 
 
@@ -19,8 +21,10 @@ const std::string relative = "/data/";
 const std::string configFile = relative + "camera_";
 const std::string caoModelNoCil = relative + "blockHole.cao";
 const std::string caoModel = relative + "blockHoleCilinder.cao";
+//const std::string caoModel = relative + "pegModelCircle.cao";
 const std::string configFileDetector = relative + "detection-config-MONO.xml";
 const std::string initFileClick = relative + "3DPointSquareFace4_";
+//const std::string initFileClick = relative + "3DPointPeg_";
 const std::string initFile_w2D = relative + "3DPointSquareFace4_w2d_";
 const std::string learnData = relative + "blockHole_learning_data_";
 //const std::string transfcameraLtoR = relative + "lTr.txt";
@@ -58,13 +62,16 @@ class StereoTracker
 public:
   StereoTracker(std::string callerName, std::vector<std::string> cameraNames,
                 std::map<std::string, vpHomogeneousMatrix> mapCameraTransf,
-                int trackerType);
+                std::vector<int> trackerTypes);
   ~StereoTracker();
 
   int initTrackingByClick( std::map<std::string, const vpImage<unsigned char>*> mapOfImages);
   int initTrackingByPoint(std::map<std::string, const vpImage<unsigned char>*> mapOfImages);
   int stereoTrack(std::map<std::string, const vpImage<unsigned char>*> mapOfImages,
                   std::map<std::string, vpHomogeneousMatrix> *mapOfCameraPoses);
+  int stereoTrack(std::map<std::string, const vpImage<unsigned char>*> mapOfImages,
+                 std::map<std::string, pcl::PointCloud< pcl::PointXYZ >::ConstPtr> mapOfPointclouds,
+                 std::map<std::string, vpHomogeneousMatrix> *mapOfcameraToObj);
   void getCamerasParams(std::map<std::string, vpCameraParameters> *mapOfCameraParams);
   void display(std::map<std::string, const vpImage<unsigned char>*> mapOfImages);
 

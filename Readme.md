@@ -62,7 +62,8 @@ TODO: better put as separate package various support/helper classes that have no
 * **image_transport** (already included with default ros installation?)
   to deal with ros topics which share images
 *  [**VISP 3.2**](https://visp.inria.fr/) Visual Servoing Platform
-   It is nicer to use than opencv when dealing with more robotic vision things like *model based stereo tracking of an object*
+   It is nicer to use than opencv when dealing with more robotic vision things like *model based stereo tracking of an object*   
+* **PCL**
 
 
 ## Solutions for some possible compiling issue:
@@ -99,6 +100,9 @@ Nota a TASKS e (main) ma non è un problema perchè è indipendente da ros, (ins
 controllore non la usa perchè usa solo cmat
 
 **kdl** get jacobians from urdf models
+
+### the workspace chaining thing
+https://answers.ros.org/question/205976/sourcing-from-multiple-workspaces/
 
 
 

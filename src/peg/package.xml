@@ -61,6 +61,8 @@
   <build_depend>kdl_parser</build_depend>
   <build_depend>peg_msgs</build_depend>
   <build_depend>image_transport</build_depend>
+  <build_depend>pcl_ros</build_depend>
+
 
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
@@ -78,6 +80,8 @@
   <exec_depend>tf_conversions</exec_depend>
   <exec_depend>kdl_parser</exec_depend>
   <exec_depend>image_transport</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+
 
 
 

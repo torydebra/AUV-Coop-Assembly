@@ -2,7 +2,6 @@
 
 from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import JointState
-from freefloating_gazebo.srv import ControlType
 import termios, fcntl, sys, os
 import rospy
 
@@ -10,11 +9,9 @@ import rospy
 from std_srvs.srv import Empty
 
 #topic to command
-twist_topic="/g500_A/body_velocity_setpoint"
-joint_topic="/g500_A/joint_setpoint"
-#service to set control mode
-bodyServ = '/g500_A/controllers/body_velocity_control'
-jointServ = '/g500_A/controllers/joints_velocity_control'
+# Twist better than odometry TODO ask why
+twist_topic="/uwsim/g500_A/twist_command"
+joint_topic="/uwsim/g500_A/joint_command"
 #base velocity for the teleoperation
 baseVelocity=0.8
 baseJoint=0.1
@@ -33,37 +30,11 @@ pubTwist = rospy.Publisher(twist_topic, TwistStamped,queue_size=1)
 pubJoint = rospy.Publisher(joint_topic, JointState,queue_size=1)
 rospy.init_node('keyboardCommand_A')
 
-#set control mode to velocity
-rospy.wait_for_service(bodyServ)
-rospy.wait_for_service(jointServ)
-
-try:
-    str = ["x", "y", "z", "pitch", "yaw"]
-    body_vel_control = rospy.ServiceProxy(bodyServ, ControlType)
-    body_vel_control(str)
-except rospy.ServiceException, e:
-    print "Service call failed: %s"%e
-try:
-    str = ["Slew", "Shoulder", "Elbow", "JawRotate", "JawOpening", "JawOpening2"]
-    joint_vel_control = rospy.ServiceProxy(jointServ, ControlType)
-    joint_vel_control(str)
-except rospy.ServiceException, e:
-    print "Service call failed: %s"%e
-
-
 #The try is necessary for the console input!
 try:
     while not rospy.is_shutdown():
         msgTwist = TwistStamped()
         msgJoint = JointState()
-        msgTwist.twist.linear.x = 0
-        msgTwist.twist.linear.y = 0
-        msgTwist.twist.linear.z = 0
-        msgTwist.twist.angular.x = 0
-        msgTwist.twist.angular.x = 0
-        msgTwist.twist.angular.z = 0
-        pubTwist.publish(msgTwist)
-
         try:
             c = sys.stdin.read(1)
             ##Depending on the character set the proper speeds
