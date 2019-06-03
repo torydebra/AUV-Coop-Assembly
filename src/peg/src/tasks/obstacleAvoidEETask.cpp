@@ -65,7 +65,7 @@ void ObstacleAvoidEETask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robo
 
 void ObstacleAvoidEETask::setReference(double w_dist){
 
-  //TODO check where the frame is to undersand well distance minimum
+  //TODO check where the frame is to understand well distance minimum
 
   //if the frame is in the middle, distance minim is two times the half of lenght
   //(plus the safe dist)

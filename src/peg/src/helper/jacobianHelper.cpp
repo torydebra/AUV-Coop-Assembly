@@ -54,6 +54,10 @@ int computeWholeJacobianEE(struct Infos *robInfo){
   robInfo->robotState.w_Jee_robot.topRows<3>() = w_J_pos;
   robInfo->robotState.w_Jee_robot.bottomRows<3>() = w_J_or;
 
+  std::cout << "J: \n"
+            << robInfo->robotState.w_Jee_robot
+            << "\n\n";
+  std::cout << "COMPTEWHOLEJACOBBBBB EEEEEEEEEE_______________END\n\n";
 
   return 0;
 }
@@ -110,8 +114,8 @@ int computeWholeJacobianTool(struct Infos *robInfo){
 
 
   //DEBUG
-//  std::cout << "kdl first Skew\n" << skew__w_Dist_v0 << "\n\n";
-//  std::cout << "kdl secodn Skew\n" << skew__w_Dist_0tool << "\n\n";
+  std::cout << "COMPTEWHOLEJACOBBBBB\n";
+  //std::cout << "kdl first Skew\n" << skew__w_Dist_vtool << "\n\n";
 //  std::cout << "eta1\n"
 //            << robInfo->robotState.wTv_eigen.topRightCorner<3,1>()
 //                  << "\n\n";
@@ -123,9 +127,11 @@ int computeWholeJacobianTool(struct Infos *robInfo){
 //            << "\n\n";
 
 
-//  std::cout << "J: \n"
-//            << robInfo->robotState.w_Jtool_robot
-//            << "\n\n";
+  std::cout << "J: \n"
+            << robInfo->robotState.w_Jtool_robot
+            << "\n\n";
+  std::cout << "COMPTEWHOLEJACOBBBBB_______________END\n\n";
+
 
 
   return 0;

@@ -19,10 +19,14 @@
     </sampling_step>
   </depth_dense>
   <camera>
-    <px>257.986</px>
+    <!--<px>257.986</px>
     <py>257.341</py>
     <u0>120</u0>
-    <v0>160</v0>
+    <v0>160</v0>-->
+    <u0>160.0</u0>
+    <v0>120.0</v0>
+    <px>257.34082279179285</px>
+    <py>257.34083046114705</py>
   </camera>
   <face>
     <angle_appear>80</angle_appear>

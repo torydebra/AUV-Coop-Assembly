@@ -1,6 +1,6 @@
 clearvars;
 
-rootPath = '~/LogPeg/without/';
+rootPath = '~/LogPeg/force2/';
 robotNameA = 'g500_A';
 robotNameB = 'g500_B';
 coordName = 'Coordinator/';
@@ -11,13 +11,13 @@ sControlLoop = 0.1;
 
 %% plot Task things
 
-% taskName = 'ARM_SHAPE';
-% 
-% plotTask(rootPath, robotName, taskName);
+ taskName = 'FORCE_INSERTION';
+ 
+ plotTask(rootPath, robotNameA, taskName);
 
 %% plot yDots (command sent to robot)
-% plotYDot(rootPath, robotNameA, 'yDotTPIK1');
-% plotYDot(rootPath, robotNameA, 'yDotFinal');
+%plotYDot(rootPath, robotNameA, 'yDotTPIK1');
+plotYDot(rootPath, robotNameA, 'yDotFinal');
 % plotYDot(rootPath, robotNameB, 'yDotTPIK1');
 % plotYDot(rootPath, robotNameB, 'yDotFinal');
 
@@ -61,5 +61,5 @@ sControlLoop = 0.1;
 
 
 %% Vision
-pathName ="~/LogPegVision/today222/g500_C/errorStereoL.txt";
-plotGenericErrorDivided(pathName)
+%pathName ="~/LogPegVision/today222/g500_C/errorStereoL.txt";
+%plotGenericErrorDivided(pathName)

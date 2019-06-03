@@ -182,8 +182,6 @@ int main(int argc, char **argv)
   kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.v_Jtool_man));
   computeWholeJacobianTool(&robInfo);
 
-
-
   ///Controller
   Controller controller(robotName);
 

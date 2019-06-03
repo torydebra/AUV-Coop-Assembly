@@ -205,6 +205,7 @@ add_library(${PROJECT_NAME}_ObstacleAvoidEETask src/tasks/obstacleAvoidEETask.cp
 add_library(${PROJECT_NAME}_PipeReachTask src/tasks/pipeReachTask.cpp)
 add_library(${PROJECT_NAME}_ArmShapeTask src/tasks/armShapeTask.cpp)
 add_library(${PROJECT_NAME}_CoopTask src/tasks/coopTask.cpp)
+add_library(${PROJECT_NAME}_ForceInsertTask src/tasks/forceInsertTask.cpp)
 
 
 ## Add cmake target dependencies of the library
@@ -226,8 +227,13 @@ add_dependencies(${PROJECT_NAME}_CoordInterfaceCoord
 #set target propr is for call the nome as rosrun pkg_name missManagerA and not pkg_name_missManagerA
 add_executable(${PROJECT_NAME}_MissionManagerA src/missionManager.cpp)
 set_target_properties(${PROJECT_NAME}_MissionManagerA PROPERTIES OUTPUT_NAME "MissionManagerA")
+
+add_executable(${PROJECT_NAME}_MissionManagerAPeg src/missionManagerPeg.cpp)
+set_target_properties(${PROJECT_NAME}_MissionManagerAPeg PROPERTIES OUTPUT_NAME "MissionManagerAPeg")
+
 add_executable(${PROJECT_NAME}_MissionManagerB src/missionManager.cpp)
 set_target_properties(${PROJECT_NAME}_MissionManagerB PROPERTIES OUTPUT_NAME "MissionManagerB")
+
 add_executable(${PROJECT_NAME}_Coordinator src/coordinator.cpp)
 set_target_properties(${PROJECT_NAME}_Coordinator PROPERTIES OUTPUT_NAME "Coordinator")
 add_executable(${PROJECT_NAME}_MissionManagerVision src/missionManagerVision.cpp)
@@ -289,6 +295,35 @@ target_link_libraries(${PROJECT_NAME}_MissionManagerA
     ${PROJECT_NAME}_ArmShapeTask
     ${PROJECT_NAME}_CoopTask
 )
+
+target_link_libraries(${PROJECT_NAME}_MissionManagerAPeg
+    ${catkin_LIBRARIES}
+    ${PROJECT_NAME}_RobotInterface
+    ${PROJECT_NAME}_WorldInterface
+    ${PROJECT_NAME}_CoordInterfaceMissMan
+    ${PROJECT_NAME}_VisionInterfaceMissMan
+    ${PROJECT_NAME}_Logger
+    ${PROJECT_NAME}_Controller
+    ${PROJECT_NAME}_Formulas
+    ${PROJECT_NAME}_KdlHelper
+    ${PROJECT_NAME}_JacobianHelper
+    #put below new task (is it necessary? YES)
+    ${PROJECT_NAME}_LastTask
+    ${PROJECT_NAME}_VehicleReachTask
+    ${PROJECT_NAME}_EEReachTask
+    ${PROJECT_NAME}_JointLimitsTask
+    ${PROJECT_NAME}_HorizontalAttitudeTask
+    ${PROJECT_NAME}_FovEEToToolTask
+    ${PROJECT_NAME}_VehicleNullVelTask
+    ${PROJECT_NAME}_VehicleConstrVelTask
+    ${PROJECT_NAME}_ObstacleAvoidVehicleTask
+    ${PROJECT_NAME}_ObstacleAvoidEETask
+    ${PROJECT_NAME}_PipeReachTask
+    ${PROJECT_NAME}_ArmShapeTask
+    ${PROJECT_NAME}_CoopTask
+    ${PROJECT_NAME}_ForceInsertTask
+)
+
 
 target_link_libraries(${PROJECT_NAME}_MissionManagerB
     ${catkin_LIBRARIES}
@@ -507,6 +542,14 @@ target_link_libraries(${PROJECT_NAME}_CoopTask
     ${PROJECT_NAME}_Task
     linuxcmat
     ${PROJECT_NAME}_Conversions
+)
+
+target_link_libraries (${PROJECT_NAME}_ForceInsertTask
+    ${PROJECT_NAME}_Task
+    linuxcmat
+    ${PROJECT_NAME}_Conversions
+    ${PROJECT_NAME}_Formulas
+
 )
 
 # to add compiler flags (-Wall -pedantic)

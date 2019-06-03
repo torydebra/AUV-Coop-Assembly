@@ -1,7 +1,9 @@
-4              # Number of points
+5              # Number of points
 #xyz with x going out, y on the left, z down
-#4 point on the outer cirlce: top, right, down, left
+#4 point on the outer cirlce: top, right, down, left, other side right
 0   0   -0.05
 0 -0.05   0
 0   0    0.05
 0  0.05   0
+-6 -0.05  0
+

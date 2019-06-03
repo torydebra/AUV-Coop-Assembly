@@ -5,6 +5,7 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/WrenchStamped.h>
 #include <sensor_msgs/JointState.h>
 
 #include <Eigen/Core>
@@ -23,6 +24,8 @@ public:
   int getJointState(std::vector<double>* jState);
   int sendyDot(std::vector<double> yDot);
 
+  int getForceTorque(Eigen::Vector3d* force, Eigen::Vector3d* torque);
+
   //int getwTjoints(std::vector<Eigen::Matrix4d> *wTjoints);
 
 
@@ -33,9 +36,14 @@ private:
   ros::Publisher pubTwist;
   ros::Publisher pubJoint;
   ros::Subscriber subJointState;
+  ros::Subscriber subForceTorque;
 
   std::vector<double> jState_priv;
+  std::vector<double> force_priv;
+  std::vector<double> torque_priv;
   void subJointStateCallback(const sensor_msgs::JointState& js);
+  void subForceTorqueCallback(const geometry_msgs::WrenchStamped& msg);
+
 };
 
 #endif // ROBOTINTERFACE_H

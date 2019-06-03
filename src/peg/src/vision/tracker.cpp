@@ -223,16 +223,14 @@ int StereoTracker::initTrackingByClick(
 
   std::map<std::string, std::string> mapOfInitFiles;
 
-
   for (int i=0; i< cameraNames.size(); i++){
-    std::string initFileName =
-        sourcePath+initFileClick+cameraNames.at(i)+".init";
-
     //dont store init file for depth camera, visp says it is not need
     if (cameraNames.at(i).compare("rangeRight") != 0) {
+      std::string initFileName =
+          sourcePath+initFileClick+cameraNames.at(i)+".init";
+
       mapOfInitFiles[cameraNames.at(i)] =  initFileName;
     }
-
   }
 
   try{
@@ -250,14 +248,20 @@ int StereoTracker::initTrackingByPoint(
   std::map<std::string, std::string> mapOfInitFiles;
 
   for (int i=0; i< cameraNames.size(); i++){
-    std::string initFileName =
-        sourcePath+initFile_w2D+cameraNames.at(i)+".init";
-    std::cout << initFileName << "\n";
-
-    mapOfInitFiles[cameraNames.at(i)] = initFileName;
+    //dont store init file for depth camera, visp says it is not need
+    if (cameraNames.at(i).compare("rangeRight") != 0) {
+      std::string initFileName =
+          sourcePath+initFile_w2D+cameraNames.at(i)+".init";
+      std::cout << initFileName << "\n";
+      mapOfInitFiles[cameraNames.at(i)] =  initFileName;
+    }
   }
 
-  tracker->initFromPoints(mapOfImages, mapOfInitFiles);
+  try{
+    tracker->initFromPoints(mapOfImages, mapOfInitFiles);
+  } catch (const vpException &e) {
+    std::cerr << "[" << callerName << "][STEREOTRACKER] Catch a ViSP exception: " << e.what() << std::endl;
+  }
 
 }
 

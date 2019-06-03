@@ -20,11 +20,12 @@
 const std::string relative = "/data/";
 const std::string configFile = relative + "camera_";
 const std::string caoModelNoCil = relative + "blockHole.cao";
-const std::string caoModel = relative + "blockHoleCilinder.cao";
-//const std::string caoModel = relative + "pegModelCircle.cao";
+//const std::string caoModel = relative + "blockHoleCilinder.cao";
+//const std::string caoModel = relative + "blockHole.cao";
+const std::string caoModel = relative + "pegModelMay.cao";
 const std::string configFileDetector = relative + "detection-config-MONO.xml";
-const std::string initFileClick = relative + "3DPointSquareFace4_";
-//const std::string initFileClick = relative + "3DPointPeg_";
+//const std::string initFileClick = relative + "3DPointSquareFace4_";
+const std::string initFileClick = relative + "3DPointPeg_";
 const std::string initFile_w2D = relative + "3DPointSquareFace4_w2d_";
 const std::string learnData = relative + "blockHole_learning_data_";
 //const std::string transfcameraLtoR = relative + "lTr.txt";

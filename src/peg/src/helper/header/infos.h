@@ -38,7 +38,7 @@ struct RobotState {
   std::vector<Eigen::Matrix4d> wTjoints; // world to each joint
   //Eigen::Matrix4d vTee_eigen; //vehicle to endEffector
 
-  /// vehicle and joint and Sensors state
+  /// vehicle and joint
   std::vector<double> vehicleVel;
   std::vector<double> jState; //joint state (rad)
 
@@ -67,6 +67,8 @@ struct RobotState {
   Eigen::Matrix<double, 6, TOT_DOF> w_JNoKdltool_robot;
 
 
+
+
 };
 
 /**
@@ -77,6 +79,8 @@ struct RobotStruct {
 
  //Necessary to compute each time the vTee in the control loop.
  Eigen::Matrix4d  vTlink0; //transformation between vehicle and link 0 (so, a fixed one)
+
+
 
 };
 
@@ -95,9 +99,21 @@ struct ExchangedInfo {
   Eigen::Matrix<double, VEHICLE_DOF, 1> coopCartVel;
 };
 
+/**
+ * @brief The RobotSensor struct used to store info from robot sensors (eg force torque)
+ */
+struct RobotSensor {
+
+  // TODO usare info non from tip ma in vera posiz del force torque sensor...
+  Eigen::Vector3d forcePegTip;
+  Eigen::Vector3d torquePegTip;
+
+};
+
 struct Infos {
   RobotStruct robotStruct;
   RobotState robotState;
+  RobotSensor robotSensor;
   Transforms transforms;
   ExchangedInfo exchangedInfo;
 };

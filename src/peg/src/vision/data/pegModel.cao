@@ -1,5 +1,6 @@
 V1
 #Peg model
+# x go out cilinder
 2                    #number of points
 0       0      0     #0 X Y Z, the center of the hole
 -6      0      0     #point1  center of hole other face

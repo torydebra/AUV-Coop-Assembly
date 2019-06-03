@@ -25,6 +25,8 @@ const std::string templName = relativeMissMan + "templateSideLittle.jpg";
 int main(int, char**);
 void append2Dto3Dfile(std::vector<cv::Point> found4CornersL, std::vector<cv::Point> found4CornersR,
                       std::string sourcePath);
+void append2Dto3Dfile(std::vector<cv::Point> found4CornersL,
+                      std::string sourcePath);
 
 
 #endif // MISSIONMANAGERVISION_H

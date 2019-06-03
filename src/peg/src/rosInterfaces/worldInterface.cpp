@@ -33,7 +33,9 @@ int WorldInterface::waitReady(std::string firstFrame, std::string secondFrame){
   std::string firstFrameTopic = "/" + firstFrame;
   std::string secondFrameTopic = "/" + secondFrame;
 
-  tfListener.waitForTransform(firstFrameTopic, secondFrameTopic, ros::Time(0), ros::Duration(3.0));
+  std::cout << "[" << callerName <<"][WORLD_INTERFACE]: waiting for trasform from " << firstFrameTopic
+            << " to " << secondFrame << "\n";
+  tfListener.waitForTransform(firstFrameTopic, secondFrameTopic, ros::Time(0), ros::Duration(60.0));
 
 
   return 0;

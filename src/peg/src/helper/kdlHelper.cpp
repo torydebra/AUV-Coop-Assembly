@@ -162,6 +162,10 @@ int KDLHelper::getJacobianTool(std::vector<double> jointPos, Eigen::Matrix<doubl
   jacobTool_solver->JntToJac(jointPositions, jacobian_kdl);
 
   *jacobianTool_eigen = CONV::jacobian_kdl2eigen(jacobian_kdl);
+  std::cout << "kdl Helper jacob tool:\n"
+            << *jacobianTool_eigen
+            << "\n";
+
 
   return 0;
 }

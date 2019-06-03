@@ -1,5 +1,6 @@
 V1
 # 3D Points
+# x going into hole,   y right,  z down
 11                    # Number of points
 0       0      0     #0 X Y Z, the center of the hole
 0     -0.4    -0.4    #1 top left front face

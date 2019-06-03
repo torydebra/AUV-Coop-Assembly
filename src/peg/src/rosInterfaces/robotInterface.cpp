@@ -18,6 +18,10 @@ RobotInterface::RobotInterface(ros::NodeHandle nh, std::string robotName)
   pubJoint = nh.advertise<sensor_msgs::JointState>((topicRoot + "joint_command"),1);
 
   subJointState = nh.subscribe(topicRoot+"joint_state", 1, &RobotInterface::subJointStateCallback, this);
+
+  force_priv.resize(3, 0.0); //0 for default value
+  torque_priv.resize(3, 0.0);
+  subForceTorque = nh.subscribe(topicRoot+"forceSensorPeg", 1, &RobotInterface::subForceTorqueCallback, this);
 }
 
 
@@ -90,6 +94,30 @@ int RobotInterface::getJointState(std::vector<double> *jState){
   *jState = jState_priv;
   return 0;
 }
+
+
+void RobotInterface::subForceTorqueCallback(const geometry_msgs::WrenchStamped& msg){
+
+  force_priv.at(0) = msg.wrench.force.x;
+  force_priv.at(1) = msg.wrench.force.y;
+  force_priv.at(2) = msg.wrench.force.z;
+
+  torque_priv.at(0) = msg.wrench.torque.x;
+  torque_priv.at(1) = msg.wrench.torque.y;
+  torque_priv.at(2) = msg.wrench.torque.z;
+
+
+}
+
+
+int RobotInterface::getForceTorque(Eigen::Vector3d *force, Eigen::Vector3d *torque){
+
+  *force = CONV::vector_std2Eigen(force_priv);
+  *torque = CONV::vector_std2Eigen(torque_priv);
+
+}
+
+
 
 
 

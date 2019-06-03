@@ -101,8 +101,10 @@ try:
                 baseVelocity+=0.1;
                 print "baseVelocity: " , baseVelocity
             elif c == 'x':
-                if baseVelocity > 0.1:
+                if baseVelocity > 0.2:
                     baseVelocity-=0.1
+                elif baseVelocity > 0:
+                    baseVelocity -= 0.01
                 else:
                     baseVelocity = 0
                 print "baseVelocity: " , baseVelocity
@@ -110,11 +112,13 @@ try:
                 baseJoint+=0.1;
                 print "jointVelocity: " , baseJoint
             elif c == 'm':
-                if baseJoint > 0.1:
+                if baseJoint > 0.2:
                     baseJoint -= 0.1
+                elif baseJoint > 0:
+                    baseJoint -= 0.01
                 else:
                     baseJoint = 0
-                print "jointVelocity: " , baseJoint
+                print "jointVelocity: ", baseJoint
             else:
                 print 'wrong key pressed'
             while c!='':

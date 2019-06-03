@@ -40,8 +40,12 @@ elseif strcmp(taskName, 'ARM_SHAPE')
     else
         leg = legend('$\dot{q}_1$','$\dot{q}_2$', '$\dot{q}_3$', '$\dot{q}_4$');
         ylab = ylabel('references [rad/s]');
-    end 
-
+    end
+elseif strcmp(taskName, 'FORCE_INSERTION')
+    if nRow == 3 % only force
+        leg = legend('$\dot{x}$','$\dot{y}$', '$\dot{z}$');
+        ylab = ylabel('references [m/s]');
+    end
 end
 
 tr = title(strcat(robotName, taskName));
@@ -82,6 +86,11 @@ elseif  strcmp(taskName, 'ARM_SHAPE')
         leg = legend('$q1_{err}$','$q2_{err}$', '$q3_{err}$', '$q4_{err}$');
         ylab = ylabel('errors [rad]');
      end
+elseif strcmp(taskName, 'FORCE_INSERTION')
+    if nRow == 3 % only force
+        leg = legend('$x_{err}$','$y_{err}$', '$z_{err}$');
+        ylab = ylabel('error [m]');
+    end
 end
 
 te = title(strcat(robotName, taskName));
@@ -123,6 +132,11 @@ elseif strcmp(taskName, 'ARM_SHAPE')
     else
       leg = legend('$A_{11}$','$A_{22}$', '$A_{33}$', '$A_{44}$');
       ylab = ylabel('activations');
+    end
+elseif strcmp(taskName, 'FORCE_INSERTION')
+    if nRow == 3 % only force
+        leg = legend('$A_{11}$','$A_{22}$', '$A_{33}$');
+        ylab = ylabel('activations');
     end
 end
 
