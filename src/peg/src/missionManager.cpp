@@ -85,10 +85,10 @@ int main(int argc, char **argv)
 
    //rot part
   wTgoalTool_eigen.topLeftCorner<3,3>() << 0, 1,  0,
-                                           -1,  0,  0,
+                                          -1,  0,  0,
                                            0,  0,  1;
 
- // wTgoalTool_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
+  //wTgoalTool_eigen.topLeftCorner<3,3>() = Eigen::Matrix3d::Identity();
 
   //trasl part
   wTgoalTool_eigen(0, 3) = goalLinearVectTool[0];
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
 
     //DEBUG
     //std::cout <<"ARRIVED wThole" << robInfo.transforms.wTholeEstimated_eigen << "\n\n";
-    robInfo.transforms.wTgoalTool_eigen = robInfo.transforms.wTholeEstimated_eigen;
+    //robInfo.transforms.wTgoalTool_eigen = robInfo.transforms.wTholeEstimated_eigen;
 
     //get ee pose RESPECT LINK 0
     kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
