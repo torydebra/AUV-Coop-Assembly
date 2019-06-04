@@ -1,9 +1,9 @@
 #include "header/pipeReachTask.h"
 
-PipeReachTask::PipeReachTask(int dim, bool eqType, std::string robotName)
+PipeReachTask::PipeReachTask(int dim, bool eqType, std::string robotName, VehArmType vehArmType)
   : Task(dim, eqType, robotName, "PIPE_REACHING_GOAL"){
   gain = 0.05;
-
+  this->vehArmType = vehArmType;
 }
 
 
@@ -26,31 +26,30 @@ int PipeReachTask::setActivation(){
 
 void PipeReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
 
-//  Eigen::Matrix<double, 5, TOT_DOF> totJ;
-//  totJ.topRows<3>() = w_J_robot.topRows<3>();
+  switch (vehArmType){
+  case ONLYVEH:
+    w_J_robot.leftCols<ARM_DOF>() = Eigen::MatrixXd::Zero(6, ARM_DOF);
+    break;
 
-//  Eigen::Matrix<double, 2, TOT_DOF> excludeRoll;
-//  excludeRoll << 0, 1, 0,
-//                0, 0, 1;
+  case ONLYARM:
+    w_J_robot.rightCols<VEHICLE_DOF>() = Eigen::MatrixXd::Zero(6, VEHICLE_DOF);
+    break;
 
+  case BOTH:
+    break;
+  }
 
-//  totJ.bottomRows<2>() = excludeRoll * w_J_robot.bottomRows<3>();
   if (dimension == 6){
-    //debug
-//    Eigen::Matrix<double, 6, TOT_DOF> temp = w_J_robot;
-//    temp.leftCols<4>() << 0, 0, 0, 0,
-//                          0,0,0,0,
-//                          0,0,0,0,
-//                          0,0,0,0,
-//                          0,0,0,0,
-//                          0,0,0,0,
     J = CONV::matrix_eigen2cmat(w_J_robot);
   }
   else if (dimension == 5){
     CMAT::Matrix J_temp = CONV::matrix_eigen2cmat(w_J_robot);
     J = J_temp.DeleteRow(4);
   }
+
 }
+
+
 
 
 void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix4d wTtool_eigen){
@@ -113,3 +112,37 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
 }
 
 
+
+
+
+
+/*** old  with cout
+ *
+void PipeReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
+
+//  Eigen::Matrix<double, 5, TOT_DOF> totJ;
+//  totJ.topRows<3>() = w_J_robot.topRows<3>();
+
+//  Eigen::Matrix<double, 2, TOT_DOF> excludeRoll;
+//  excludeRoll << 0, 1, 0,
+//                0, 0, 1;
+
+
+//  totJ.bottomRows<2>() = excludeRoll * w_J_robot.bottomRows<3>();
+  if (dimension == 6){
+    //debug
+//    Eigen::Matrix<double, 6, TOT_DOF> temp = w_J_robot;
+//    temp.leftCols<4>() << 0, 0, 0, 0,
+//                          0,0,0,0,
+//                          0,0,0,0,
+//                          0,0,0,0,
+//                          0,0,0,0,
+//                          0,0,0,0,
+    J = CONV::matrix_eigen2cmat(w_J_robot);
+  }
+  else if (dimension == 5){
+    CMAT::Matrix J_temp = CONV::matrix_eigen2cmat(w_J_robot);
+    J = J_temp.DeleteRow(4);
+  }
+}
+*/

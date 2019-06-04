@@ -205,7 +205,7 @@ add_library(${PROJECT_NAME}_ObstacleAvoidEETask src/tasks/obstacleAvoidEETask.cp
 add_library(${PROJECT_NAME}_PipeReachTask src/tasks/pipeReachTask.cpp)
 add_library(${PROJECT_NAME}_ArmShapeTask src/tasks/armShapeTask.cpp)
 add_library(${PROJECT_NAME}_CoopTask src/tasks/coopTask.cpp)
-
+add_library(${PROJECT_NAME}_ForceInsertTask src/tasks/forceInsertTask.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -508,6 +508,15 @@ target_link_libraries(${PROJECT_NAME}_CoopTask
     linuxcmat
     ${PROJECT_NAME}_Conversions
 )
+
+target_link_libraries (${PROJECT_NAME}_ForceInsertTask
+    ${PROJECT_NAME}_Task
+    linuxcmat
+    ${PROJECT_NAME}_Conversions
+    ${PROJECT_NAME}_Formulas
+
+)
+
 
 # to add compiler flags (-Wall -pedantic)
 #target_compile_options(VehicleReachTask INTERFACE ${REPLACED_FLAGS})

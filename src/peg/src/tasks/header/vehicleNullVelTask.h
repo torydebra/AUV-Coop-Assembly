@@ -4,7 +4,7 @@
 #include "task.h"
 
 /**
- * @brief The VehicleNullVel class. It is a non reactive task which is need
+ * @brief The VehicleNullVel class. It is a non reactive task which is needed
  * in manipulation phases where we want the vehicle to stay still while the
  * arm is manipulating something. In such situation, this task should be putted
  * as the highest priority task

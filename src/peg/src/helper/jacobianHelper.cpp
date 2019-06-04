@@ -54,12 +54,6 @@ int computeWholeJacobianEE(struct Infos *robInfo){
   robInfo->robotState.w_Jee_robot.topRows<3>() = w_J_pos;
   robInfo->robotState.w_Jee_robot.bottomRows<3>() = w_J_or;
 
-  std::cout << "J EE: \n"
-            << robInfo->robotState.w_Jee_robot
-         << "\n\n";
-
-
-
   return 0;
 }
 
@@ -126,12 +120,6 @@ int computeWholeJacobianTool(struct Infos *robInfo){
 //  std::cout << "eta_ee1\n"
 //            << robInfo->transforms.wTt_eigen.topRightCorner<3,1>()
 //            << "\n\n";
-
-
-  std::cout << "J TOOL: \n"
-            << robInfo->robotState.w_Jtool_robot
-         << "\n\n";
-
 
   return 0;
 }

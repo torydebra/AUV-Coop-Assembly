@@ -142,7 +142,7 @@ int main(int argc, char **argv)
   std::string link0 = "part0";
   std::string endEffector = "end_effector";
 
-  KDLHelper kdlHelper(filenamePeg, link0, endEffector, robotName);
+  KDLHelper kdlHelper(filenamePeg, link0, endEffector, vehicle);
   kdlHelper.setEESolvers();
   // KDL parse for fixed things (e.g. vehicle and one of his sensor)
   //TODO Maybe exist an easier method to parse fixed frame from urdf without needed of kdl solver
@@ -217,7 +217,7 @@ int main(int argc, char **argv)
   //wait coordinator to start
   double msinit = 1;
   boost::asio::io_service ioinit;
-  std::cout << "[" << robotName<< "][MISSION_MANAGER] Wating for "<<
+  std::cout << "[" << robotName << "][MISSION_MANAGER] Wating for "<<
                "Coordinator to say I can start...\n";
   while(!coordInterface.getStartFromCoord()){
     boost::asio::deadline_timer loopRater(ioinit, boost::posix_time::milliseconds(msinit));
@@ -255,7 +255,7 @@ int main(int argc, char **argv)
     worldInterface.getwPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
     visionInterface.getHoleTransform(&(robInfo.transforms.wTholeEstimated_eigen));
 
-    //DEBUG
+    //DEBUG VISION
     //std::cout <<"ARRIVED wThole" << robInfo.transforms.wTholeEstimated_eigen << "\n\n";
     //robInfo.transforms.wTgoalTool_eigen = robInfo.transforms.wTholeEstimated_eigen;
 
@@ -431,8 +431,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
 
 
   ///MISSION TASKS
-  Task* pr5 = new PipeReachTask(5, eqType, robotName);
-  Task* pr6 = new PipeReachTask(6, eqType, robotName);
+  Task* pr5 = new PipeReachTask(5, eqType, robotName, ONLYVEH);
+  Task* pr6 = new PipeReachTask(6, eqType, robotName, ONLYVEH);
 
   Task* eer = new EndEffectorReachTask(6, eqType, robotName);
   Task* vehR = new VehicleReachTask(3, eqType, robotName, ANGULAR);
@@ -525,7 +525,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks){
   //tasks->push_back(new FovEEToToolTask(1, ineqType, robotName));
 
   //tasks->push_back(new EndEffectorReachTask(6, eqType, robotName));
-  tasks->push_back(new PipeReachTask(5, eqType, robotName));
+  tasks->push_back(new PipeReachTask(5, eqType, robotName, BOTH));
   //tasks->push_back(new VehicleReachTask(6, eqType, robotName));
 
   tasks->push_back(new ArmShapeTask(4, ineqType, robotName, MID_LIMITS));
@@ -553,8 +553,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1, std::vector
 
 
   ///MISSION TASKS
-  Task* pr5 = new PipeReachTask(5, eqType, robotName);
-  Task* pr6 = new PipeReachTask(6, eqType, robotName);
+  Task* pr5 = new PipeReachTask(5, eqType, robotName, BOTH);
+  Task* pr6 = new PipeReachTask(6, eqType, robotName, BOTH);
 
   Task* tr = new EndEffectorReachTask(6, eqType, robotName);
 
