@@ -1,6 +1,6 @@
 clearvars;
 
-rootPath = '~/LogPeg/without/';
+rootPath = '~/logPeg/4giu-7/';
 robotNameA = 'g500_A';
 robotNameB = 'g500_B';
 coordName = 'Coordinator/';
@@ -11,9 +11,12 @@ sControlLoop = 0.1;
 
 %% plot Task things
 
-% taskName = 'ARM_SHAPE';
+ taskName = 'ARM_SHAPE';
+%taskName = 'JOINT_LIMIT';
 % 
-% plotTask(rootPath, robotName, taskName);
+plotTask(rootPath, robotNameA, taskName);
+plotTask(rootPath, robotNameB, taskName);
+
 
 %% plot yDots (command sent to robot)
 % plotYDot(rootPath, robotNameA, 'yDotTPIK1');
@@ -61,5 +64,5 @@ sControlLoop = 0.1;
 
 
 %% Vision
-pathName ="~/LogPegVision/today222/g500_C/errorStereoL.txt";
-plotGenericErrorDivided(pathName)
+%pathName ="~/LogPegVision/today222/g500_C/errorStereoL.txt";
+%plotGenericErrorDivided(pathName)

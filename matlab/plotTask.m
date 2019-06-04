@@ -44,7 +44,7 @@ elseif strcmp(taskName, 'ARM_SHAPE')
 
 end
 
-tr = title(strcat(robotName, taskName));
+tr = title(strcat(robotName, " ", taskName));
 set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize );
 set (tr, 'Interpreter', 'none', 'FontSize', titleFontSize);
 set (ylab, 'Interpreter', 'none', 'FontSize', ylabFontSize);
