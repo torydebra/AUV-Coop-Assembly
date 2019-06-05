@@ -14,6 +14,23 @@
   <xacro:property name="cos180minusTheta2" value="0.390731128" />  
   <xacro:property name="sin180minusTheta2" value="0.920504853" />
   
+    
+  <!-- Sphere inertial matrix -->
+  <xacro:macro name="sph_inertial" params="mass radius">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="${2/5*mass*radius*radius}"
+	  ixy="0.0"
+	  ixz="0.0"
+	  iyy="${2/5*mass*radius*radius}"
+	  iyz="0.0"
+	  izz="${2/5*mass*radius*radius}"/>
+    </inertial>
+  </xacro:macro>
+  
+  
   
 
 
@@ -138,7 +155,6 @@
     <child link="peg"/>
     <origin rpy="0 0 -1.5707991565684896" xyz="-0.000005641198616 -1.9999781062135944 0.006895626409301414"/>
   </joint>
-
 
 
   <link name="part4_jaw1">

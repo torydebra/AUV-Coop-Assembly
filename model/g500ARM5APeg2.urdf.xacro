@@ -1,0 +1,264 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="girona500" >
+	
+  <xacro:property name="pi" value="3.141592654" />
+  <xacro:property name="robot_parts_path" value="robot/ARM5E/ARM5E" />  
+  <xacro:property name="ext" value="osg" />
+  
+  <xacro:property name="theta1" value="0.139277274" />
+  <xacro:property name="theta2" value="1.972222055" />
+  
+  <xacro:property name="cosTheta1" value="0.990316589" />  
+  <xacro:property name="sinTheta1" value="0.138827424" />
+  
+  <xacro:property name="cos180minusTheta2" value="0.390731128" />  
+  <xacro:property name="sin180minusTheta2" value="0.920504853" />
+  
+    <!-- Body properties -->
+  <xacro:property name="body_top_mass" value="25"/>
+  <xacro:property name="body_bottom_mass" value="50"/>
+  <xacro:property name="body_radius" value="0.13"/>
+  <xacro:property name="body_height" value="0.7" /> 
+  <xacro:property name="body_width" value="0.7" /> 
+  <xacro:property name="body_length" value="1.5" />
+  <xacro:property name="X_cog" value="-0.55" />
+    <!-- Arm properties -->
+  <xacro:property name="arm_mass" value="1"/>
+  <xacro:property name="arm_radius" value="0.10"/>
+  <xacro:property name="jaw_mass" value="0.5"/>
+  <xacro:property name="jaw_radius" value="0.05"/>  
+  <xacro:property name="eps" value="0.00000001"/>
+  
+    <!-- Cylinder inertial matrix with x axis along the lenght of the cilinder (for the pipe peg)-->
+  <xacro:macro name="cyl_inertial_xAxis" params="mass radius length">
+  	<inertial>
+  	  <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  	ixx="${(1/2)*mass*radius*radius}"
+	  	ixy="0.0"
+	  	ixz="0.0"
+	  	iyy="${(1/12)*mass*(3*radius*radius + length*length)}"
+	  	iyz="0.0"
+	  	izz="${(1/12)*mass*(3*radius*radius + length*length)}"
+	  />
+  	</inertial>
+  </xacro:macro>
+  
+  <!-- Sphere inertial matrix -->
+  <xacro:macro name="sph_inertial" params="mass radius">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="${2/5*mass*radius*radius}"
+	  ixy="0.0"
+	  ixz="0.0"
+	  iyy="${2/5*mass*radius*radius}"
+	  iyz="0.0"
+	  izz="${2/5*mass*radius*radius}"/>
+    </inertial>
+  </xacro:macro>
+  
+  
+
+
+  <link name="base_link">
+    <inertial>
+      <mass value="95" />
+      <inertia ixx="100"  ixy="0"  ixz="0" iyy="100" iyz="0" izz="100" />
+    </inertial>
+    <visual>
+      <origin rpy="-${pi/2} 0 ${pi}" xyz="-0.2 0 0.75"/>
+      <geometry>
+	<mesh filename="file://$(env HOME)/.uwsim/data/robot/GIRONA500/g500_March11.${ext}"/>
+      </geometry>
+    </visual>
+    <buoyancy>
+      <compensation>1.01</compensation>
+      <origin xyz= "${X_cog} 0 ${body_height*body_bottom_mass/(2*body_top_mass+body_bottom_mass)/2}"/>
+      <limit radius=".5"/>
+      <damping xyz="60 100 100" rpy="20 50 50"/>
+  </buoyancy>
+  </link>
+
+  <link name="part0">
+    <visual>
+      <origin rpy="${pi} 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part0.${ext}"/>
+      </geometry>
+    </visual>
+    <xacro:sph_inertial mass="${arm_mass}" radius="${arm_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>
+  </link>
+
+  <joint name="baselink_to_part0" type="fixed">
+    <parent link="base_link"/>
+    <child link="part0"/>
+    <origin rpy="0 0 ${pi}" xyz="0 0 0.95"/>
+  </joint>
+  
+
+ <link name="part1">
+    <visual>
+      <origin rpy="${pi} 0 0" xyz="0.0 0 -0.13"/>
+      <geometry>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part1.${ext}"/>
+      </geometry>
+    </visual>
+    <xacro:sph_inertial mass="${arm_mass}" radius="${arm_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>
+  </link>
+
+  <joint name="Slew" type="revolute">
+    <parent link="part0"/>
+    <child link="part1"/>
+    <axis xyz="0 0 1"/>
+    <origin rpy="0 0 0" xyz="0 0 0.13"/> 
+    <dynamics damping="0.8"/>  
+    <limit effort="1000.0" lower="-${pi/2}" upper="0.5488" velocity="1.0"/>
+  </joint>
+
+ <link name="part2">
+    <visual>
+      <origin rpy="${pi/2} 0 -${0.22654-theta1}" xyz="0 0 0"/> <!-- rpy="1.57 -0.209 0" xyz="0 0 0" -->
+      <geometry>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part2.${ext}"/>
+      </geometry>
+    </visual>
+    <xacro:sph_inertial mass="${arm_mass}" radius="${arm_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>    
+  </link>
+
+  <joint name="Shoulder" type="revolute">
+    <parent link="part1"/>
+    <child link="part2"/>
+    <axis xyz="0 0 1"/>
+    <origin rpy="${pi/2} 0 0" xyz="0.08052 0 0"/>
+    <limit effort="1000.0" lower="0" upper="1.58665" velocity="1.0"/>    
+  </joint>
+
+ <link name="part3">
+    <visual>
+      <origin rpy="${pi/2} 0 0.4014" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part3.${ext}"/>
+      </geometry>
+    </visual>
+    <xacro:sph_inertial mass="${arm_mass}" radius="${arm_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>
+  </link>
+
+  <joint name="Elbow" type="revolute">
+    <parent link="part2"/>
+    <child link="part3"/>
+    <axis xyz="0 0 1"/>
+    <origin rpy="0 0 ${theta1}" xyz="${cosTheta1*0.44278} ${sinTheta1*0.44278} 0"/>    
+    <limit effort="1000.0" lower="0" upper="2.15294" velocity="1.0"/>
+  </joint>
+
+  <link name="part4_base">
+    <xacro:sph_inertial mass="0.5" radius="0.05" />
+    <visual>
+      <origin xyz="0 0 -0.028" rpy="0 -${pi/2} 0" />
+      <geometry>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part4_base.${ext}"/>
+      </geometry>
+    </visual>
+    <xacro:sph_inertial mass="${jaw_mass}" radius="${jaw_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>
+  </link>
+
+  <joint name="JawRotate" type="continuous">
+    <parent link="part3"/>
+    <child link="part4_base"/>
+    <axis xyz="0 0 1"/>
+    <origin rpy="${pi/2} 0 ${theta2}" xyz="${0.083/cos180minusTheta2
+     				+sin180minusTheta2*0.1485} ${cos180minusTheta2*0.1485} 0"/>
+    <dynamics damping="0.8"/>
+    <limit lower="${-pi}" upper="${pi}" velocity="1" effort="200"/>
+  </joint>
+ 
+  <link name="end_effector">
+  </link>
+  
+  <joint name="part4_base_to_end_effector" type="fixed">
+    <parent link="part4_base"/>
+    <child link="end_effector"/>
+    <origin rpy="0 0 0" xyz="0 0 0.1485"/>
+  </joint>
+  
+  <link name="peg"> 
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="objects/pegmaggio.obj"/>
+      </geometry>
+    </visual>
+    <xacro:cyl_inertial_xAxis mass="20" radius ="0.05" length="6"/> 
+   <!-- <collision>   gives problems with uwsim
+      <origin xyz="0 0 0" rpy="0 -1.57079632679489661923 -1.57079632679489661923"/>
+      <geometry>
+        <cylinder radius="0.05" length="6"/>
+      </geometry>
+    </collision>    -->
+  </link>
+  
+  <joint name="ee_to_peg" type="fixed">
+    <origin rpy="0 0 -1.57079632679489661923" xyz="0 2 0"/>
+    <parent link="end_effector"/>
+    <child link="peg"/>
+  </joint>
+  
+  <link name = "pegHead"> 
+  </link>
+  
+  <joint name="peg_to_pegHead" type="fixed">
+  	<parent link="peg"/>
+  	<child link="pegHead"/>
+  	<origin rpy="0 0 0" xyz="3 0 0"/>
+  </joint>
+
+  <link name="part4_jaw1">
+    <visual>
+      <origin rpy="0 -${pi/2} 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part4_jaw1.${ext}"/>
+      </geometry>
+    </visual>
+    <xacro:sph_inertial mass="${jaw_mass}" radius="${jaw_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>
+  </link>
+
+  <joint name="JawOpening" type="continuous">
+    <parent link="part4_base"/>
+    <child link="part4_jaw1"/>
+    <axis xyz="0 -1 0"/>
+    <origin rpy="0 0 0" xyz="-0.04 0 0.045"/><!-- x era 0.07-->
+    <dynamics damping="0.8"/>
+    <limit effort="100.0" lower="-0.05816" upper="1.337696" velocity="1.0"/> 
+  </joint>
+
+
+  <link name="part4_jaw2">
+    <visual>
+      <origin rpy="0 -${pi/2} 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part4_jaw2.${ext}"/>
+      </geometry>
+    </visual>
+    <xacro:sph_inertial mass="${jaw_mass}" radius="${jaw_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>
+  </link>
+
+  <joint name="part4_to_link4_jaw2" type="continuous">
+    <parent link="part4_base"/>
+    <child link="part4_jaw2"/>
+    <axis xyz="0 1 0"/>
+    <origin rpy="0 0 0" xyz="0.04 0 0.0450"/><!-- x era 0.07-->
+    <dynamics damping="0.8"/>
+    <mimic joint="JawOpening" multiplier="1" offset="0"/>
+  </joint>
+
+</robot>

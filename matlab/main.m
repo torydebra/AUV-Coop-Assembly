@@ -1,6 +1,6 @@
 clearvars;
 
-rootPath = '~/logPeg/4giu-7/';
+rootPath = '~/LogPeg/singleForce2/';
 robotNameA = 'g500_A';
 robotNameB = 'g500_B';
 coordName = 'Coordinator/';
@@ -11,16 +11,19 @@ sControlLoop = 0.1;
 
 %% plot Task things
 
- taskName = 'ARM_SHAPE';
+ taskName = 'FORCE_INSERTION';
 %taskName = 'JOINT_LIMIT';
 % 
 plotTask(rootPath, robotNameA, taskName);
-plotTask(rootPath, robotNameB, taskName);
+%plotTask(rootPath, robotNameB, taskName);
 
 
 %% plot yDots (command sent to robot)
-% plotYDot(rootPath, robotNameA, 'yDotTPIK1');
-% plotYDot(rootPath, robotNameA, 'yDotFinal');
+%plotYDot(rootPath, robotNameA, 'yDotTPIK1');
+%plotYDot(rootPath, robotNameA, 'yDotFinal');
+plotYDotDivided(rootPath, robotNameA, 'yDotTPIK1'); %ang e lin vel of vehicle divided
+plotYDotDivided(rootPath, robotNameA, 'yDotFinal');
+
 % plotYDot(rootPath, robotNameB, 'yDotTPIK1');
 % plotYDot(rootPath, robotNameB, 'yDotFinal');
 

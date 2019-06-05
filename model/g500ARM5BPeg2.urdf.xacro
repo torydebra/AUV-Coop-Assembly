@@ -14,6 +14,37 @@
   <xacro:property name="cos180minusTheta2" value="0.390731128" />  
   <xacro:property name="sin180minusTheta2" value="0.920504853" />
   
+      <!-- Body properties -->
+  <xacro:property name="body_top_mass" value="25"/>
+  <xacro:property name="body_bottom_mass" value="50"/>
+  <xacro:property name="body_radius" value="0.13"/>
+  <xacro:property name="body_height" value="0.7" /> 
+  <xacro:property name="body_width" value="0.7" /> 
+  <xacro:property name="body_length" value="1.5" />
+  <xacro:property name="X_cog" value="-0.55" />
+    <!-- Arm properties -->
+  <xacro:property name="arm_mass" value="1"/>
+  <xacro:property name="arm_radius" value="0.10"/>
+  <xacro:property name="jaw_mass" value="0.5"/>
+  <xacro:property name="jaw_radius" value="0.05"/>  
+  <xacro:property name="eps" value="0.00000001"/>
+
+  
+  <!-- Sphere inertial matrix -->
+  <xacro:macro name="sph_inertial" params="mass radius">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="${2/5*mass*radius*radius}"
+	  ixy="0.0"
+	  ixz="0.0"
+	  iyy="${2/5*mass*radius*radius}"
+	  iyz="0.0"
+	  izz="${2/5*mass*radius*radius}"/>
+    </inertial>
+  </xacro:macro>
+  
   
 
 
@@ -25,18 +56,26 @@
     <visual>
       <origin rpy="-${pi/2} 0 ${pi}" xyz="-0.2 0 0.75"/>
       <geometry>
-        <mesh filename="robot/GIRONA500/g500_March11.${ext}"/>
+	<mesh filename="file://$(env HOME)/.uwsim/data/robot/GIRONA500/g500_March11.${ext}"/>
       </geometry>
     </visual>
+    <buoyancy>
+      <compensation>1.01</compensation>
+      <origin xyz= "${X_cog} 0 ${body_height*body_bottom_mass/(2*body_top_mass+body_bottom_mass)/2}"/>
+      <limit radius=".5"/>
+      <damping xyz="60 100 100" rpy="20 50 50"/>
+  </buoyancy>
   </link>
 
   <link name="part0">
     <visual>
       <origin rpy="${pi} 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="${robot_parts_path}_part0.${ext}"/>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part0.${ext}"/>
       </geometry>
     </visual>
+    <xacro:sph_inertial mass="${arm_mass}" radius="${arm_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>
   </link>
 
   <joint name="baselink_to_part0" type="fixed">
@@ -45,29 +84,24 @@
     <origin rpy="0 0 ${pi}" xyz="0 0 0.95"/>
   </joint>
   
-  <link name="kinematic_base"> <!-- kinematic base of the robot -->
-  </link>
-  
-  <joint name="part0_to_kinematic_base" type="fixed">
-    <parent link="part0"/>
-    <child link="kinematic_base"/>
-    <origin rpy="0 0 0" xyz="0 0 0.13"/>
-  </joint>
 
  <link name="part1">
     <visual>
       <origin rpy="${pi} 0 0" xyz="0.0 0 -0.13"/>
       <geometry>
-        <mesh filename="${robot_parts_path}_part1.${ext}"/>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part1.${ext}"/>
       </geometry>
     </visual>
+    <xacro:sph_inertial mass="${arm_mass}" radius="${arm_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>
   </link>
 
-  <joint name="Slew" type="continuous">
-    <parent link="kinematic_base"/>
+  <joint name="Slew" type="revolute">
+    <parent link="part0"/>
     <child link="part1"/>
     <axis xyz="0 0 1"/>
-    <origin rpy="0 0 0" xyz="0 0 0"/> <!-- La distancia base_link - base cinematica es 1.08. -->    
+    <origin rpy="0 0 0" xyz="0 0 0.13"/> 
+    <dynamics damping="0.8"/>  
     <limit effort="1000.0" lower="-${pi/2}" upper="0.5488" velocity="1.0"/>
   </joint>
 
@@ -75,12 +109,14 @@
     <visual>
       <origin rpy="${pi/2} 0 -${0.22654-theta1}" xyz="0 0 0"/> <!-- rpy="1.57 -0.209 0" xyz="0 0 0" -->
       <geometry>
-        <mesh filename="${robot_parts_path}_part2.${ext}"/>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part2.${ext}"/>
       </geometry>
     </visual>
+    <xacro:sph_inertial mass="${arm_mass}" radius="${arm_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>    
   </link>
 
-  <joint name="Shoulder" type="continuous">
+  <joint name="Shoulder" type="revolute">
     <parent link="part1"/>
     <child link="part2"/>
     <axis xyz="0 0 1"/>
@@ -92,12 +128,14 @@
     <visual>
       <origin rpy="${pi/2} 0 0.4014" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="${robot_parts_path}_part3.${ext}"/>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part3.${ext}"/>
       </geometry>
     </visual>
+    <xacro:sph_inertial mass="${arm_mass}" radius="${arm_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>
   </link>
 
-  <joint name="Elbow" type="continuous">
+  <joint name="Elbow" type="revolute">
     <parent link="part2"/>
     <child link="part3"/>
     <axis xyz="0 0 1"/>
@@ -106,22 +144,28 @@
   </joint>
 
   <link name="part4_base">
+    <xacro:sph_inertial mass="0.5" radius="0.05" />
     <visual>
-      <origin xyz="0 0 -0.028" rpy="0 -${pi/2} 0" /><!-- TEMPORAL: para compensar la pieza que falta -->
+      <origin xyz="0 0 -0.028" rpy="0 -${pi/2} 0" />
       <geometry>
-        <mesh filename="${robot_parts_path}_part4_base.${ext}"/>
+        <mesh filename="file://$(env HOME)/.uwsim/data/robot/ARM5E/ARM5E_part4_base.${ext}"/>
       </geometry>
     </visual>
+    <xacro:sph_inertial mass="${jaw_mass}" radius="${jaw_radius}" />
+    <buoyancy><compensation>1.0</compensation></buoyancy>
   </link>
 
   <joint name="JawRotate" type="continuous">
     <parent link="part3"/>
     <child link="part4_base"/>
     <axis xyz="0 0 1"/>
-    <origin rpy="${pi/2} 0 ${theta2}" xyz="${0.083/cos180minusTheta2+sin180minusTheta2*0.1485} ${cos180minusTheta2*0.1485} 0"/>
+    <origin rpy="${pi/2} 0 ${theta2}" xyz="${0.083/cos180minusTheta2
+     				+sin180minusTheta2*0.1485} ${cos180minusTheta2*0.1485} 0"/>
+    <dynamics damping="0.8"/>
+    <limit lower="${-pi}" upper="${pi}" velocity="1" effort="200"/>
   </joint>
-
-  <link name="end_effector"> <!-- From the kinematic base of the robot -->
+ 
+  <link name="end_effector">
   </link>
   
   <joint name="part4_base_to_end_effector" type="fixed">
@@ -130,13 +174,13 @@
     <origin rpy="0 0 0" xyz="0 0 0.1485"/>
   </joint>
   
-  <link name="peg"> 
+    <link name="peg"> 
   </link>
   
-  <joint name="ee_to_peg" type="fixed">
+    <joint name="ee_to_peg" type="fixed">
     <parent link="end_effector"/>
     <child link="peg"/>
-    <origin rpy="0 0 -1.5707948748378069" xyz="-0.0000028856177 1.9999940120157211 -0.01669243251116903"/>
+    <origin rpy="0 0 -1.570796326794896" xyz="0.00000580817 -2.0002353498657666 0.000000385895265"/>
   </joint>
   
   <link name = "pegHead"> 

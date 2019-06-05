@@ -13,7 +13,6 @@ nStep = size(refs, 3);
 %millisecond indicated in missionManager
 global sControlLoop;
 totSecondPassed = sControlLoop*(nStep-1);
-
 seconds = 0:sControlLoop:totSecondPassed;
 
 figure
@@ -41,6 +40,11 @@ elseif strcmp(taskName, 'ARM_SHAPE')
         leg = legend('$\dot{q}_1$','$\dot{q}_2$', '$\dot{q}_3$', '$\dot{q}_4$');
         ylab = ylabel('references [rad/s]');
     end 
+elseif strcmp(taskName, 'FORCE_INSERTION')
+    if nRow == 3 % only force
+        leg = legend('$\dot{x}$','$\dot{y}$', '$\dot{z}$');
+        ylab = ylabel('references [m/s]');
+    end
 
 end
 
@@ -56,7 +60,6 @@ nRow = size(refs, 1);
 nStep = size(refs, 3);
 
 %millisecond indicated in missionManager
-sControlLoop = 0.1;
 totSecondPassed = sControlLoop*(nStep-1);
 seconds = 0:sControlLoop:totSecondPassed;
 
@@ -82,9 +85,14 @@ elseif  strcmp(taskName, 'ARM_SHAPE')
         leg = legend('$q1_{err}$','$q2_{err}$', '$q3_{err}$', '$q4_{err}$');
         ylab = ylabel('errors [rad]');
      end
+ elseif strcmp(taskName, 'FORCE_INSERTION')
+    if nRow == 3 % only force
+        leg = legend('$x_{err}$','$y_{err}$', '$z_{err}$');
+        ylab = ylabel('error [m]');
+    end
 end
 
-te = title(strcat(robotName, taskName));
+te = title(strcat(robotName, " ", taskName));
 set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
 set (te, 'Interpreter', 'none', 'FontSize', titleFontSize);
 set (ylab, 'Interpreter', 'none', 'FontSize', ylabFontSize);
@@ -98,7 +106,6 @@ nRow = size(refs, 1);
 nStep = size(refs, 3);
 
 %millisecond indicated in missionManager
-sControlLoop = 0.1;
 totSecondPassed = sControlLoop*(nStep-1);
 seconds = 0:sControlLoop:totSecondPassed;
 
@@ -124,9 +131,14 @@ elseif strcmp(taskName, 'ARM_SHAPE')
       leg = legend('$A_{11}$','$A_{22}$', '$A_{33}$', '$A_{44}$');
       ylab = ylabel('activations');
     end
+elseif strcmp(taskName, 'FORCE_INSERTION')
+    if nRow == 3 % only force
+        leg = legend('$A_{11}$','$A_{22}$', '$A_{33}$');
+        ylab = ylabel('activations');
+    end
 end
 
-ta = title(strcat(robotName, taskName));
+ta = title(strcat(robotName, " " ,taskName));
 set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
 set (ta, 'Interpreter', 'none', 'FontSize' , titleFontSize);
 set (ylab, 'Interpreter', 'none', 'FontSize', ylabFontSize);
