@@ -235,6 +235,9 @@ set_target_properties(${PROJECT_NAME}_MissionManagerVision PROPERTIES OUTPUT_NAM
 #old TRY files
 add_executable(${PROJECT_NAME}_Vision src/vision.cpp)
 set_target_properties(${PROJECT_NAME}_Vision PROPERTIES OUTPUT_NAME "Vision")
+#try for peg with force
+add_executable(${PROJECT_NAME}_MissionManagerAPeg src/missionManagerPeg.cpp)
+set_target_properties(${PROJECT_NAME}_MissionManagerAPeg PROPERTIES OUTPUT_NAME "MissionManagerAPeg")
 
 
 
@@ -288,6 +291,34 @@ target_link_libraries(${PROJECT_NAME}_MissionManagerA
     ${PROJECT_NAME}_PipeReachTask
     ${PROJECT_NAME}_ArmShapeTask
     ${PROJECT_NAME}_CoopTask
+)
+
+target_link_libraries(${PROJECT_NAME}_MissionManagerAPeg
+    ${catkin_LIBRARIES}
+    ${PROJECT_NAME}_RobotInterface
+    ${PROJECT_NAME}_WorldInterface
+    ${PROJECT_NAME}_CoordInterfaceMissMan
+    ${PROJECT_NAME}_VisionInterfaceMissMan
+    ${PROJECT_NAME}_Logger
+    ${PROJECT_NAME}_Controller
+    ${PROJECT_NAME}_Formulas
+    ${PROJECT_NAME}_KdlHelper
+    ${PROJECT_NAME}_JacobianHelper
+    #put below new task (is it necessary? YES)
+    ${PROJECT_NAME}_LastTask
+    ${PROJECT_NAME}_VehicleReachTask
+    ${PROJECT_NAME}_EEReachTask
+    ${PROJECT_NAME}_JointLimitsTask
+    ${PROJECT_NAME}_HorizontalAttitudeTask
+    ${PROJECT_NAME}_FovEEToToolTask
+    ${PROJECT_NAME}_VehicleNullVelTask
+    ${PROJECT_NAME}_VehicleConstrVelTask
+    ${PROJECT_NAME}_ObstacleAvoidVehicleTask
+    ${PROJECT_NAME}_ObstacleAvoidEETask
+    ${PROJECT_NAME}_PipeReachTask
+    ${PROJECT_NAME}_ArmShapeTask
+    ${PROJECT_NAME}_CoopTask
+    ${PROJECT_NAME}_ForceInsertTask
 )
 
 target_link_libraries(${PROJECT_NAME}_MissionManagerB
@@ -388,6 +419,7 @@ target_link_libraries(${PROJECT_NAME}_Controller
 target_link_libraries(${PROJECT_NAME}_RobotInterface
     tf
     ${PROJECT_NAME}_Conversions
+    ${PROJECT_NAME}_Formulas
 )
 
 target_link_libraries(${PROJECT_NAME}_RobotVisionInterface

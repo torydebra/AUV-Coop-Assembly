@@ -15,10 +15,13 @@
 class KDLHelper
 {
 public:
-  KDLHelper(std::string filename, std::string link0_name, std::string endEffector_name, std::string vehicle_name);
+  KDLHelper(std::string filename, std::string link0_name,
+            std::string endEffector_name, std::string vehicle_name,
+            std::string toolName = "");
   ~KDLHelper();
   int setEESolvers();
   int setToolSolvers(Eigen::Matrix4d eeTtool_eigen);
+  int setToolSolvers();
   int getFixedFrame(std::string frameOrigin, std::string frameTarget, Eigen::Matrix4d *xTx_eigen);
   int getEEpose(std::vector<double> jointPos, Eigen::Matrix4d *eePose_eigen);
   int getJacobianEE(std::vector<double> jointPos, Eigen::Matrix<double, 6, ARM_DOF> *jacobianEE_eigen);
@@ -35,6 +38,7 @@ private:
   std::string link0_name;
   std::string vehicle_name;
   std::string endEffector_name;
+  std::string tool_name;
   KDL::Tree tree;
   KDL::ChainJntToJacSolver* jacobEE_solver;
   KDL::ChainJntToJacSolver* jacobTool_solver;

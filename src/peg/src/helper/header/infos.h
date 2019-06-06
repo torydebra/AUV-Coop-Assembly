@@ -79,7 +79,7 @@ struct RobotStruct {
 
  //Necessary to compute each time the vTee in the control loop.
  Eigen::Matrix4d  vTlink0; //transformation between vehicle and link 0 (so, a fixed one)
- Eigen::Matrix4d  eeTtool; // from end effector to peg, FIXED BECAUSE FIRM GRASP ASSUMPTION
+ //Eigen::Matrix4d  eeTtool; // from end effector to peg, FIXED BECAUSE FIRM GRASP ASSUMPTION
  Eigen::Matrix4d  eeTtoolTip; // from end effector to insertion point of the peg, FIXED BECAUSE FIRM GRASP ASSUMPTION
 
 

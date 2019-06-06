@@ -149,4 +149,28 @@ double FRM::saturateScalar(double scalar, double threshold){
 
 }
 
+Eigen::Matrix3d FRM::eul2Rot(std::vector<double> eulRad){
+
+  Eigen::Matrix3d R_x, R_y, R_z;
+
+  R_x << 1,                        0,                       0,
+         0,                 cos(eulRad.at(0)),       -sin(eulRad.at(0)),
+         0,                 sin(eulRad.at(0)),        cos(eulRad.at(0));
+
+  R_y << cos(eulRad.at(1)),        0,                 sin(eulRad.at(1)),
+          0,                       1,                          0,
+        -sin(eulRad.at(1)),        0,                 cos(eulRad.at(1));
+
+  R_z << cos(eulRad.at(2)),    -sin(eulRad.at(2)),         0,
+         sin(eulRad.at(2)),    cos(eulRad.at(2)),          0,
+           0,                           0,                 1;
+
+
+  return (R_x * R_y * R_z);
+
+
+
+
+}
+
 

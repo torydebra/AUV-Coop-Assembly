@@ -29,12 +29,19 @@ fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
 pubTwist = rospy.Publisher(twist_topic, TwistStamped,queue_size=1)
 pubJoint = rospy.Publisher(joint_topic, JointState,queue_size=1)
 rospy.init_node('keyboardCommand_A')
+msgTwist = TwistStamped()
+msgJoint = JointState()
+modality = True # true: at each while velocitty is resetted
 
 #The try is necessary for the console input!
 try:
     while not rospy.is_shutdown():
-        msgTwist = TwistStamped()
+
         msgJoint = JointState()
+
+        if (modality):
+            msgTwist = TwistStamped()
+
         try:
             c = sys.stdin.read(1)
             ##Depending on the character set the proper speeds
@@ -120,12 +127,19 @@ try:
                     baseJoint = 0
                 print "jointVelocity: ", baseJoint
             else:
-                print 'wrong key pressed'
+                print 'wrong key pressed, and reset all vehicle and joint velocities'
+                msgTwist = TwistStamped()
+                msgJoint = JointState()
+                modality = not modality
+
             while c!='':
                 c = sys.stdin.read(1)
         except IOError: pass
 
         ##publish the message
+        print 'velocity vehicle published:'
+        print (msgTwist.twist.linear.x,  msgTwist.twist.linear.y, msgTwist.twist.linear.z)
+        print (msgTwist.twist.angular.x,  msgTwist.twist.angular.y,  msgTwist.twist.angular.z )
         pubTwist.publish(msgTwist)
         pubJoint.publish(msgJoint)
         rospy.sleep(0.1)

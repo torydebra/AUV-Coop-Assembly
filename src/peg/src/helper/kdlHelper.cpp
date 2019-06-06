@@ -6,7 +6,8 @@
  * @param endEffector_name name in the urdf file of the frame of the end effector (actually, name of <link></link>)
  */
 KDLHelper::KDLHelper(std::string filename, std::string link0_name,
-                     std::string endEffector_name, std::string vehicle_name)
+                     std::string endEffector_name, std::string vehicle_name,
+                     std::string tool_name)
 {
 
   TiXmlDocument file_xml(filename);
@@ -28,6 +29,7 @@ KDLHelper::KDLHelper(std::string filename, std::string link0_name,
   this->link0_name = link0_name;
   this->endEffector_name = endEffector_name;
   this->vehicle_name = vehicle_name;
+  this->tool_name = tool_name;
 
 }
 
@@ -89,6 +91,14 @@ int KDLHelper::setToolSolvers(Eigen::Matrix4d eeTtool_eigen){
   tree.getChain(vehicle_name, endEffector_name, kinChain);
   // now kinChain is a chain for only the arm
 
+  nJoints = kinChain.getNrOfJoints();
+  if (nJoints != ARM_DOF){
+    std::cerr << "[KDL_HELPER] Something wrong with urdf:\n" <<
+                 "I have found from urdf file " << nJoints << " joints " <<
+                 "but from define list file I read " << ARM_DOF <<". Please check\n";
+    return -1;
+  }
+
 
   // now we add a fake joint to add to kinChain a segment which is for the tool
   //(that is fixed respect to the ee)
@@ -101,6 +111,32 @@ int KDLHelper::setToolSolvers(Eigen::Matrix4d eeTtool_eigen){
 
   /// kinChain until tool now
   jacobTool_solver = new KDL::ChainJntToJacSolver(kinChain);
+
+}
+
+/**
+ * @brief KDLHelper::setToolSolvers version for when the peg is a link of the robot
+ * @return
+ */
+int KDLHelper::setToolSolvers(){
+  if (tool_name.size() == 0 ){
+    std::cerr << "[KDL_HELPER] tool_name not inserted in costructor, insert it or use the other setTool\n";
+    return -1;
+  }
+
+  KDL::Chain kinChain;
+  tree.getChain(vehicle_name, tool_name, kinChain);
+
+  nJoints = kinChain.getNrOfJoints();
+  if (nJoints != ARM_DOF){
+    std::cerr << "[KDL_HELPER] Something wrong with urdf:\n" <<
+                 "I have found from urdf file " << nJoints << " joints " <<
+                 "but from define list file I read " << ARM_DOF <<". Please check\n";
+    return -1;
+  }
+
+  jacobTool_solver = new KDL::ChainJntToJacSolver(kinChain);
+
 
 }
 

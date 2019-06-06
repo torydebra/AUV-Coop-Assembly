@@ -26,5 +26,7 @@ Eigen::MatrixXd pseudoInverse(Eigen::MatrixXd mat, double tolerance = 0.0001);
 Eigen::VectorXd saturateVectorEigen(Eigen::VectorXd vector, double threshold);
 CMAT::Matrix saturateCmat(CMAT::Matrix mat, double threshold);
 double saturateScalar(double scalar, double threshold);
+
+Eigen::Matrix3d eul2Rot(std::vector<double> eulRad);
 }
 #endif // FORMULAS_H

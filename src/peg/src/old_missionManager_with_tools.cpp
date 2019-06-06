@@ -39,7 +39,8 @@ int main(int argc, char **argv)
 *****************************************************************************************************************/
 
 
-  /// GOAL VEHICLE    TO grasp peg    OLD values
+
+  /// GOAL VEHICLE    TO grasp peg
   double goalLinearVect[] = {-0.287, -0.090, 8};
   Eigen::Matrix4d wTgoalVeh_eigen = Eigen::Matrix4d::Identity();
   //rot part
@@ -49,7 +50,7 @@ int main(int argc, char **argv)
   wTgoalVeh_eigen(1, 3) = goalLinearVect[1];
   wTgoalVeh_eigen(2, 3) = goalLinearVect[2];
 
-  /// GOAL EE  to grasp PEG  OLD values
+  /// GOAL EE  to grasp PEG
   double goalLinearVectEE[3];
   if (robotName.compare("g500_A") == 0){
     goalLinearVectEE[0] = 2.89;
@@ -73,15 +74,18 @@ int main(int argc, char **argv)
   wTgoalEE_eigen(1, 3) = goalLinearVectEE[1];
   wTgoalEE_eigen(2, 3) = goalLinearVectEE[2];
 
+
+
+
   /// GOAL TOOL
   //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
-  double goalLinearVectTool[] = {-0.20, -3.102, 9.000};
+  double goalLinearVectTool[] = {-0.27, -1.102, 9.000};
 
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
 
    //rot part
   wTgoalTool_eigen.topLeftCorner<3,3>() << 0,  1,  0,
-                                           -1,  0,  0,
+                                          -1,  0,  0,
                                            0,  0,  1;
 
   //wTgoalTool_eigen.topLeftCorner<3,3>() = Eigen::Matrix3d::Identity();
@@ -109,46 +113,57 @@ int main(int argc, char **argv)
   ///Ros interfaces
   RobotInterface robotInterface(nh, robotName);
   robotInterface.init();
-
+  //The robot 2 has attached the tool2, we cant give him the pipe1 because
+  //if it is not followed exactly for robB the tool is moving respect EE
+  //TODO but try giving robB the pipe1
+  std::string toolName;
+  if (robotName.compare("g500_A") == 0){
+    toolName = "pipe";
+  } else{
+    toolName = "pipe";
+  }
   WorldInterface worldInterface(robotName);
-  worldInterface.waitReady("world", otherRobotName);
+  worldInterface.waitReady(toolName);
+  CoordInterfaceMissMan coordInterface(nh, robotName);
+
+  VisionInterfaceMissMan visionInterface(nh, robotName);
+
+
+  /// KDL parser to after( in the control loop )get jacobian from joint position
+  //std::string filename = "/home/tori/UWsim/Peg/model/g500ARM5.urdf";
+  std::string filenamePeg; //the model of robot with a "fake joint" in the peg
+  //so, it is ONLY for the already grasped scene
+  if (robotName.compare("g500_A") == 0){
+    filenamePeg = "/home/tori/UWsim/Peg/model/g500ARM5APeg.urdf";
+  } else {
+    filenamePeg = "/home/tori/UWsim/Peg/model/g500ARM5BPeg.urdf";
+  }
+  std::string vehicle = "base_link";
+  std::string link0 = "part0";
+  std::string endEffector = "end_effector";
+
+  //KDLHelper kdlHelper(filenamePeg, link0, endEffector, vehicle);
+  KDLHelper kdlHelper(filenamePeg, link0, endEffector, "");
+
+  kdlHelper.setEESolvers();
+  // KDL parse for fixed things (e.g. vehicle and one of his sensor)
+  //TODO Maybe exist an easier method to parse fixed frame from urdf without needed of kdl solver
+  kdlHelper.getFixedFrame(vehicle, link0, &(robInfo.robotStruct.vTlink0));
+ // TODO vT0 non serve più?
 
   /// Set initial state (todo, same as in control loop, make a function?)
   robotInterface.getJointState(&(robInfo.robotState.jState));
   robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
 
+  worldInterface.getwT(&(robInfo.transforms.wTt_eigen), toolName);
+  //robInfo.transforms.wTgoalTool_eigen.topLeftCorner<3,3>() = robInfo.transforms.wTt_eigen.topLeftCorner<3,3>();
   worldInterface.getwPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
 
   //DEBUGG
   //robotInterface.getwTjoints(&(robInfo.robotState.wTjoints));
 
 
-  /// KDL parser to after( in the control loop )get jacobian from joint position
-  std::string filenamePeg; //the model of robot with a "fake joint" in the peg
-  //so, it is ONLY for the already grasped scene
-  if (robotName.compare("g500_A") == 0){
-    filenamePeg = "/home/tori/UWsim/Peg/model/g500ARM5APeg2.urdf";
-  } else {
-    filenamePeg = "/home/tori/UWsim/Peg/model/g500ARM5BPeg2.urdf";
-  }
-  std::string vehicle = "base_link";
-  std::string link0 = "part0";
-  std::string endEffector = "end_effector";
-  std::string peg = "peg";
-  std::string pegHead = "pegHead";
 
-  KDLHelper kdlHelper(filenamePeg, link0, endEffector, vehicle);
-  //KDLHelper kdlHelper(filenamePeg, link0, endEffector, "");
-  // KDL parse for fixed things (e.g. vehicle and one of his sensor)
-  //TODO Maybe exist an easier method to parse fixed frame from urdf without needed of kdl solver
-  kdlHelper.getFixedFrame(vehicle, link0, &(robInfo.robotStruct.vTlink0));
- // TODO vT0 non serve più?
-  //kdlHelper.getFixedFrame(endEffector, peg, &(robInfo.robotStruct.eeTtool));
-  kdlHelper.getFixedFrame(endEffector, pegHead, &(robInfo.robotStruct.eeTtoolTip));
-        //TODO TRY : for B is not really fixed...
-
-
-  kdlHelper.setEESolvers();
   //get ee pose RESPECT LINK 0
   kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
   // useful have vTee: even if it is redunant, everyone use it a lot
@@ -158,18 +173,18 @@ int main(int argc, char **argv)
   //get whole jacobian (arm+vehcile and projected on world
   computeWholeJacobianEE(&robInfo);
 
-  //kdlHelper.setToolSolvers(robInfo.robotStruct.eeTtool);
-  kdlHelper.setToolSolvers(robInfo.robotStruct.eeTtoolTip);
 
+  //TODO before this the robot must have grasped, here only to see if it is correct
+  //if (true){ //TODO if grasped
+    Eigen::Matrix4d eeTtool =
+        FRM::invertTransf(robInfo.robotState.wTv_eigen*robInfo.robotState.vTee_eigen)
+          * robInfo.transforms.wTt_eigen;
+    kdlHelper.setToolSolvers(eeTtool);
+  //}
   kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.v_Jtool_man));
   computeWholeJacobianTool(&robInfo);
 
-  robInfo.transforms.wTt_eigen = robInfo.robotState.wTv_eigen *
-      robInfo.robotState.vTee_eigen * robInfo.robotStruct.eeTtoolTip;
 
-
-  CoordInterfaceMissMan coordInterface(nh, robotName);
-  VisionInterfaceMissMan visionInterface(nh, robotName);
 
   ///Controller
   Controller controller(robotName);
@@ -221,7 +236,7 @@ int main(int argc, char **argv)
 /** *********************************************************************************************************+*********
                                MAIN CONTROL LOOP
 *******************************************************************************************************************/
-  int ms = MS_CONTROL_LOOP;
+  int ms = 100;
   boost::asio::io_service io;
   boost::asio::io_service io2;
 
@@ -238,13 +253,10 @@ int main(int argc, char **argv)
     /// Update state
     robotInterface.getJointState(&(robInfo.robotState.jState));
     robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-
-    //TODO TRY : for B is not really fixed...
-
+    worldInterface.getwT(&(robInfo.transforms.wTt_eigen), toolName);
     worldInterface.getwPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
+    visionInterface.getHoleTransform(&(robInfo.transforms.wTholeEstimated_eigen));
 
-    /// VISION
-    //visionInterface.getHoleTransform(&(robInfo.transforms.wTholeEstimated_eigen));
     //DEBUG VISION
     //std::cout <<"ARRIVED wThole" << robInfo.transforms.wTholeEstimated_eigen << "\n\n";
     //robInfo.transforms.wTgoalTool_eigen = robInfo.transforms.wTholeEstimated_eigen;
@@ -257,13 +269,13 @@ int main(int argc, char **argv)
     kdlHelper.getJacobianEE(robInfo.robotState.jState, &(robInfo.robotState.link0_Jee_man));
     computeWholeJacobianEE(&robInfo);
 
-    robInfo.transforms.wTt_eigen = robInfo.robotState.wTv_eigen *
-        robInfo.robotState.vTee_eigen * robInfo.robotStruct.eeTtoolTip;
-    //kdlHelper.setToolSolvers(eeTtool);
+    Eigen::Matrix4d eeTtool =
+        FRM::invertTransf(robInfo.robotState.wTv_eigen*robInfo.robotState.vTee_eigen)
+          * robInfo.transforms.wTt_eigen;
+
+    kdlHelper.setToolSolvers(eeTtool);
     kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.v_Jtool_man));
     computeWholeJacobianTool(&robInfo);
-
-   /** **********************************************************************************************/
 
     /// Pass state to controller which deal with tpik
     controller.updateMultipleTasksMatrices(tasksTPIK1, &robInfo);
@@ -305,7 +317,7 @@ int main(int argc, char **argv)
       robInfo.robotState.vehicleVel.at(i-ARM_DOF) = yDotFinal.at(i);
     }
 
-    /** **********************************************************************************************/
+
 
 
     ///Send command to vehicle
@@ -396,15 +408,7 @@ int main(int argc, char **argv)
 }
 
 
-/**
- * @brief setTaskListInit initialize the task list passed as first argument
- * @param robotName name of the robot
- * @param *tasks std::vector<Task*> the vector of pointer to the task, passed by reference
- * @note   note: std::vector is nicer because to change the order of priority or to leave for the moment
- * a task we can simply comment the row.
- * instead, with tasks as Task**, we need to fill the list with task[0], ...task[i] ... and changing
- * priority order would be slower.
- */
+
 void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
                   std::vector<Task*> *tasksCoord, std::vector<Task*> *tasksArmVeh){
 
@@ -430,7 +434,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
 
   ///MISSION TASKS
   Task* pr5 = new PipeReachTask(5, eqType, robotName, ONLYVEH);
-  Task* pr6 = new PipeReachTask(6, eqType, robotName, BOTH);
+  Task* pr6 = new PipeReachTask(6, eqType, robotName, ONLYVEH);
 
   Task* eer = new EndEffectorReachTask(6, eqType, robotName);
   Task* vehR = new VehicleReachTask(3, eqType, robotName, ANGULAR);
@@ -465,7 +469,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksCoord->push_back(coopTask6dof);
   tasksCoord->push_back(jl);
   tasksCoord->push_back(ha);
-  tasksCoord->push_back(pr6);
+  //tasksCoord->push_back(pr6);
   //tasks1->push_back(eeAvoid);
   tasksCoord->push_back(shape);
   tasksCoord->push_back(last);
@@ -474,7 +478,6 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksArmVeh->push_back(constrainVel);
   tasksArmVeh->push_back(jl);
   tasksArmVeh->push_back(ha);
-  tasksArmVeh->push_back(pr6);
   //tasks1->push_back(eeAvoid);
 
   tasksArmVeh->push_back(shape);
@@ -497,20 +500,15 @@ void deleteTasks(std::vector<Task*> *tasks){
 
 
 
-
-
-
-
-
-
-
-
-
-/********* OLD VERSIONS *********************************************************************************
-
-
-
-
+/**
+ * @brief setTaskListInit initialize the task list passed as first argument
+ * @param *tasks std::vector<Task*> the vector of pointer to the task, passed by reference
+ * @param robotName name of the robot
+ * @note   note: std::vector is nicer because to change the order of priority or to leave for the moment
+ * a task we can simply comment the row.
+ * instead, with tasks as Task**, we need to fill the list with task[0], ...task[i] ... and changing
+ * priority order would be slower.
+ */
 void setTaskLists(std::string robotName, std::vector<Task*> *tasks){
 
   /// PUT HERE NEW TASKS.

@@ -2,7 +2,7 @@
 
 PipeReachTask::PipeReachTask(int dim, bool eqType, std::string robotName, VehArmType vehArmType)
   : Task(dim, eqType, robotName, "PIPE_REACHING_GOAL"){
-  gain = 0.05;
+  gain = 0.1;
   this->vehArmType = vehArmType;
 }
 
@@ -57,6 +57,8 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
   CMAT::TransfMatrix wTgoaltool_cmat = CONV::matrix_eigen2cmat(wTgoaltool_eigen);
   CMAT::TransfMatrix wTtool_cmat = CONV::matrix_eigen2cmat(wTtool_eigen);
 
+
+
   CMAT::Vect6 errorSwapped = CMAT::CartError(wTgoaltool_cmat, wTtool_cmat);//ang;lin
   // ang and lin must be swapped because in yDot and jacob linear part is before
 
@@ -108,6 +110,12 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
     this->reference(4) = vect2_ang(1);
     this->reference(5) = vect2_ang(2);
   }
+
+  std::cout << "DEBUG: wTgoal\n" << wTgoaltool_eigen << "\n"
+            <<  "wTtool " << wTtool_eigen << "\n"
+             << "error: \n";
+  error.PrintMtx();
+  std::cout << "\n";
 
 }
 

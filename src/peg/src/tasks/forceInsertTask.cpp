@@ -2,7 +2,7 @@
 
 ForceInsertTask::ForceInsertTask(int dim, bool eqType, std::string robotName)
   : Task(dim, eqType, robotName, "FORCE_INSERTION"){
-  gain = 0.1;
+  gain = 0.2;
 
 }
 
@@ -19,12 +19,27 @@ int ForceInsertTask::updateMatrices(Infos* const robInfo){
  * @brief ForceInsertTask::setActivation
  * @param force
  * @param torque
- * @todo at the moment is equality task always active
+ * @todo activation needed otherwise vehicle dont move
  */
 void ForceInsertTask::setActivation(Eigen::Vector3d force, Eigen::Vector3d torque){
-  double vectDiag[dimension];
-  std::fill_n(vectDiag, dimension, 1);
-  this->A.SetDiag(vectDiag);
+  if (eqType){
+    double vectDiag[dimension];
+    std::fill_n(vectDiag, dimension, 1);
+    this->A.SetDiag(vectDiag);
+
+  } else {
+
+    double negValueforActMax = -1; //which means that when force is > |1| activation is 1
+    double posValueForActMax = 1;
+
+    for (int i=1; i<=dimension; i++){
+      A(i,i) = CMAT::DecreasingBellShapedFunction(negValueforActMax, -0.1,
+                                                  0, 1, force(i-1)) +
+               CMAT::IncreasingBellShapedFunction(posValueForActMax, 0.1,
+                                                   0, 1, force(i-1));
+    }
+
+  }
 }
 
 void ForceInsertTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
@@ -39,7 +54,7 @@ void ForceInsertTask::setReference(Eigen::Vector3d force, Eigen::Vector3d torque
   if (dimension == 3){ //only force
     error = -1 * CONV::matrix_eigen2cmat(force);
     reference = gain * error; //-1 because it is 0 - force
-    reference = FRM::saturateCmat(reference, 0.5);
+    reference = FRM::saturateCmat(reference, 0.1);
 
 
   } else if(dimension == 6){

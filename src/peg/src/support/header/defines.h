@@ -46,5 +46,5 @@ enum ControlPoint {ee, tool};
 #define LOG 1 //0-1 logging (printing matrix on files) not activated or activated
 
 
-#define MS_CONTROL_LOOP 100 //millisecond for the control loops
+#define MS_CONTROL_LOOP 50 //millisecond for the control loops
 #endif // DEFINES_H

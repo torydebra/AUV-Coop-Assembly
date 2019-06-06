@@ -21,28 +21,18 @@ int main(int argc, char **argv){
   std::cout << "[COORDINATOR] Start" << std::endl;
   ros::NodeHandle nh;
 
-  // world interface needed to find peg position to calculate barX_t (reference that brings tool in goal)
-  std::string toolName = "g500_A/pegHead";
-  std::string toolName2 = "g500_B/pegHead";
-  WorldInterface worldInterface("COORDINATOR");
-  worldInterface.waitReady(toolName);
-  worldInterface.waitReady(toolName2);
-  Eigen::Matrix4d wTt;
-  worldInterface.getwT(&wTt, toolName);
-
   /// GOAL TOOL
   //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
-  double goalLinearVectTool[] = {-0.20, -3.102, 9.000};
+  double goalLinearVectTool[] = {-0.27, -1.102, 9.000};
 
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
 
    //rot part
-
-  //rot part
-  wTgoalTool_eigen.topLeftCorner<3,3>() << 0,  1,  0,
+  wTgoalTool_eigen.topLeftCorner<3,3>() << 0, 1,  0,
                                            -1,  0,  0,
                                            0,  0,  1;
-  //wTgoalTool_eigen.topLeftCorner<3,3>() = wTt.topLeftCorner<3,3>(); //actual goal = actual rotation
+
+  //wTgoalTool_eigen.topLeftCorner(3,3) = Eigen::Matrix3d::Identity();
 
   //trasl part
   wTgoalTool_eigen(0, 3) = goalLinearVectTool[0];
@@ -50,6 +40,16 @@ int main(int argc, char **argv){
   wTgoalTool_eigen(2, 3) = goalLinearVectTool[2];
 
 
+  //TODO put these in interfaces ? this should be a single publisher...
+
+
+  /// Interfaces
+  // world interface needed to find peg position to calculate barX_t (reference that brings tool in goal)
+  std::string toolName = "pipe";
+  std::string toolName2 = "pipe2";
+  WorldInterface worldInterface("COORDINATOR");
+  worldInterface.waitReady(toolName);
+  worldInterface.waitReady(toolName2);
 
 
   CoordInterfaceCoord coordInterface(nh, robotNameA, robotNameB);
@@ -60,7 +60,7 @@ int main(int argc, char **argv){
   Eigen::Matrix<double, VEHICLE_DOF, 1> refTool;
   Eigen::Matrix<double, VEHICLE_DOF, 1> coopVelToolFeasible;
 
-
+  Eigen::Matrix4d wTt;
 
   ///Log things
   Logger logger;
@@ -69,7 +69,7 @@ int main(int argc, char **argv){
     logger.createDirectoryForNode();
   }
 
-  int ms = MS_CONTROL_LOOP;
+  int ms = 100;
   boost::asio::io_service io;
 
   while(ros::ok()){

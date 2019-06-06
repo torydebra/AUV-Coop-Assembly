@@ -19,8 +19,15 @@ RobotInterface::RobotInterface(ros::NodeHandle nh, std::string robotName)
 
   subJointState = nh.subscribe(topicRoot+"joint_state", 1, &RobotInterface::subJointStateCallback, this);
 
-  force_priv.resize(3, 0.0); //0 for default value
-  torque_priv.resize(3, 0.0);
+  //force_priv.resize(3, 0.0); //0 for default value
+  //torque_priv.resize(3, 0.0);
+  vectorForceQueue.resize(3);
+  vectorTorqueQueue.resize(3);
+  for (int i =0; i<3; i++){ //3 becuase x y z directions
+    vectorForceQueue.at(i) = boost::circular_buffer<double>(NELEMENTQUEUE);
+    vectorTorqueQueue.at(i) = boost::circular_buffer<double>(NELEMENTQUEUE);
+  }
+
   subForceTorque = nh.subscribe(topicRoot+"forceSensorPeg", 1, &RobotInterface::subForceTorqueCallback, this);
 }
 
@@ -66,6 +73,15 @@ int RobotInterface::getwTv(Eigen::Matrix4d* wTv_eigen){
     ros::Duration(1.0).sleep();
   }
 
+//  std::cout << "rosinterface :\n "
+//            << wTv_tf.getBasis().getRow(0).getX() << " " << wTv_tf.getBasis().getRow(0).getY() << " " << wTv_tf.getBasis().getRow(0).getZ() << "\n"
+//            << wTv_tf.getBasis().getRow(1).getX() << " " << wTv_tf.getBasis().getRow(1).getY() << " " << wTv_tf.getBasis().getRow(1).getZ() << "\n"
+//            << wTv_tf.getBasis().getRow(2).getX() <<" " << wTv_tf.getBasis().getRow(2).getY() << " " << wTv_tf.getBasis().getRow(2).getZ() << "\n"
+//            << "\n\n";
+
+//  std::cout << "rosinterface :\n "
+ //           << wTv_tf.getRotation().getX() << " " << wTv_tf.getRotation().getY() << " " << wTv_tf.getRotation().getZ() << " " << wTv_tf.getRotation().getW() << "\n";
+
   *wTv_eigen = CONV::transfMatrix_tf2eigen(wTv_tf);
 
   return 0;
@@ -93,21 +109,55 @@ int RobotInterface::getJointState(std::vector<double> *jState){
   return 0;
 }
 
+/**
+ * @brief RobotInterface::subForceTorqueCallback
+ * @param msg
+ */
 void RobotInterface::subForceTorqueCallback(const geometry_msgs::WrenchStamped& msg){
 
-  force_priv.at(0) = msg.wrench.force.x;
-  force_priv.at(1) = msg.wrench.force.y;
-  force_priv.at(2) = msg.wrench.force.z;
+  //std::vector<double> force_priv(3); //with queues they dont need to be member of class
+  //force_priv.at(0) = msg.wrench.force.x;
+  //force_priv.at(1) = msg.wrench.force.y;
+  //force_priv.at(2) = msg.wrench.force.z;
+  vectorForceQueue.at(0).push_back(msg.wrench.force.x);
+  vectorForceQueue.at(1).push_back(msg.wrench.force.y);
+  vectorForceQueue.at(2).push_back(msg.wrench.force.z);
 
-  torque_priv.at(0) = msg.wrench.torque.x;
-  torque_priv.at(1) = msg.wrench.torque.y;
-  torque_priv.at(2) = msg.wrench.torque.z;
+
+  //std::vector<double> torque_priv(3);
+  //torque_priv.at(0) = msg.wrench.torque.x;
+  //torque_priv.at(1) = msg.wrench.torque.y;
+  //torque_priv.at(2) = msg.wrench.torque.z;
+  vectorTorqueQueue.at(0).push_back(msg.wrench.torque.x);
+  vectorTorqueQueue.at(1).push_back(msg.wrench.torque.y);
+  vectorTorqueQueue.at(2).push_back(msg.wrench.torque.z);
 }
+
 
 int RobotInterface::getForceTorque(Eigen::Vector3d *force, Eigen::Vector3d *torque){
 
-  *force = CONV::vector_std2Eigen(force_priv);
-  *torque = CONV::vector_std2Eigen(torque_priv);
+  if (vectorForceQueue.at(0).size() == 0){ // no sensor data yet
+    *force << 0, 0, 0;
+    *torque << 0, 0, 0;
+    return 1;
+  }
+
+  std::vector<double> sumForces (3);
+  std::vector<double> sumTorques (3);
+
+  for (int i=0; i<3; i++){
+    sumForces.at(i) = std::accumulate(vectorForceQueue.at(i).begin(), vectorForceQueue.at(i).end(), 0.0); //0 init the sum to 0
+    sumTorques.at(i) = std::accumulate(vectorTorqueQueue.at(i).begin(), vectorTorqueQueue.at(i).end(), 0.0); //0 init the sum to 0
+
+    sumForces.at(i) /= vectorForceQueue.at(i).size();
+    sumTorques.at(i) /= vectorTorqueQueue.at(i).size();
+  }
+
+
+  *force = CONV::vector_std2Eigen(sumForces);
+  *torque = CONV::vector_std2Eigen(sumTorques);
+  *force = FRM::saturateVectorEigen(*force, 1);
+  return 0;
 }
 
 

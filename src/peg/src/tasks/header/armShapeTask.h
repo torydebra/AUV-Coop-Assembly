@@ -24,6 +24,7 @@ public:
   int updateMatrices(struct Infos* const robInfo);
 private:
   ShapeType shapeType;
+  double rangeAct;
 
   int setActivation(std::vector<double> jointGoal, std::vector<double> jState);
   int setJacobian();

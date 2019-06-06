@@ -18,8 +18,10 @@ if __name__ == '__main__':
     rate = rospy.Rate(1.0)
     while not rospy.is_shutdown():
         try:
-            (trans,rot) = listener.lookupTransform(sys.argv[1], sys.argv[2], rospy.Time(0))
-            print trans, "\n[rpy] ",  tf.transformations.euler_from_quaternion(rot), "\n\n"
+            (trans,rot) = listener.lookupTransform(sys.argv[1], sys.argv[2], rospy.Time(0))     
+            print trans, "\n[rpy] ",  tf.transformations.euler_from_quaternion(rot)
+            #print "in quaternion:", rot
+            print "\n\n"
         except (tf.LookupException, tf.ConnectivityException):
             continue
 
