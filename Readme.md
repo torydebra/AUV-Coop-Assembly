@@ -63,7 +63,7 @@ TODO: better put as separate package various support/helper classes that have no
   to deal with ros topics which share images
 *  [**VISP 3.2**](https://visp.inria.fr/) Visual Servoing Platform
    It is nicer to use than opencv when dealing with more robotic vision things like *model based stereo tracking of an object*   
-* **PCL**
+* [**PCL**](http://www.pointclouds.org/)
 
 
 ## Solutions for some possible compiling issue:
@@ -80,6 +80,14 @@ this is a problem because kdl library has a const int called PI.
 Solution is to change (in cmat_defines.h) :
 `#define PI 3.14xxxxx` in `const int PI 3.14xxxxx`
 
+#### VISP_HAVE_PCL not setted
+there is a function .track() in the tracker.cpp. This function is declared in a .h which has VISP\_HAVE\_PCL flag before.
+Even with pcl-ros installed, this flag can be unsetted.
+Solution? Not sure I have broken all, but I simply add 
+```c
+#define VISP_HAVE_PCL
+```
+in /opt/ros/kinetic/include/visp3/visp_modules.h
 ______________________________
 ## MISC
 
