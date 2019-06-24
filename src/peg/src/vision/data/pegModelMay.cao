@@ -1,0 +1,41 @@
+V1
+#Peg model of may (inner border bigger)
+# cilinder with little circle on the surface and the 4 little holes on the border
+# x go out, z down,  y left
+18                    #number of points
+0       0      0     #0   X Y Z, the center of the hole
+-6      0      0     #1   center of hole other face
+0     -0.05    0     #2   right point on perimeter of border outer circle
+0       0    -0.05   #3   top point on perimeter of border outer circle
+0     -0.035   0     #4   right point on perimeter of border inner circle
+0       0   -0.035   #5   top point on perimeter of border inner circle
+############# little circlesssss point
+0      0    -0.0425  #6   center of top little hole
+0   -0.0425    0     #7   center of right little hole
+0      0     0.0425  #8   center of bottom little hole
+0    0.0425    0     #9   center of left little hole
+0   -0.005  -0.0425  #10  right point of top little hole
+0      0     0.0475  #11  top point of top little hole
+0   -0.0475    0     #12  right point of right little hole
+0   -0.0425 -0.005   #13  top point of right little hole
+0   -0.005   0.0425  #14  right point of bottom little hole
+0      0     0.0375  #15  top point of bottom little hole
+0    0.0375   0      #16  right point of left little hole
+0    0.0425  -0.005  #17  top point of left little hole
+# 3D lines
+0
+# Faces from 3D lines
+0
+# Faces from 3D points
+0
+# 3D cylinders     # cylinder: [1st point on revolution axis] [2nd point on revolution axis] [radius]
+1                  #number cilinders
+0 1 0.05
+# 3D circles       # circles sintax: [radius] [circle center] [1st point on circle plane] [2nd point on circle plane] COUTNERCLOCKIWSE
+6                 #number circles
+0.05  0 2 3   name="hole"
+0.035 0 4 5   name="innerHole"
+0.005 6 10 11 name="topLittleHole"
+0.005 7 12 13 name="rightLittleHole"
+0.005 8 14 15 name="bottomLittleHole"
+0.005 9 16 17 name="leftLittleHole"

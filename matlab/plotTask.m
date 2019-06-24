@@ -41,9 +41,13 @@ elseif strcmp(taskName, 'ARM_SHAPE')
         ylab = ylabel('references [rad/s]');
     end 
 elseif strcmp(taskName, 'FORCE_INSERTION')
-    if nRow == 3 % only force
+    if nRow == 1 %only force norm
+       leg = legend('$\dot{\bar{x}}$');
+       ylab = ylabel('reference (norm)');
+
+    elseif nRow == 3 % only force
         leg = legend('$\dot{x}$','$\dot{y}$', '$\dot{z}$');
-        ylab = ylabel('references [m/s]');
+        ylab = ylabel('reference []');
     end
 
 end
@@ -86,7 +90,10 @@ elseif  strcmp(taskName, 'ARM_SHAPE')
         ylab = ylabel('errors [rad]');
      end
  elseif strcmp(taskName, 'FORCE_INSERTION')
-    if nRow == 3 % only force
+     if nRow == 1 %only force norm
+        leg = legend('$norm_{err}$');
+        ylab = ylabel('error (norm)');         
+     elseif nRow == 3 % only force
         leg = legend('$x_{err}$','$y_{err}$', '$z_{err}$');
         ylab = ylabel('error [m]');
     end
@@ -132,7 +139,10 @@ elseif strcmp(taskName, 'ARM_SHAPE')
       ylab = ylabel('activations');
     end
 elseif strcmp(taskName, 'FORCE_INSERTION')
-    if nRow == 3 % only force
+    if nRow == 1 % only norm force
+        leg = legend('$A$');
+        ylab = ylabel('activation');
+	elseif nRow == 3 % only force
         leg = legend('$A_{11}$','$A_{22}$', '$A_{33}$');
         ylab = ylabel('activations');
     end

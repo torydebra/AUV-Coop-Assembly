@@ -117,9 +117,10 @@ int main(int argc, char** argv){
         imageRangeR_vp_raw[i][j] = imageRangeR_cv.at<unsigned short>(i,j);
       }
     }
-
-    DCAM::makePointCloud(imageRangeR_vp_raw, pointcloud);
+    //DCAM::makePointCloud(imageRangeR_vp_raw, pointcloud);
     vpImageConvert::createDepthHistogram(imageRangeR_vp_raw, imageRangeR_vp);
+
+    DCAM::makePointCloud(imageRangeR_cv, pointcloud);
   }
 
 
@@ -210,9 +211,12 @@ int main(int argc, char** argv){
   } else { //find point without click //TODO, parla anche di altri metodi provati
 
     if (useDepth){
-      ///TODO
-      std::cout << "usedepth with not clickn not still supported\n";
-      return -1;
+      Detector::findSquare(imageL_cv, &found4CornersVectorL);
+      Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
+
+      append2Dto3Dfile(found4CornersVectorL.at(0), sourcePath);
+      stereoTracker->initTrackingByPoint(mapOfImages);
+
     }
 
     /// FIND SQUARE METHOD
@@ -288,6 +292,8 @@ int main(int argc, char** argv){
     if (useDepth){
       robotVisInterface.getRangeRightImage(&imageRangeR_cv);
       imageRangeR_cv.convertTo(imageRangeR_cv, CV_16UC1);
+
+
       // convert function of visp dont convert from cv to uint16_t visp matrix)
       vpImage<uint16_t> imageRangeR_vp_raw;
       imageRangeR_vp_raw.resize(imageRangeR_cv.rows, imageRangeR_cv.cols);
@@ -296,8 +302,10 @@ int main(int argc, char** argv){
           imageRangeR_vp_raw[i][j] = imageRangeR_cv.at<unsigned short>(i,j);
         }
       }
-      DCAM::makePointCloud(imageRangeR_vp_raw, pointcloud);
+      //DCAM::makePointCloud(imageRangeR_vp_raw, pointcloud);
       vpImageConvert::createDepthHistogram(imageRangeR_vp_raw, imageRangeR_vp);
+
+      DCAM::makePointCloud(imageRangeR_cv, pointcloud);
       vpDisplay::display(imageRangeR_vp);
     }
 
@@ -360,14 +368,12 @@ int main(int argc, char** argv){
         CONV::matrix_visp2eigen(cLThole);
     Eigen::Matrix4d wTh_estimated_right =
         robVisInfo.robotState.wTv_eigen *
-        robVisInfo.robotStruct.vTcameraL *
+        robVisInfo.robotStruct.vTcameraR *
         CONV::matrix_visp2eigen(cRThole);
 
 
-    robVisInfo.transforms.wTh_estimated_eigen =
-        robVisInfo.robotState.wTv_eigen *
-        robVisInfo.robotStruct.vTcameraL *
-        CONV::matrix_visp2eigen(cLThole);
+
+    robVisInfo.transforms.wTh_estimated_eigen = wTh_estimated_left;
 
     ///debug
     std::cout << "PUBLISHING:\n" << robVisInfo.transforms.wTh_estimated_eigen <<"\n";
@@ -471,6 +477,40 @@ void append2Dto3Dfile(std::vector<cv::Point> found4CornersL, std::vector<cv::Poi
        << found4CornersR.at(2).y << " " << found4CornersR.at(2).x << std::endl
        << found4CornersR.at(3).y << " " << found4CornersR.at(3).x << std::endl ;
   dstR.close();
+
+  return;
+}
+
+/**
+ * @brief append2Dto3Dfile function to write 2D point in the file where corresponded 3D point are
+ *    version for only left image, used by depth camera method
+ * @param found4CornersL the 4 point in the left image
+ * @param sourcePath the path of the .cpp file
+ * @note there isn't a visp function that permits to init using file for
+ *       3D points and vector for 2D points. So we have to write (append) 2D points
+ *       in the file of 3D points and use
+ *       void vpMbGenericTracker::initFromPoints( const vpImage< unsigned char > &  	I1,
+ *                                                 const vpImage< unsigned char > &  	I2,
+ *                                               const std::string &  	initFile1,
+ *                                               const std::string &  	initFile2 )
+ * @warning Visp want switched x and y coord for the 2D point. SO this funtion print point as y, x coord
+ */
+void append2Dto3Dfile(std::vector<cv::Point> found4CornersL, std::string sourcePath){
+
+  // copy original files, if destination exist, it will be overwrite (that is what we want)
+  std::ifstream  srcL(sourcePath+"/vision/"+initFileClick+"left.init", std::ios::binary);
+  std::ofstream  dstL(sourcePath+"/vision/"+initFile_w2D+"left.init",  std::ios::binary);
+  dstL << srcL.rdbuf();
+  srcL.close();
+
+  //write on the new file
+  dstL << "#Generate by code: append 2D points" << std::endl
+       << "4" << std::endl // number of points
+       << found4CornersL.at(0).y << " " << found4CornersL.at(0).x << std::endl
+       << found4CornersL.at(1).y << " " << found4CornersL.at(1).x << std::endl
+       << found4CornersL.at(2).y << " " << found4CornersL.at(2).x << std::endl
+       << found4CornersL.at(3).y << " " << found4CornersL.at(3).x << std::endl ;
+  dstL.close();
 
   return;
 }

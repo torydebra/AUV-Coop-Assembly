@@ -1,28 +1,32 @@
 clearvars;
 
-rootPath = '~/LogPeg/strange/';
+rootPath = '~/LogPeg/taskAuto21/';
 robotNameA = 'g500_A';
 robotNameB = 'g500_B';
 coordName = 'Coordinator/';
 
 %millisecond indicated in missionManager
 global sControlLoop
-sControlLoop = 0.05; %original 0.1 = 100 ms
+sControlLoop = 0.1;
+%sControlLoop = 0.05; %original 0.1 = 100 ms
 
 %% plot Task things
 
- %taskName = 'FORCE_INSERTION';
-taskName = 'JOINT_LIMIT';
+ taskName = 'FORCE_INSERTION';
+%taskName = 'JOINT_LIMIT';
 % 
-plotTask(rootPath, robotNameA, taskName);
+%plotTask(rootPath, robotNameA, taskName);
 %plotTask(rootPath, robotNameB, taskName);
 
 
 %% plot yDots (command sent to robot)
 %plotYDot(rootPath, robotNameA, 'yDotTPIK1');
 %plotYDot(rootPath, robotNameA, 'yDotFinal');
-plotYDotDivided(rootPath, robotNameA, 'yDotTPIK1'); %ang e lin vel of vehicle divided
+%plotYDotDivided(rootPath, robotNameA, 'yDotTPIK1'); %ang e lin vel of vehicle divided
 plotYDotDivided(rootPath, robotNameA, 'yDotFinal');
+plotYDotDivided(rootPath, robotNameA, 'yDotFinalWithCollision');
+plotVector(rootPath, robotNameA, 'forces');
+plotVector(rootPath, robotNameA, 'torques');
 
 % plotYDot(rootPath, robotNameB, 'yDotTPIK1');
 % plotYDot(rootPath, robotNameB, 'yDotFinal');

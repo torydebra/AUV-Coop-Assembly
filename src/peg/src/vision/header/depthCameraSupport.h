@@ -11,7 +11,7 @@ struct rs_intrinsics;
 
 void rs_deproject_pixel_to_point(float point[3], const rs_intrinsics &intrin, const float pixel[2], float depth);
 bool makePointCloud(vpImage<uint16_t> &I_depth_raw, pcl::PointCloud<pcl::PointXYZ>::Ptr &pointcloud);
-
+bool makePointCloud(cv::Mat I_depth_raw, pcl::PointCloud<pcl::PointXYZ>::Ptr &pointcloud);
 
 }
 

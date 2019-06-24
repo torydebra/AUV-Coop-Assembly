@@ -19,7 +19,8 @@ Detector::Detector(){} //private costructor not to be used
  * @return 0 correct execution
  * @note Please note that there is no way to understand which is the more precise square (if they are more than one).
  * Various trial show that is the squares are more than one, they are almost on the same position,
- * so they are not really false positive.
+ * so they are not really false positive (it is because we have three channels one for each color so
+ * a squares is detected for each channel.
  * @note If a colored image is used, the result will be more precise because detection is done on each color
  * channel.
  * @todo various parameters are hardcoded in _findSquares. Maybe they can be setted from external caller.

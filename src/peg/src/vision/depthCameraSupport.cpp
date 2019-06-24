@@ -8,7 +8,9 @@ struct DCAM::rs_intrinsics {
   float coeffs[5];
 };
 
-void DCAM::rs_deproject_pixel_to_point(float point[3], const rs_intrinsics &intrin, const float pixel[2], float depth) {
+void DCAM::rs_deproject_pixel_to_point(float point[3], const rs_intrinsics &intrin,
+                                       const float pixel[2], float depth) {
+
   float x = (pixel[0] - intrin.ppx) / intrin.fx;
   float y = (pixel[1] - intrin.ppy) / intrin.fy;
   float r2 = x * x + y * y;
@@ -48,6 +50,45 @@ bool DCAM::makePointCloud(vpImage<uint16_t> &I_depth_raw,
   for (unsigned int i = 0; i < height; i++) {
     for (unsigned int j = 0; j < width; j++) {
       float scaled_depth = I_depth_raw[i][j] * depth_scale;
+      float point[3];
+      float pixel[2] = {(float)j, (float)i};
+      rs_deproject_pixel_to_point(point, depth_intrinsic, pixel, scaled_depth);
+      pointcloud->push_back(pcl::PointXYZ(point[0], point[1], point[2]));
+    }
+  }
+  return true;
+}
+
+
+bool DCAM::makePointCloud(cv::Mat I_depth_raw,
+                     pcl::PointCloud<pcl::PointXYZ>::Ptr &pointcloud){
+
+  unsigned int height = I_depth_raw.rows;
+  unsigned int width = I_depth_raw.cols;
+
+  // Transform pointcloud
+  pointcloud->width = width;
+  pointcloud->height = height;
+  pointcloud->reserve((size_t)width * height);
+  // Params of depth camera. They are in the scene.xml
+  const float depth_scale = 1.0f;
+  rs_intrinsics depth_intrinsic;
+  //depth_intrinsic.ppx = 120.0f;
+  //depth_intrinsic.ppy = 160.0f;
+  //depth_intrinsic.fx = 257.986f;
+  //depth_intrinsic.fy = 257.341f;
+  depth_intrinsic.ppx = 160.0f;
+  depth_intrinsic.ppy = 120.0f;
+  depth_intrinsic.fx = 257.34082279179285f;
+  depth_intrinsic.fy = 257.34083046114705f;
+  depth_intrinsic.coeffs[0] = 0.0f;
+  depth_intrinsic.coeffs[1] = 0.0f;
+  depth_intrinsic.coeffs[2] = 0.0f;
+  depth_intrinsic.coeffs[3] = 0.0f;
+  depth_intrinsic.coeffs[4] = 0.0f;
+  for (unsigned int i = 0; i < height; i++) {
+    for (unsigned int j = 0; j < width; j++) {
+      float scaled_depth = I_depth_raw.at<float>(i,j) * depth_scale;
       float point[3];
       float pixel[2] = {(float)j, (float)i};
       rs_deproject_pixel_to_point(point, depth_intrinsic, pixel, scaled_depth);

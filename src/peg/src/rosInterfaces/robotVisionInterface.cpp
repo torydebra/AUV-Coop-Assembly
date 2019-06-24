@@ -140,7 +140,7 @@ int RobotVisionInterface::getRightImage(cv::Mat *imageCV){
 int RobotVisionInterface::getRangeRightImage(cv::Mat *imageCV){
 
   cv_bridge::CvImagePtr imageCVPtr =
-      cv_bridge::toCvCopy(rangeRightImage);
+      cv_bridge::toCvCopy(rangeRightImage, "32FC1");
   *imageCV = imageCVPtr.get()->image;
 
   return 0;
