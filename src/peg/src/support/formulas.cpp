@@ -106,6 +106,35 @@ Eigen::VectorXd FRM::saturateVectorEigen(Eigen::VectorXd vector, double threshol
   return out;
 }
 
+std::vector<double> FRM::saturateVectorStd(std::vector<double> vector, double threshold){
+
+  if (threshold <0.0){
+    std::cerr << "FRM::saturateVectorStd: ERROR: the threshold must be positive";
+    return vector;
+  }
+  std::vector<double> out = vector;
+
+  //take abs value
+  for (int i =0; i< vector.size(); i++){
+    if (vector.at(i) < 0.0){
+      vector.at(i) *= -1;
+    }
+  }
+
+  double maxCoeff = *(std::max_element(vector.begin(), vector.end()));
+  if ( maxCoeff > threshold){ //if so, scale vector
+
+    for (int i=0; i<out.size(); i++){
+      out.at(i) = (out.at(i))/maxCoeff*threshold;
+
+    }
+
+  }
+
+  return out;
+}
+
+
 CMAT::Matrix FRM::saturateCmat(CMAT::Matrix mat, double threshold){
   if (threshold <0.0){
     std::cerr << "FRM::saturateCmat: ERROR: the threshold must be positive";
@@ -141,8 +170,16 @@ double FRM::saturateScalar(double scalar, double threshold){
     return scalar;
   }
 
-  if (scalar > threshold){
-    scalar = threshold;
+  if (scalar < 0){
+
+    if (scalar < (-threshold) ) {
+      scalar = -threshold;
+    }
+
+  } else {
+    if (scalar > threshold){
+      scalar = threshold;
+    }
   }
 
   return scalar;

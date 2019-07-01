@@ -11,3 +11,5 @@ Peg.workspace.user
 
 # OSX / *nix default autosave extension
 *.m~
+
+matlab/log

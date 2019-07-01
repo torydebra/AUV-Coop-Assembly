@@ -46,6 +46,16 @@ std::vector<double> CONV::vector_cmat2std(CMAT::Matrix mat){
   return vect;
 }
 
+std::vector<double> CONV::vector_eigen2std(Eigen::VectorXd vect){
+
+  std::vector<double> vect_std(vect.size());
+  for (int i=0; i< vect.size(); i++){
+    vect_std.at(i) = vect(i);
+  }
+
+  return vect_std;
+}
+
 Eigen::Matrix3d CONV::rotMatrix_cmat2eigen(CMAT::RotMatrix mat_cmat){
 
   Eigen::Matrix3d mat_eigen;
