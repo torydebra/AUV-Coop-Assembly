@@ -22,13 +22,14 @@
 #include "../helper/header/kdlHelper.h"
 #include "../helper/header/logger.h"
 
-
 #include "../controller/header/controller.h"
+#include "../controller/header/collisionPropagator.h"
+#include "../controller/header/graspConstrainer.h"
+
 #include "../rosInterfaces/header/robotInterface.h"
 #include "../rosInterfaces/header/worldInterface.h"
 #include "../rosInterfaces/header/coordInterfaceMissMan.h"
 #include "../rosInterfaces/header/visionInterfaceMissMan.h"
-
 
 #include "../tasks/header/lastTask.h"
 #include "../tasks/header/vehicleReachTask.h"
@@ -43,16 +44,20 @@
 #include "../tasks/header/pipeReachTask.h"
 #include "../tasks/header/armShapeTask.h"
 #include "../tasks/header/coopTask.h"
+#include "../tasks/header/forceInsertTask.h"
+
 
 
 int main(int, char**);
 void setTaskLists(std::string robotName, std::vector<Task*> *tasks);
-void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
-                  std::vector<Task*> *tasksFinal);
+
 
 void setTaskLists(std::string robotName, std::vector<Task*>* ,
                   std::vector<Task*>*, std::vector<Task*>*);
 
 void deleteTasks(std::vector<Task*> *tasks);
+
+//void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
+//                  std::vector<Task*> *tasksFinal);
 
 #endif // MISSIONMANAGER_H

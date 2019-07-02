@@ -24,6 +24,7 @@ Eigen::Matrix4d invertTransf(Eigen::Matrix4d mat);
 Eigen::MatrixXd pseudoInverse(Eigen::MatrixXd mat, double tolerance = 0.0001);
 
 Eigen::VectorXd saturateVectorEigen(Eigen::VectorXd vector, double threshold);
+std::vector<double> saturateVectorStd(std::vector<double> vector, double threshold);
 CMAT::Matrix saturateCmat(CMAT::Matrix mat, double threshold);
 double saturateScalar(double scalar, double threshold);
 

@@ -10,7 +10,7 @@ from std_srvs.srv import Empty
 
 #topic to command
 # Twist better than odometry TODO ask why
-twist_topic="/uwsim/g500_A/twist_command"
+twist_topic="/uwsim/g500_B/twist_command"
 #base velocity for the teleoperation
 baseVelocity=0.01
 
@@ -24,10 +24,10 @@ oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
 fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
 
 ##create the publishers
-pubTwist = rospy.Publisher(twist_topic, TwistStamped,queue_size=1)
-rospy.init_node('keyboardCommandVeh_A')
+pubTwist = rospy.Publisher(twist_topic, TwistStamped, queue_size=1)
+rospy.init_node('keyboardCommandVeh_B')
 msgTwist = TwistStamped()
-modality = True # true: at each while velocitty is resetted
+modality = True # true: at each while velocity is resetted
 
 #The try is necessary for the console input!
 try:

@@ -2,7 +2,8 @@
 
 PipeReachTask::PipeReachTask(int dim, bool eqType, std::string robotName, VehArmType vehArmType)
   : Task(dim, eqType, robotName, "PIPE_REACHING_GOAL"){
-  gain = 0.1;
+  //gain = 0.05;
+  gain = 0.01;
   this->vehArmType = vehArmType;
 }
 
@@ -75,8 +76,8 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
     vect3_lin = (this->gain * errorSwapped.GetSecondVect3());
     vect3_ang= (this->gain * errorSwapped.GetFirstVect3());
 
-    vect3_lin = FRM::saturateCmat(vect3_lin, 0.3);
-    vect3_ang = FRM::saturateCmat(vect3_ang, 0.1);
+    vect3_lin = FRM::saturateCmat(vect3_lin, 0.05); //0.1 before
+    vect3_ang = FRM::saturateCmat(vect3_ang, 0.05);
 
     this->reference(1) = vect3_lin(1);
     this->reference(2) = vect3_lin(2);
@@ -110,12 +111,6 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
     this->reference(4) = vect2_ang(1);
     this->reference(5) = vect2_ang(2);
   }
-
-  std::cout << "DEBUG: wTgoal\n" << wTgoaltool_eigen << "\n"
-            <<  "wTtool " << wTtool_eigen << "\n"
-             << "error: \n";
-  error.PrintMtx();
-  std::cout << "\n";
 
 }
 

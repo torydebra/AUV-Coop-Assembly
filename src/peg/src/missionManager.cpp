@@ -75,21 +75,27 @@ int main(int argc, char **argv)
 
   /// GOAL TOOL
   //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
-  double goalLinearVectTool[] = {-0.20, -3.102, 9.000};
-
+  double goalLinearVectTool[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
+  //std::vector<double> eulRad = {0, 0, -1.443185307179587}; //true angular
+  std::vector<double> eulRad = {0.0, 0.0, -1.443185307179587}; //with error on z: 0.1rad ~ 6deg
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
 
    //rot part
-  wTgoalTool_eigen.topLeftCorner<3,3>() << 0,  1,  0,
-                                           -1,  0,  0,
-                                           0,  0,  1;
+//  wTgoalTool_eigen.topLeftCorner<3,3>() << 0,  1,  0,
+//                                           -1,  0,  0,
+//                                           0,  0,  1;
+  wTgoalTool_eigen.topLeftCorner<3,3>() = FRM::eul2Rot(eulRad);
 
-  //wTgoalTool_eigen.topLeftCorner<3,3>() = Eigen::Matrix3d::Identity();
+  //to get inside the hole of 0.2m:
+  Eigen::Vector3d v_inside;
+  //v_inside << 0.40, 0.18, 0; //rigth big hole + error
+  v_inside << 0.40, 0, 0;
+  Eigen::Vector3d w_inside = FRM::eul2Rot(eulRad) * v_inside;
 
   //trasl part
-  wTgoalTool_eigen(0, 3) = goalLinearVectTool[0];
-  wTgoalTool_eigen(1, 3) = goalLinearVectTool[1];
-  wTgoalTool_eigen(2, 3) = goalLinearVectTool[2];
+  wTgoalTool_eigen(0, 3) = goalLinearVectTool[0] + w_inside(0);
+  wTgoalTool_eigen(1, 3) = goalLinearVectTool[1] + w_inside(1);
+  wTgoalTool_eigen(2, 3) = goalLinearVectTool[2] + w_inside(2);
 
 
 /** ***************************************************************************************************************
@@ -116,12 +122,21 @@ int main(int argc, char **argv)
   /// Set initial state (todo, same as in control loop, make a function?)
   robotInterface.getJointState(&(robInfo.robotState.jState));
   robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-
   worldInterface.getwPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
+
+  /// FOR FIRM GRASP CONTRAINT (the "glue")
+  if (robotName.compare("g500_A") == 0){
+    worldInterface.getwT(&(robInfo.transforms.wTotherPeg),
+                        "g500_B/eeA");
+
+  } else {
+    worldInterface.getwT(&(robInfo.transforms.wTotherPeg),
+                        "g500_A/eeB");
+  }
+
 
   //DEBUGG
   //robotInterface.getwTjoints(&(robInfo.robotState.wTjoints));
-
 
   /// KDL parser to after( in the control loop )get jacobian from joint position
   std::string filenamePeg; //the model of robot with a "fake joint" in the peg
@@ -134,11 +149,10 @@ int main(int argc, char **argv)
   std::string vehicle = "base_link";
   std::string link0 = "part0";
   std::string endEffector = "end_effector";
-  std::string peg = "peg";
-  std::string pegHead = "pegHead";
+  std::string peg = "peg"; //pass this to kdlHelper costructor to have jacobian of the center of peg
+  std::string pegHead = "pegHead"; //pass this to kdlHelper constructor to have jacobian of the tip
 
-  KDLHelper kdlHelper(filenamePeg, link0, endEffector, vehicle);
-  //KDLHelper kdlHelper(filenamePeg, link0, endEffector, "");
+  KDLHelper kdlHelper(filenamePeg, link0, endEffector, vehicle, pegHead);
   // KDL parse for fixed things (e.g. vehicle and one of his sensor)
   //TODO Maybe exist an easier method to parse fixed frame from urdf without needed of kdl solver
   kdlHelper.getFixedFrame(vehicle, link0, &(robInfo.robotStruct.vTlink0));
@@ -147,6 +161,9 @@ int main(int argc, char **argv)
   kdlHelper.getFixedFrame(endEffector, pegHead, &(robInfo.robotStruct.eeTtoolTip));
         //TODO TRY : for B is not really fixed...
 
+  //get info from sensors
+  // for robot B in truth it takes infor from sensor of robot A
+  robotInterface.getForceTorque(&(robInfo.robotSensor.forcePegTip), &robInfo.robotSensor.torquePegTip);
 
   kdlHelper.setEESolvers();
   //get ee pose RESPECT LINK 0
@@ -159,8 +176,8 @@ int main(int argc, char **argv)
   computeWholeJacobianEE(&robInfo);
 
   //kdlHelper.setToolSolvers(robInfo.robotStruct.eeTtool);
-  kdlHelper.setToolSolvers(robInfo.robotStruct.eeTtoolTip);
-
+  //kdlHelper.setToolSolvers(robInfo.robotStruct.eeTtoolTip);
+  kdlHelper.setToolSolvers(); //version for peg as robot link
   kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.v_Jtool_man));
   computeWholeJacobianTool(&robInfo);
 
@@ -238,11 +255,25 @@ int main(int argc, char **argv)
     /// Update state
     robotInterface.getJointState(&(robInfo.robotState.jState));
     robotInterface.getwTv(&(robInfo.robotState.wTv_eigen));
-
-    //TODO TRY : for B is not really fixed...
-
     worldInterface.getwPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
+    //worldInterface.getwT(&(robInfo.transforms.wTt_eigen), toolName);
 
+    /// FOR FIRM GRASP CONTRAINT (the "glue")
+    if (robotName.compare("g500_A") == 0){
+      worldInterface.getwT(&(robInfo.transforms.wTotherPeg),
+                          "g500_B/eeA");
+
+    } else {
+      worldInterface.getwT(&(robInfo.transforms.wTotherPeg),
+                          "g500_A/eeB");
+    }
+
+    /// info from sensors
+    /// FORCE TORQUE
+    robotInterface.getForceTorque(&(robInfo.robotSensor.forcePegTip), &robInfo.robotSensor.torquePegTip);
+    //std::cout << "force torque arrive:\n"
+    //          << robInfo.robotSensor.forcePegTip << "\n"
+    //          << robInfo.robotSensor.torquePegTip << "\n\n";
     /// VISION
     //visionInterface.getHoleTransform(&(robInfo.transforms.wTholeEstimated_eigen));
     //DEBUG VISION
@@ -253,12 +284,12 @@ int main(int argc, char **argv)
     kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
     // useful have vTee: even if it is redunant, tasks use it a lot
     robInfo.robotState.vTee_eigen = robInfo.robotStruct.vTlink0 * robInfo.robotState.link0Tee_eigen;
-    // get jacobian respect link0
+    robInfo.transforms.wTt_eigen = robInfo.robotState.wTv_eigen *
+        robInfo.robotState.vTee_eigen * robInfo.robotStruct.eeTtoolTip;
+
     kdlHelper.getJacobianEE(robInfo.robotState.jState, &(robInfo.robotState.link0_Jee_man));
     computeWholeJacobianEE(&robInfo);
 
-    robInfo.transforms.wTt_eigen = robInfo.robotState.wTv_eigen *
-        robInfo.robotState.vTee_eigen * robInfo.robotStruct.eeTtoolTip;
     //kdlHelper.setToolSolvers(eeTtool);
     kdlHelper.getJacobianTool(robInfo.robotState.jState, &(robInfo.robotState.v_Jtool_man));
     computeWholeJacobianTool(&robInfo);
@@ -296,7 +327,6 @@ int main(int argc, char **argv)
 
     for (int i=0; i<ARM_DOF; i++){
       yDotFinal.at(i) = yDotOnlyArm.at(i);
-
     }
 
     for (int i = ARM_DOF; i<TOT_DOF; i++) {
@@ -305,23 +335,101 @@ int main(int argc, char **argv)
       robInfo.robotState.vehicleVel.at(i-ARM_DOF) = yDotFinal.at(i);
     }
 
-    /** **********************************************************************************************/
+    /** **********   add COLLISION PROPAGATOR  **************************++*****************/
+    std::vector<double> deltayDot(ARM_DOF);
+    std::vector<double> yDotFinalWithCollision = yDotFinal;
+    //if (robInfo.robotSensor.forcePegTip.norm() > 0){ //simple way to see if some contact happened
+    if (robInfo.robotSensor.forcePegTip.norm() > 0 || robInfo.robotSensor.torquePegTip.norm() > 0){
+      if (COLLISION_PROPAGATOR){ //if active, calculate and modify joint command accordingly
+        //only forces
+//              deltayDot = CollisionPropagator::calculateCollisionDisturb(
+//                    robInfo.robotState.w_Jtool_robot.leftCols<4>(), robInfo.transforms.wTt_eigen,
+//                    robInfo.robotSensor.forcePegTip);
+
+        //forces and torques
+        deltayDot = CollisionPropagator::calculateCollisionDisturb(
+              robInfo.robotState.w_Jtool_robot.leftCols<4>(), robInfo.transforms.wTt_eigen,
+              robInfo.robotSensor.forcePegTip, robInfo.robotSensor.torquePegTip);
+
+        deltayDot = FRM::saturateVectorStd(deltayDot, 0.002);
+
+        for (int i=0; i<ARM_DOF; i++){
+          yDotFinalWithCollision.at(i) += deltayDot.at(i); //add disturbs to command
+          //yDotFinalWithCollision.at(i) = deltayDot.at(i); //reset command and only move arm for disturb
+          // but if I reset the force task become useless
+        }
+      }
+
+      //yDotFinalWithCollision = FRM::saturateVectorStd(yDotFinalWithCollision, 0.1);
+      //debug try: stop vehilce until collision resolved. zeroing vehicle vel both with and withoud collision prop
+      //withou collision prop is the task force which resolve the collision
+      //for (int i=ARM_DOF; i<TOT_DOF; i++){
+       // yDotFinalWithCollision.at(i) = 0;
+      //}
+      ///DEBUGG
+      std::cout << "collision command:\n";
+      for (auto const& c : deltayDot){
+          std::cout << c << ' ';
+      }
+      std::cout << "\n\n";
+
+    }
+
+    /** ************* END COLLISION PROPAGATOR  ****************************++*******/
+
+    /** ************* FIRM GRASP CONSTRAINER  ****************************++*******/
+
+    std::vector<double> yDotFinalWithGrasp = yDotFinalWithCollision;
+    if (GRASP_CONSTRAINER){
+
+      /// O ARM O ALL NOT BOTH
+//      std::vector<double> graspyDot(ARM_DOF);
+//      graspyDot = GraspConstrainer::calculateGraspVelocities_arm(
+//            robInfo.robotState.w_Jtool_robot.leftCols<ARM_DOF>(),
+//            robInfo.transforms.otherEE_T_EE);
+
+      std::vector<double> graspyDot(TOT_DOF);
+      graspyDot = GraspConstrainer::calculateGraspVelocities_armVeh(
+            robInfo.robotState.w_Jtool_robot,
+            robInfo.transforms.wTotherPeg,
+            robInfo.robotState.wTv_eigen * robInfo.robotState.vTee_eigen);
+
+
+      for (int i=0; i<graspyDot.size(); i++){
+        yDotFinalWithGrasp.at(i) += graspyDot.at(i);
+      }
+
+      ///DEBUGG
+      std::cout << "GRASP command:\n";
+      for (auto const& c : graspyDot){
+          std::cout << c << ' ';
+      }
+      std::cout << "\n\n";
+
+    }
+    /** ************* END GRASP CONSTRAINER  ****************************++*******/
 
 
     ///Send command to vehicle
     //robotInterface.sendyDot(yDotTPIK1);
     //robotInterface.sendyDot(yDotOnlyVeh);
-    robotInterface.sendyDot(yDotFinal);
+    //robotInterface.sendyDot(yDotFinal);
+    //robotInterface.sendyDot(yDotFinalWithCollision);
+    robotInterface.sendyDot(yDotFinalWithGrasp);
+
 
 
     ///Log things
     if (pathLog.size() != 0){
-      logger.logAllForTasks(tasksTPIK1);
+      logger.logAllForTasks(tasksArmVehCoord);
       //TODO flag LOGGED to not print same thing twice
       //or maybe another list with ALL task only to log here and create folder for log
       //for the moment, yDot are exactly how vehicle and arm are moving
       logger.logNumbers(yDotTPIK1, "yDotTPIK1");
       logger.logNumbers(yDotFinal, "yDotFinal");
+      logger.logNumbers(yDotFinalWithCollision, "yDotFinalWithCollision");
+      logger.logNumbers(robInfo.robotSensor.forcePegTip, "forces");
+      logger.logNumbers(robInfo.robotSensor.torquePegTip, "torques");
       //logger.logNumbers(admisVelTool_eigen, "JJsharp");
       logger.logNumbers(robInfo.robotState.w_Jtool_robot
                               * CONV::vector_std2Eigen(yDotOnlyVeh), "toolCartVelCoop");
@@ -349,19 +457,21 @@ int main(int argc, char **argv)
 //                 * CONV::vector_std2Eigen(yDotFinal)
 //              << "\n\n";
 
-//    std::vector<Task*> tasksDebug = tasksTPIK1;
-//    for(int i=0; i<tasksDebug.size(); i++){
-//      std::cout << "Activation " << tasksDebug[i]->getName() << ": \n";
-//      tasksDebug[i]->getActivation().PrintMtx() ;
-//      std::cout << "\n";
-//      std::cout << "JACOBIAN " << tasksDebug[i]->getName() << ": \n";
-//      tasksDebug[i]->getJacobian().PrintMtx();
-//       std::cout<< "\n";
+    std::vector<Task*> tasksDebug = tasksArmVehCoord;
+    for(int i=0; i<tasksDebug.size(); i++){
+      if (tasksDebug[i]->getName().compare("FORCE_INSERTION") == 0){
+        std::cout << "Activation " << tasksDebug[i]->getName() << ": \n";
+        tasksDebug[i]->getActivation().PrintMtx() ;
+        std::cout << "\n";
+        std::cout << "JACOBIAN " << tasksDebug[i]->getName() << ": \n";
+        tasksDebug[i]->getJacobian().PrintMtx();
+        std::cout<< "\n";
 
-//      std::cout << "REFERENCE " << tasksDebug[i]->getName() << ": \n";
-//      tasksDebug[i]->getReference().PrintMtx() ;
-//      std::cout << "\n";
-//    }
+        std::cout << "REFERENCE " << tasksDebug[i]->getName() << ": \n";
+        tasksDebug[i]->getReference().PrintMtx() ;
+        std::cout << "\n";
+      }
+    }
 
 
     controller.resetAllUpdatedFlags(tasksTPIK1);
@@ -426,7 +536,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
 
 
   /// PREREQUISITE TASKS
-
+  Task* forceInsert = new ForceInsertTask(2, ineqType, robotName);
+  Task* vehStill = new VehicleNullVelTask(6, eqType, robotName);
 
   ///MISSION TASKS
   Task* pr5 = new PipeReachTask(5, eqType, robotName, ONLYVEH);
@@ -446,12 +557,13 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasks1->push_back(jl);
   tasks1->push_back(ha);
   //tasks1->push_back(eeAvoid);
+  //tasks1->push_back(forceInsert);
   tasks1->push_back(pr6);
   //TODO discutere diff tra pr6 e pr5... il 5 mette più stress sull obj?
   //tasks1->push_back(vehR);
   //tasks1->push_back(vehYaxis);
   //tasks1->push_back(eer);
-  tasks1->push_back(shape);
+  //tasks1->push_back(shape);
   tasks1->push_back(last);
 
   //TODO ASK al momento fatte così le versioni 6dof di pr e coop sono
@@ -465,19 +577,18 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksCoord->push_back(coopTask6dof);
   tasksCoord->push_back(jl);
   tasksCoord->push_back(ha);
+  //tasksCoord->push_back(forceInsert);
   tasksCoord->push_back(pr6);
-  //tasks1->push_back(eeAvoid);
-  tasksCoord->push_back(shape);
+  //tasksCoord->push_back(shape);
   tasksCoord->push_back(last);
 
   tasksArmVeh->push_back(coopTask6dof);
   tasksArmVeh->push_back(constrainVel);
   tasksArmVeh->push_back(jl);
   tasksArmVeh->push_back(ha);
+  //tasksArmVeh->push_back(forceInsert);
   tasksArmVeh->push_back(pr6);
-  //tasks1->push_back(eeAvoid);
-
-  tasksArmVeh->push_back(shape);
+//  tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
 
 }

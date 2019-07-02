@@ -199,7 +199,7 @@ StereoTracker::StereoTracker(std::string callerName, std::vector<std::string> ca
 
    tracker->loadConfigFile(mapOfConfigFiles);
 
-   tracker->loadModel(sourcePath+caoModel);
+   tracker->loadModel(sourcePath+caoModelNoCil);
 
    tracker->setCameraTransformationMatrix(mapCameraTransf);
 

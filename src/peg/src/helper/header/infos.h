@@ -19,6 +19,9 @@ struct Transforms {
   Eigen::Matrix4d wTt_eigen; //tool in the world
   Eigen::Matrix4d wTholeEstimated_eigen;
 
+  //Eigen::Matrix4d otherEE_T_EE; //for firm grasp constrain
+  Eigen::Matrix4d wTotherPeg;
+
 };
 
 /**
@@ -51,7 +54,6 @@ struct RobotState {
   //geometric jacobian of the arm projected on link 0 with tool as last frame
  // (ie: tool is the controlled one)
   //Eigen::Matrix<double, 6, ARM_DOF> link0_Jtool_man;
-
   Eigen::Matrix<double, 6, ARM_DOF> v_Jtool_man;
 
 

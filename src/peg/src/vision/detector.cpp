@@ -56,7 +56,7 @@ void Detector::drawSquares( cv::Mat image, const std::vector<std::vector<cv::Poi
 
   using namespace std;
   using namespace cv;
-    for( size_t i = 0; i < squares.size(); i++ )
+  for( size_t i = 0; i < squares.size(); i++ )
     {
         const Point* p = &squares[i][0];
         int n = (int)squares[i].size();
@@ -69,6 +69,7 @@ void Detector::drawSquares( cv::Mat image, const std::vector<std::vector<cv::Poi
 
     }
     imshow(wndname, image);
+    waitKey(0);
 }
 
 
@@ -328,9 +329,9 @@ int Detector::templateMatching(cv::Mat img, cv::Mat templ,
   }
 
   if (scaleFactors.size() == 0){
-    scaleFactors = {1, 0.9, 0.8, 0.7, 0.75, 0.6, 0.65, 0.5,
+    scaleFactors = {0.75, 0.6, 0.65, 0.5,
                     0.48, 0.45, 0.42, 0.4, 0.38, 0.38, 0.32, 0.3,
-                    0.28, 0.25, 0.22, 0.2, 0.15, 0.1};
+                    0.28, 0.25, 0.24, 0.23, 0.22, 0.21, 0.20, 0.19, 0.18, 0.15, 0.1};
   }
 
 
@@ -413,7 +414,7 @@ int Detector::templateMatching(cv::Mat img, cv::Mat templ,
   if(showDisplay){
 
     cv::rectangle( img_display, topLeft, bottomRight,
-                   cv::Scalar::all(0), 1, 8, 0 );
+                   cv::Scalar(0,255,0), 1, 8, 0);
     cv::imshow( image_window, img_display);
     cv::waitKey(0);
   }

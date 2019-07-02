@@ -10,7 +10,8 @@ from std_srvs.srv import Empty
 
 #topic to command
 # Twist better than odometry TODO ask why
-twist_topic="/uwsim/g500_A/twist_command"
+twist_topic_A="/uwsim/g500_A/twist_command"
+twist_topic_B="/uwsim/g500_B/twist_command"
 #base velocity for the teleoperation
 baseVelocity=0.01
 
@@ -24,8 +25,9 @@ oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
 fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
 
 ##create the publishers
-pubTwist = rospy.Publisher(twist_topic, TwistStamped,queue_size=1)
-rospy.init_node('keyboardCommandVeh_A')
+pubTwist_A = rospy.Publisher(twist_topic_A, TwistStamped, queue_size=1)
+pubTwist_B = rospy.Publisher(twist_topic_B, TwistStamped, queue_size=1)
+rospy.init_node('keyboardCommandVeh_both')
 msgTwist = TwistStamped()
 modality = True # true: at each while velocitty is resetted
 
@@ -88,10 +90,11 @@ try:
         except IOError: pass
 
         ##publish the message
-        print 'velocity vehicle published:'
+        print 'velocity vehicles published:'
         print (msgTwist.twist.linear.x,  msgTwist.twist.linear.y, msgTwist.twist.linear.z)
         print (msgTwist.twist.angular.x,  msgTwist.twist.angular.y,  msgTwist.twist.angular.z )
-        pubTwist.publish(msgTwist)
+        pubTwist_A.publish(msgTwist)
+        pubTwist_B.publish(msgTwist)
         rospy.sleep(0.1)
 
 ##Other input stuff

@@ -1,4 +1,4 @@
-#ifndef MISSIONMANAGERPEG_H
+﻿#ifndef MISSIONMANAGERPEG_H
 #define MISSIONMANAGERPEG_H
 
 #include <iostream>
@@ -22,13 +22,13 @@
 #include "../helper/header/kdlHelper.h"
 #include "../helper/header/logger.h"
 
-
 #include "../controller/header/controller.h"
+#include "../controller/header/collisionPropagator.h"
+
 #include "../rosInterfaces/header/robotInterface.h"
 #include "../rosInterfaces/header/worldInterface.h"
 #include "../rosInterfaces/header/coordInterfaceMissMan.h"
 #include "../rosInterfaces/header/visionInterfaceMissMan.h"
-
 
 #include "../tasks/header/lastTask.h"
 #include "../tasks/header/vehicleReachTask.h"
@@ -48,12 +48,14 @@
 
 int main(int, char**);
 void setTaskLists(std::string robotName, std::vector<Task*> *tasks);
-void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
-                  std::vector<Task*> *tasksFinal);
+
 
 void setTaskLists(std::string robotName, std::vector<Task*>* ,
                   std::vector<Task*>*, std::vector<Task*>*);
 
 void deleteTasks(std::vector<Task*> *tasks);
+
+//void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
+//                  std::vector<Task*> *tasksFinal);
 
 #endif // MISSIONMANAGERPEG_H

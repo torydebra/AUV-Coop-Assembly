@@ -115,14 +115,12 @@ int main(int argc, char** argv){
 
   robotVisInterface.getLeftImage(&imageL_cv);
   robotVisInterface.getRightImage(&imageR_cv);
-  imageL_cv.convertTo(imageL_cv, CV_8U); //TODO check if necessary convert in 8U
-  imageR_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
-  //cut top part of image where a piece of auv is visible and can distract cv algos
-  imageL_cv = imageL_cv(cv::Rect(0, 60, imageL_cv.cols, imageL_cv.rows-60));
-  imageR_cv = imageR_cv(cv::Rect(0, 60, imageR_cv.cols, imageR_cv.rows-60));
+  //imageL_cv.convertTo(imageL_cv, CV_8U); //TODO check if necessary convert in 8U
+  //imageR_cv.convertTo(imageR_cv, CV_8U); //TODO check if necessary convert in 8U
 
   vpImageConvert::convert(imageL_cv, imageL_vp);
   vpImageConvert::convert(imageR_cv, imageR_vp);
+
 
   /// METHOD 1 E 2
   std::vector<int> trackerTypes;
@@ -145,7 +143,7 @@ int main(int argc, char** argv){
   display_right.init(imageR_vp, 110 + (int)imageL_vp.getWidth(), 100,
                      "Model-based tracker (Right)");
 
-  bool initByClick = true;
+  bool initByClick = false;
   if (initByClick){ //init by click
     switch (trackerTypes.size()){
     case 1:
@@ -362,98 +360,98 @@ int main(int argc, char** argv){
     /// keypoint are not matched. Maybe a fine setup will work.
 
     //-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
-//    cv::Mat img_object = cv::imread("/home/tori/UWsim/Peg/src/peg/src/vision/data/templateSideBorder.jpg",
-//                                    cv::IMREAD_GRAYSCALE );
+    cv::Mat img_object = cv::imread("/home/tori/UWsim/Peg/src/peg/src/vision/data/templateSideBorder.jpg",
+                                    cv::IMREAD_GRAYSCALE );
 
-//    cv::Mat img_scene = imageL_cv;
-//    cv::Canny(img_object, img_object, 50, 200, 3);
-//    cv::Canny(img_scene, img_scene, 50, 200, 3);
+    cv::Mat img_scene = imageL_cv;
+    //cv::Canny(img_object, img_object, 50, 200, 3);
+    //cv::Canny(img_scene, img_scene, 50, 200, 3);
 
-//    cv::Mat imgd_scene = img_scene; //for intermiadate display
-//    cv::Mat imgd_obj = img_object; //for intermiadate display
+    cv::Mat imgd_scene = img_scene; //for intermiadate display
+    cv::Mat imgd_obj = img_object; //for intermiadate display
 
-//    cv::Ptr<cv::xfeatures2d::SURF> detectorSURF = cv::xfeatures2d::SURF::create(300);
-//    cv::Ptr<cv::xfeatures2d::SURF> detectorSURF2 = cv::xfeatures2d::SURF::create(
-//          100, 4, 3, true);
-//    cv::Ptr<cv::xfeatures2d::SIFT> detectorSIFT = cv::xfeatures2d::SIFT::create(
-//          0, 3, 0.04, 10);
-//    cv::Ptr<cv::xfeatures2d::SIFT> detectorSIFT2 = cv::xfeatures2d::SIFT::create(
-//          0, 3, 0.02, 15);
-//    std::vector<cv::KeyPoint> keypoints_object, keypoints_scene;
-//    cv::Mat descriptors_object, descriptors_scene;
-//    detectorSURF->detectAndCompute( img_object, cv::noArray(), keypoints_object, descriptors_object );
-//    detectorSURF->detectAndCompute( img_scene, cv::noArray(), keypoints_scene, descriptors_scene );
-//    std::cout <<"point in template: " << keypoints_object.size() << "\n\n";
-//    std::cout <<"point in scene: " << keypoints_scene.size() << "\n\n";
-//    cv::drawKeypoints(img_scene, keypoints_scene, imgd_scene, cv::Scalar(255,0,0));
-//    cv::drawKeypoints(img_object, keypoints_object, imgd_obj, cv::Scalar(255,0,0));
-//    cv::imshow("scena keypoint", imgd_scene);
-//    cv::imshow("temmplate keypoint", imgd_obj);
-//    cv::waitKey();
+    cv::Ptr<cv::xfeatures2d::SURF> detectorSURF = cv::xfeatures2d::SURF::create(300);
+    cv::Ptr<cv::xfeatures2d::SURF> detectorSURF2 = cv::xfeatures2d::SURF::create(
+          100, 4, 3, true);
+    cv::Ptr<cv::xfeatures2d::SIFT> detectorSIFT = cv::xfeatures2d::SIFT::create(
+          0, 3, 0.04, 10);
+    cv::Ptr<cv::xfeatures2d::SIFT> detectorSIFT2 = cv::xfeatures2d::SIFT::create(
+          0, 3, 0.02, 15);
+    std::vector<cv::KeyPoint> keypoints_object, keypoints_scene;
+    cv::Mat descriptors_object, descriptors_scene;
+    detectorSURF2->detectAndCompute( img_object, cv::noArray(), keypoints_object, descriptors_object );
+    detectorSURF2->detectAndCompute( img_scene, cv::noArray(), keypoints_scene, descriptors_scene );
+    std::cout <<"point in template: " << keypoints_object.size() << "\n\n";
+    std::cout <<"point in scene: " << keypoints_scene.size() << "\n\n";
+    cv::drawKeypoints(img_scene, keypoints_scene, imgd_scene, cv::Scalar(255,0,0));
+    cv::drawKeypoints(img_object, keypoints_object, imgd_obj, cv::Scalar(255,0,0));
+    cv::imshow("scena keypoint", imgd_scene);
+    cv::imshow("temmplate keypoint", imgd_obj);
+    cv::waitKey();
 
 
-//    //-- Step 2: Matching descriptor vectors with a FLANN based matcher
-//    // Since SURF is a floating-point descriptor NORM_L2 is used
-//    cv::Ptr<cv::DescriptorMatcher> matcher =
-//        cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
-//    std::vector< std::vector<cv::DMatch> > knn_matches;
-//    matcher->knnMatch( descriptors_object, descriptors_scene, knn_matches, 2 );
+    //-- Step 2: Matching descriptor vectors with a FLANN based matcher
+    // Since SURF is a floating-point descriptor NORM_L2 is used
+    cv::Ptr<cv::DescriptorMatcher> matcher =
+        cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
+    std::vector< std::vector<cv::DMatch> > knn_matches;
+    matcher->knnMatch( descriptors_object, descriptors_scene, knn_matches, 2 );
 
-//    //-- Filter matches using the Lowe's ratio test
-//    const float ratio_thresh = 0.75f;
-//    std::vector<cv::DMatch> good_matches;
-//    std::cout << "knn_matches matches: " << knn_matches.size() << "\n\n";
+    //-- Filter matches using the Lowe's ratio test
+    const float ratio_thresh = 0.95f;
+    std::vector<cv::DMatch> good_matches;
+    std::cout << "knn_matches matches: " << knn_matches.size() << "\n\n";
 
-//    for (size_t i = 0; i < knn_matches.size(); i++)
-//    {
-//      if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
-//      {
-//        good_matches.push_back(knn_matches[i][0]);
-//      }
-//    }
+    for (size_t i = 0; i < knn_matches.size(); i++)
+    {
+      if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
+      {
+        good_matches.push_back(knn_matches[i][0]);
+      }
+    }
 
-//    std::cout << "goo matches: " << good_matches.size() << "\n\n";
+    std::cout << "goo matches: " << good_matches.size() << "\n\n";
 
-//    //-- Draw matches
-//    cv::Mat img_matches;
-//    cv::drawMatches( img_object, keypoints_object, img_scene, keypoints_scene,
-//                     good_matches, img_matches, cv::Scalar::all(-1),
-//                     cv::Scalar::all(-1), std::vector<char>(),
-//                     cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
-//    //-- Localize the object
-//    std::vector<cv::Point2f> obj;
-//    std::vector<cv::Point2f> scene;
-//    for( size_t i = 0; i < good_matches.size(); i++ )
-//    {
-//      //-- Get the keypoints from the good matches
-//      obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
-//      scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
-//    }
-//    std::cout << "to find homog template good match: " << obj.size() << "\n\n";
-//    std::cout << "to find homog scene good match: " << scene.size() << "\n\n";
+    //-- Draw matches
+    cv::Mat img_matches;
+    cv::drawMatches( img_object, keypoints_object, img_scene, keypoints_scene,
+                     good_matches, img_matches, cv::Scalar::all(-1),
+                     cv::Scalar::all(-1), std::vector<char>(),
+                     cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+    //-- Localize the object
+    std::vector<cv::Point2f> obj;
+    std::vector<cv::Point2f> scene;
+    for( size_t i = 0; i < good_matches.size(); i++ )
+    {
+      //-- Get the keypoints from the good matches
+      obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
+      scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
+    }
+    std::cout << "to find homog template good match: " << obj.size() << "\n\n";
+    std::cout << "to find homog scene good match: " << scene.size() << "\n\n";
 
-//    cv::Mat H = cv::findHomography( obj, scene, cv::RANSAC, 3 );
-//    std::cout << "mat result of findhomog: " << H.size() << "\n\n";
-//    //-- Get the corners from the image_1 ( the object to be "detected" )
-//    std::vector<cv::Point2f> obj_corners(4);
-//    obj_corners[0] = cv::Point2f(0, 0);
-//    obj_corners[1] = cv::Point2f( (float)img_object.cols, 0 );
-//    obj_corners[2] = cv::Point2f( (float)img_object.cols, (float)img_object.rows );
-//    obj_corners[3] = cv::Point2f( 0, (float)img_object.rows );
-//    std::vector<cv::Point2f> scene_corners(4);
-//    cv::perspectiveTransform( obj_corners, scene_corners, H);
-//    //-- Draw lines between the corners (the mapped object in the scene - image_2 )
-//    cv::line( img_matches, scene_corners[0] + cv::Point2f((float)img_object.cols, 0),
-//        scene_corners[1] + cv::Point2f((float)img_object.cols, 0), cv::Scalar(0, 255, 0), 4 );
-//    cv::line( img_matches, scene_corners[1] + cv::Point2f((float)img_object.cols, 0),
-//        scene_corners[2] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
-//    cv::line( img_matches, scene_corners[2] + cv::Point2f((float)img_object.cols, 0),
-//        scene_corners[3] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
-//    cv::line( img_matches, scene_corners[3] + cv::Point2f((float)img_object.cols, 0),
-//        scene_corners[0] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
-//    //-- Show detected matches
-//    cv::imshow("Good Matches & Object detection", img_matches );
-//    cv::waitKey();
+    cv::Mat H = cv::findHomography( obj, scene, cv::RANSAC, 3 );
+    std::cout << "mat result of findhomog: " << H.size() << "\n\n";
+    //-- Get the corners from the image_1 ( the object to be "detected" )
+    std::vector<cv::Point2f> obj_corners(4);
+    obj_corners[0] = cv::Point2f(0, 0);
+    obj_corners[1] = cv::Point2f( (float)img_object.cols, 0 );
+    obj_corners[2] = cv::Point2f( (float)img_object.cols, (float)img_object.rows );
+    obj_corners[3] = cv::Point2f( 0, (float)img_object.rows );
+    std::vector<cv::Point2f> scene_corners(4);
+    cv::perspectiveTransform( obj_corners, scene_corners, H);
+    //-- Draw lines between the corners (the mapped object in the scene - image_2 )
+    cv::line( img_matches, scene_corners[0] + cv::Point2f((float)img_object.cols, 0),
+        scene_corners[1] + cv::Point2f((float)img_object.cols, 0), cv::Scalar(0, 255, 0), 4 );
+    cv::line( img_matches, scene_corners[1] + cv::Point2f((float)img_object.cols, 0),
+        scene_corners[2] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+    cv::line( img_matches, scene_corners[2] + cv::Point2f((float)img_object.cols, 0),
+        scene_corners[3] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+    cv::line( img_matches, scene_corners[3] + cv::Point2f((float)img_object.cols, 0),
+        scene_corners[0] + cv::Point2f((float)img_object.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+    //-- Show detected matches
+    cv::imshow("Good Matches & Object detection", img_matches );
+    cv::waitKey();
 
     /// FEATURE 2 + HOMOGRAPy *******************************************************************************************************+
 

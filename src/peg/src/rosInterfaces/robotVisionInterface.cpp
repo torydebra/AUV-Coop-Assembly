@@ -114,9 +114,9 @@ int RobotVisionInterface::sendyDot(std::vector<double> yDot){
  */
 int RobotVisionInterface::getLeftImage(cv::Mat *imageCV){
 
-//sensor_msgs::image_encodings::MONO8  old second argument of toCvCopy
+//sensor_msgs::image_encodings::MONO8  old second argument of toCvCopy (neded for detection with templ match)
   cv_bridge::CvImagePtr imageCVPtr =
-      cv_bridge::toCvCopy(leftImage);
+      cv_bridge::toCvCopy(leftImage, sensor_msgs::image_encodings::MONO8);
   *imageCV = imageCVPtr.get()->image;
   //cut top part of image where a piece of auv is visible and can distract cv algos
   //note: doing this camera param are changed: -60px for v0 element
@@ -128,7 +128,7 @@ int RobotVisionInterface::getLeftImage(cv::Mat *imageCV){
 int RobotVisionInterface::getRightImage(cv::Mat *imageCV){
 
   cv_bridge::CvImagePtr imageCVPtr =
-      cv_bridge::toCvCopy(rightImage);
+      cv_bridge::toCvCopy(rightImage, sensor_msgs::image_encodings::MONO8);
   *imageCV = imageCVPtr.get()->image;
   //cut top part of image where a piece of auv is visible and can distract cv algos
   //note: doing this camera param are changed: -60px for v0 element

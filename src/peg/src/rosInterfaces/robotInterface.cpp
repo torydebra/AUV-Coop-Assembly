@@ -28,7 +28,10 @@ RobotInterface::RobotInterface(ros::NodeHandle nh, std::string robotName)
     vectorTorqueQueue.at(i) = boost::circular_buffer<double>(NELEMENTQUEUE);
   }
 
-  subForceTorque = nh.subscribe(topicRoot+"forceSensorPeg", 1, &RobotInterface::subForceTorqueCallback, this);
+  //subForceTorque = nh.subscribe(topicRoot+"forceSensorPeg", 1, &RobotInterface::subForceTorqueCallback, this);
+
+  //hard-coded name for topic, beacuse both robot read from a single force sensor
+  subForceTorque = nh.subscribe("/uwsim/g500_A/forceSensorPeg", 1, &RobotInterface::subForceTorqueCallback, this);
 }
 
 
@@ -156,7 +159,9 @@ int RobotInterface::getForceTorque(Eigen::Vector3d *force, Eigen::Vector3d *torq
 
   *force = CONV::vector_std2Eigen(sumForces);
   *torque = CONV::vector_std2Eigen(sumTorques);
-  *force = FRM::saturateVectorEigen(*force, 1);
+  // need to saturate otherwise simulation crashes
+  //*force = FRM::saturateVectorEigen(*force, 1);
+  //*torque = FRM::saturateVectorEigen(*torque, 1);
   return 0;
 }
 

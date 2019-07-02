@@ -18,7 +18,7 @@
 #include <pcl_ros/io/pcd_io.h>
 
 const std::string relativeMissMan = "/vision/data/";
-const std::string templName = relativeMissMan + "templateSideLittle.jpg";
+const std::string templName = relativeMissMan + "templateFrontLittle.jpg";
 
 
 

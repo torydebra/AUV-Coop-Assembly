@@ -1,9 +1,9 @@
 clearvars;
 
-rootPath = '~/LogPeg/taskAuto21/';
-robotNameA = 'g500_A';
-robotNameB = 'g500_B';
-coordName = 'Coordinator/';
+% rootPath = '~/LogVision_Good/clickMethod/depth';
+% robotNameA = 'g500_A';
+% robotNameB = 'g500_B';
+% coordName = 'Coordinator/';
 
 %millisecond indicated in missionManager
 global sControlLoop
@@ -12,7 +12,7 @@ sControlLoop = 0.1;
 
 %% plot Task things
 
- taskName = 'FORCE_INSERTION';
+%  taskName = 'FORCE_INSERTION';
 %taskName = 'JOINT_LIMIT';
 % 
 %plotTask(rootPath, robotNameA, taskName);
@@ -23,10 +23,10 @@ sControlLoop = 0.1;
 %plotYDot(rootPath, robotNameA, 'yDotTPIK1');
 %plotYDot(rootPath, robotNameA, 'yDotFinal');
 %plotYDotDivided(rootPath, robotNameA, 'yDotTPIK1'); %ang e lin vel of vehicle divided
-plotYDotDivided(rootPath, robotNameA, 'yDotFinal');
-plotYDotDivided(rootPath, robotNameA, 'yDotFinalWithCollision');
-plotVector(rootPath, robotNameA, 'forces');
-plotVector(rootPath, robotNameA, 'torques');
+% plotYDotDivided(rootPath, robotNameA, 'yDotFinal');
+% plotYDotDivided(rootPath, robotNameA, 'yDotFinalWithCollision');
+% plotVector(rootPath, robotNameA, 'forces');
+% plotVector(rootPath, robotNameA, 'torques');
 
 % plotYDot(rootPath, robotNameB, 'yDotTPIK1');
 % plotYDot(rootPath, robotNameB, 'yDotFinal');
@@ -71,5 +71,13 @@ plotVector(rootPath, robotNameA, 'torques');
 
 
 %% Vision
-%pathName ="~/LogPegVision/today222/g500_C/errorStereoL.txt";
-%plotGenericErrorDivided(pathName)
+pathName ="logVisionGood/templ/mono/g500_C/errorMonoL.txt";
+%plotGenericErrorDividedNorm(pathName)
+pathName ="logVisionGood/templ/mono/g500_C/errorMonoR.txt";
+%plotGenericErrorDividedNorm(pathName)
+
+
+pathName ="logVisionGood/templ/stereo/g500_C/errorStereoL.txt";
+plotGenericErrorDividedNorm(pathName)
+pathName ="logVisionGood/templ/depth/g500_C/errorStereoL.txt";
+plotGenericErrorDividedNorm(pathName)

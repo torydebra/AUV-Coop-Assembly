@@ -83,7 +83,7 @@ Solution is to change (in cmat_defines.h) :
 #### VISP_HAVE_PCL not setted
 there is a function .track() in the tracker.cpp. This function is declared in a .h which has VISP\_HAVE\_PCL flag before.
 Even with pcl-ros installed, this flag can be unsetted.
-Solution? Not sure I have broken all, but I simply add 
+Solution? Not sure I have broken all (at the moment is works, but be sure pcl is installed (ros-pcl is ok)), but I simply add 
 ```c
 #define VISP_HAVE_PCL
 ```

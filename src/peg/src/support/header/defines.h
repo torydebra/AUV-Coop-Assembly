@@ -46,5 +46,8 @@ enum ControlPoint {ee, tool};
 #define LOG 1 //0-1 logging (printing matrix on files) not activated or activated
 
 
-#define MS_CONTROL_LOOP 50 //millisecond for the control loops
+#define MS_CONTROL_LOOP 100 //millisecond for the control loops
+
+#define COLLISION_PROPAGATOR true //to set if collision with peg and hole cause disturbances to arm
+#define GRASP_CONSTRAINER true //to firm grasp constrain, which bring ee towards the correspondent point of the other robot peg
 #endif // DEFINES_H

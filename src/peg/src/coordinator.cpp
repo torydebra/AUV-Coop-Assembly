@@ -32,25 +32,29 @@ int main(int argc, char **argv){
 
   /// GOAL TOOL
   //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
-  double goalLinearVectTool[] = {-0.20, -3.102, 9.000};
+  double goalLinearVectTool[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
+  //std::vector<double> eulRad = {0, 0, -1.443185307179587}; //true angular
+  std::vector<double> eulRad = {0.0, 0.0, -1.443185307179587}; //with error on z: 0.1rad ~ 6deg
 
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
 
-   //rot part
-
-  //rot part
-  wTgoalTool_eigen.topLeftCorner<3,3>() << 0,  1,  0,
-                                           -1,  0,  0,
-                                           0,  0,  1;
+  /// rot part
+//  wTgoalTool_eigen.topLeftCorner<3,3>() << 0,  1,  0,
+//                                           -1,  0,  0,
+//                                           0,  0,  1;
   //wTgoalTool_eigen.topLeftCorner<3,3>() = wTt.topLeftCorner<3,3>(); //actual goal = actual rotation
+  wTgoalTool_eigen.topLeftCorner<3,3>() = FRM::eul2Rot(eulRad);
 
-  //trasl part
-  wTgoalTool_eigen(0, 3) = goalLinearVectTool[0];
-  wTgoalTool_eigen(1, 3) = goalLinearVectTool[1];
-  wTgoalTool_eigen(2, 3) = goalLinearVectTool[2];
+  //to get inside the hole of 0.2m:
+  Eigen::Vector3d v_inside;
+  //v_inside << 0.40, 0.18, 0; //rigth big hole + error
+  v_inside << 0.40, 0, 0;
+  Eigen::Vector3d w_inside = FRM::eul2Rot(eulRad) * v_inside;
 
-
-
+  /// trasl part
+  wTgoalTool_eigen(0, 3) = goalLinearVectTool[0] + w_inside(0);
+  wTgoalTool_eigen(1, 3) = goalLinearVectTool[1] + w_inside(1);
+  wTgoalTool_eigen(2, 3) = goalLinearVectTool[2] + w_inside(2);
 
   CoordInterfaceCoord coordInterface(nh, robotNameA, robotNameB);
   Eigen::Matrix<double, VEHICLE_DOF, 1> nonCoopCartVelA_eigen;
@@ -59,8 +63,6 @@ int main(int argc, char **argv){
   Eigen::Matrix<double, VEHICLE_DOF, VEHICLE_DOF> admisVelToolB_eigen;
   Eigen::Matrix<double, VEHICLE_DOF, 1> refTool;
   Eigen::Matrix<double, VEHICLE_DOF, 1> coopVelToolFeasible;
-
-
 
   ///Log things
   Logger logger;
@@ -207,10 +209,10 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> calculateRefTool(Eigen::Matrix4d wTgoaltoo
   reference(4) = errorSwapped(2);
   reference(5) = errorSwapped(3);
 
-  reference *= 0.05;
+  reference *= 0.01;
 
-  reference.topRows(3) = FRM::saturateVectorEigen(reference.topRows(3), 0.3);
-  reference.bottomRows(3) = FRM::saturateVectorEigen(reference.bottomRows(3), 0.1);
+  reference.topRows(3) = FRM::saturateVectorEigen(reference.topRows(3), 0.05);
+  reference.bottomRows(3) = FRM::saturateVectorEigen(reference.bottomRows(3), 0.05);
 
 
   return reference;

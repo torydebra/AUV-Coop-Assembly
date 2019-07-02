@@ -54,15 +54,16 @@ void HorizontalAttitudeTask::setActivation(){
 void HorizontalAttitudeTask::setJacobian(){
 
   Eigen::Vector3d normalPhi;
-  if (phi.norm() > 0){ //to not divide by zero
-    normalPhi = phi/(phi.norm());
+  double normPhi = phi.norm();
+  if (normPhi > 0){ //to not divide by zero
+    normalPhi = phi/normPhi;
   } else{
     normalPhi << 0,0,0;
   }
 
   //first element are zero, actually J is a row
   Eigen::MatrixXd J_eigen(dimension, dof);
-  Eigen::MatrixXd temp(3,VEHICLE_DOF);
+  Eigen::Matrix<double, 3, VEHICLE_DOF> temp;
   temp.topLeftCorner(3,3) = Eigen::Matrix3d::Zero();
   temp.topRightCorner(3,3) = Eigen::Matrix3d::Identity();
 

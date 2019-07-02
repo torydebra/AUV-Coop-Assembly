@@ -12,34 +12,32 @@ global sControlLoop
 totSecondPassed = sControlLoop*(nStep-1);
 seconds = 0:sControlLoop:totSecondPassed;
 
+%squeeze shrink the 3d matrix into 2d matrix. errors has the second
+%dimension of always size 1
+errorsLinSqueezed = squeeze(errors(1:3,:,:));
+errorsAngSqueezed = squeeze(errors(4:6,:,:));
+
+linNorms = vecnorm(errorsLinSqueezed); %return the norm of each column
+angNorms = vecnorm(errorsAngSqueezed);
+
 figure
 subplot(2,1,1);
-hold on;
-for i = 1:3
-    a(:) = errors(i,1,:);
-    plot(seconds, a);
-end
-hold off;
+plot(seconds, linNorms);
 xlabel('time [s]');
-ylab1 = ylabel('errors [m]');
-tq1 = title("Cartesian Linear Error");
-leg1 = legend('$x$','$y$', '$z$');
+ylab1 = ylabel('errors norm [m]');
+tq1 = title("Norm of Cartesian Linear Error");
+xlim([0 10]);
+ylim([0 0.13]);
 
 subplot(2,1,2);
-hold on;
-for i = 4:6
-    a(:) = errors(i,1,:);
-    plot(seconds, a);
-end
-hold off;
+plot(seconds, angNorms);
 xlabel('time [s]');
-ylab2 = ylabel('errors [rad]');
-tq2 = title("Cartesian Angular Error");
-leg2 = legend('$roll$', '$pitch$', '$yaw$');
+ylab2 = ylabel('errors norm [rad]');
+tq2 = title("Norm of Cartesian Angular Error");
+xlim([0 10]);
+ylim([0 0.4]);
 
 
-set(leg1, 'Interpreter', 'latex', 'FontSize' , legFontSize);
-set(leg2, 'Interpreter', 'latex', 'FontSize' , legFontSize);
 set(ylab1, 'Interpreter', 'none', 'FontSize' , ylabFontSize);
 set (tq1, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
 set(ylab2, 'Interpreter', 'none', 'FontSize' , ylabFontSize);

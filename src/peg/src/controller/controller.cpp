@@ -117,14 +117,16 @@ std::vector<double> Controller::execAlgorithm(std::vector<Task*> tasks){
     }
 
     ////DEBUG
-    std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
-    yDot_cmat.PrintMtx();
-    std::cout << "\n";
+//    std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
+//    yDot_cmat.PrintMtx();
+//    std::cout << "\n";
   }
 
   return (CONV::vector_cmat2std(yDot_cmat));
 
 }
+
+
 
 /**
  * @brief Controller::equalityIcat icat algorithm taken from another code. It uses the regolarized pseudoinverse

@@ -6,6 +6,7 @@
  * @param argc
  * @param argv
  * @return
+ * @note to use templ matching, mono8 image must be given from robot interface
  * @todo racconta del init by click, che lo setti perfetto tanto è facile cliccare sui 4 angoli zoomando con il
  * display di opencv. E cmq è da fare solo una volta, poi salva i file .pos
  * @todo color images considerations?
@@ -87,8 +88,8 @@ int main(int argc, char** argv){
 *******************************************************************************************************************/
 
   bool stereo = true;
-  bool initByClick = true;
-  bool useDepth = true;
+  bool initByClick = false;
+  bool useDepth = false;
 
 
   /// Initial images
@@ -196,7 +197,7 @@ int main(int argc, char** argv){
     stereoTracker = new StereoTracker(robotName, cameraNames, mapCameraTransf, trackerTypes);
   }
 
-  /// INIT TRACKERS
+  /// START DETECTION
 
   std::vector<std::vector<cv::Point>> found4CornersVectorL, found4CornersVectorR; //used if initclick false
   if (initByClick){
@@ -211,20 +212,25 @@ int main(int argc, char** argv){
   } else { //find point without click //TODO, parla anche di altri metodi provati
 
     if (useDepth){
-      Detector::findSquare(imageL_cv, &found4CornersVectorL);
-      Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
+      /// FIND SQUARE METHOD
+//      Detector::findSquare(imageL_cv, &found4CornersVectorL);
+//      Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
+
+      /// TEMPLATE MATCH METHOD
+          cv::Mat templL1 = cv::imread(sourcePath + templName);
+          found4CornersVectorL.resize(1);
+          Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL.at(0)));
 
       append2Dto3Dfile(found4CornersVectorL.at(0), sourcePath);
-      stereoTracker->initTrackingByPoint(mapOfImages);
 
-    }
+    } else {  // no depth use
 
     /// FIND SQUARE METHOD
       // https://docs.opencv.org/3.4/db/d00/samples_2cpp_2squares_8cpp-example.html#a20
-    Detector::findSquare(imageL_cv, &found4CornersVectorL);
-    Detector::findSquare(imageR_cv, &found4CornersVectorR);
-    Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
-    Detector::drawSquares(imageR_cv, found4CornersVectorR, "right");
+//    Detector::findSquare(imageL_cv, &found4CornersVectorL);
+//    Detector::findSquare(imageR_cv, &found4CornersVectorR);
+//    Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
+//    Detector::drawSquares(imageR_cv, found4CornersVectorR, "right");
 
     /// TEMPLATE MATCHING OPENCV
      // https://docs.opencv.org/3.4.6/de/da9/tutorial_template_matching.html
@@ -235,26 +241,39 @@ int main(int argc, char** argv){
     // in pixel nella immagine che si vede dalle camere... ci vorrebbe homography
     // per rectify immagini...
     //TODO rectify?
-//    cv::Mat templL1 = cv::imread(sourcePath + templName);
-//    cv::Mat templR1 = cv::imread(sourcePath + templName);
-//    found4CornersVectorL.resize(1);
-//    found4CornersVectorR.resize(1);
-//    Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL.at(0)));
-//    Detector::templateMatching(imageR_cv, templR1, &(found4CornersVectorR.at(0)));
+    cv::Mat templL1 = cv::imread(sourcePath + templName);
+    cv::Mat templR1 = cv::imread(sourcePath + templName);
+    found4CornersVectorL.resize(1);
+    found4CornersVectorR.resize(1);
+    Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL.at(0)));
+    Detector::templateMatching(imageR_cv, templR1, &(found4CornersVectorR.at(0)));
 
 
     //TODO  if found4CornersVector contain more than one element, pick the best...
-    append2Dto3Dfile(found4CornersVectorL.at(0), found4CornersVectorR.at(0), sourcePath);
+    if (found4CornersVectorR.size() < 1){
+      std::cout << "[" << robotName << "][MISSION_MANAGER] ERROR: NOT FOUND ANY SQUARE IN RIGHT IMAGE" << std::endl;
+      return -1;
+    }
+    if (found4CornersVectorL.size() < 1){
+      std::cout << "[" << robotName << "][MISSION_MANAGER] ERROR: NOT FOUND ANY SQUARE IN LEFT IMAGE" << std::endl;
+      return -1;
+    }
 
+    append2Dto3Dfile(found4CornersVectorL.at(0), found4CornersVectorR.at(0), sourcePath);
+    }
+
+    /// END DETECTION
+
+
+  /// init tracking
     if (stereo == false){
       monoTrackerL->initTrackingByPoint(&imageL_vp);
       monoTrackerR->initTrackingByPoint(&imageR_vp);
 
-    }else {
+    } else {
       stereoTracker->initTrackingByPoint(mapOfImages);
-
     }
-  } // END INIT
+  }
 
 
 /** *********************************************************************************************************+*********
@@ -292,7 +311,6 @@ int main(int argc, char** argv){
     if (useDepth){
       robotVisInterface.getRangeRightImage(&imageRangeR_cv);
       imageRangeR_cv.convertTo(imageRangeR_cv, CV_16UC1);
-
 
       // convert function of visp dont convert from cv to uint16_t visp matrix)
       vpImage<uint16_t> imageRangeR_vp_raw;

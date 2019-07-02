@@ -4,6 +4,7 @@ project(peg)
 #to exclude two non existent header from cmat.h
 add_definitions(-DCMAT_STATIC_BUFFERS -DCMAT_STANDALONE)
 
+
 ## set list of compile option to later use target_compile_options(my_target INTERFACE ${REPLACED_FLAGS}) in the added files
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Werror -Wextra")
 ## CMAKE_CXX_FLAGS expects a single string (parameters are separated by spaces)
@@ -40,6 +41,7 @@ find_package(
 find_package(
   VISP REQUIRED
 )
+include_directories(${VISP_INCLUDE_DIRS})
 find_package(
     PCL REQUIRED
 )
@@ -187,10 +189,11 @@ add_library(${PROJECT_NAME}_Detector src/vision/detector.cpp)
 add_library(${PROJECT_NAME}_Tracker src/vision/tracker.cpp)
 add_library(${PROJECT_NAME}_DepthCameraSupport src/vision/depthCameraSupport.cpp)
 
+add_library(${PROJECT_NAME}_CollisionPropagator src/controller/collisionPropagator.cpp)
+add_library(${PROJECT_NAME}_GraspConstrainer src/controller/graspConstrainer.cpp)
 
 
 ## ADD library new task here
-
 add_library(${PROJECT_NAME}_Task src/tasks/task.cpp)
 add_library(${PROJECT_NAME}_LastTask src/tasks/lastTask.cpp)
 add_library(${PROJECT_NAME}_VehicleReachTask src/tasks/vehicleReachTask.cpp)
@@ -277,33 +280,8 @@ target_link_libraries(${PROJECT_NAME}_MissionManagerA
     ${PROJECT_NAME}_Formulas
     ${PROJECT_NAME}_KdlHelper
     ${PROJECT_NAME}_JacobianHelper
-    #put below new task (is it necessary? YES)
-    ${PROJECT_NAME}_LastTask
-    ${PROJECT_NAME}_VehicleReachTask
-    ${PROJECT_NAME}_EEReachTask
-    ${PROJECT_NAME}_JointLimitsTask
-    ${PROJECT_NAME}_HorizontalAttitudeTask
-    ${PROJECT_NAME}_FovEEToToolTask
-    ${PROJECT_NAME}_VehicleNullVelTask
-    ${PROJECT_NAME}_VehicleConstrVelTask
-    ${PROJECT_NAME}_ObstacleAvoidVehicleTask
-    ${PROJECT_NAME}_ObstacleAvoidEETask
-    ${PROJECT_NAME}_PipeReachTask
-    ${PROJECT_NAME}_ArmShapeTask
-    ${PROJECT_NAME}_CoopTask
-)
-
-target_link_libraries(${PROJECT_NAME}_MissionManagerAPeg
-    ${catkin_LIBRARIES}
-    ${PROJECT_NAME}_RobotInterface
-    ${PROJECT_NAME}_WorldInterface
-    ${PROJECT_NAME}_CoordInterfaceMissMan
-    ${PROJECT_NAME}_VisionInterfaceMissMan
-    ${PROJECT_NAME}_Logger
-    ${PROJECT_NAME}_Controller
-    ${PROJECT_NAME}_Formulas
-    ${PROJECT_NAME}_KdlHelper
-    ${PROJECT_NAME}_JacobianHelper
+    ${PROJECT_NAME}_CollisionPropagator
+    ${PROJECT_NAME}_GraspConstrainer
     #put below new task (is it necessary? YES)
     ${PROJECT_NAME}_LastTask
     ${PROJECT_NAME}_VehicleReachTask
@@ -321,7 +299,7 @@ target_link_libraries(${PROJECT_NAME}_MissionManagerAPeg
     ${PROJECT_NAME}_ForceInsertTask
 )
 
-target_link_libraries(${PROJECT_NAME}_MissionManagerB
+target_link_libraries(${PROJECT_NAME}_MissionManagerAPeg
     ${catkin_LIBRARIES}
     ${PROJECT_NAME}_RobotInterface
     ${PROJECT_NAME}_WorldInterface
@@ -332,6 +310,7 @@ target_link_libraries(${PROJECT_NAME}_MissionManagerB
     ${PROJECT_NAME}_Formulas
     ${PROJECT_NAME}_KdlHelper
     ${PROJECT_NAME}_JacobianHelper
+    ${PROJECT_NAME}_CollisionPropagator
     #put below new task (is it necessary? YES)
     ${PROJECT_NAME}_LastTask
     ${PROJECT_NAME}_VehicleReachTask
@@ -346,6 +325,38 @@ target_link_libraries(${PROJECT_NAME}_MissionManagerB
     ${PROJECT_NAME}_PipeReachTask
     ${PROJECT_NAME}_ArmShapeTask
     ${PROJECT_NAME}_CoopTask
+    ${PROJECT_NAME}_ForceInsertTask
+
+)
+
+target_link_libraries(${PROJECT_NAME}_MissionManagerB
+    ${catkin_LIBRARIES}
+    ${PROJECT_NAME}_RobotInterface
+    ${PROJECT_NAME}_WorldInterface
+    ${PROJECT_NAME}_CoordInterfaceMissMan
+    ${PROJECT_NAME}_VisionInterfaceMissMan
+    ${PROJECT_NAME}_Logger
+    ${PROJECT_NAME}_Controller
+    ${PROJECT_NAME}_Formulas
+    ${PROJECT_NAME}_KdlHelper
+    ${PROJECT_NAME}_JacobianHelper
+    ${PROJECT_NAME}_CollisionPropagator
+    ${PROJECT_NAME}_GraspConstrainer
+    #put below new task (is it necessary? YES)
+    ${PROJECT_NAME}_LastTask
+    ${PROJECT_NAME}_VehicleReachTask
+    ${PROJECT_NAME}_EEReachTask
+    ${PROJECT_NAME}_JointLimitsTask
+    ${PROJECT_NAME}_HorizontalAttitudeTask
+    ${PROJECT_NAME}_FovEEToToolTask
+    ${PROJECT_NAME}_VehicleNullVelTask
+    ${PROJECT_NAME}_VehicleConstrVelTask
+    ${PROJECT_NAME}_ObstacleAvoidVehicleTask
+    ${PROJECT_NAME}_ObstacleAvoidEETask
+    ${PROJECT_NAME}_PipeReachTask
+    ${PROJECT_NAME}_ArmShapeTask
+    ${PROJECT_NAME}_CoopTask
+    ${PROJECT_NAME}_ForceInsertTask
 )
 
 target_link_libraries(${PROJECT_NAME}_MissionManagerVision
@@ -385,6 +396,7 @@ target_link_libraries(${PROJECT_NAME}_Tracker
 
 target_link_libraries(${PROJECT_NAME}_DepthCameraSupport
     ${catkin_LIBRARIES}
+    ${VISP_LIBRARIES}
 )
 
 target_link_libraries(${PROJECT_NAME}_Conversions
@@ -459,6 +471,15 @@ target_link_libraries(${PROJECT_NAME}_JacobianHelper
 
 target_link_libraries(${PROJECT_NAME}_LastTask
     ${PROJECT_NAME}_Task
+    linuxcmat
+)
+
+target_link_libraries(${PROJECT_NAME}_CollisionPropagator
+    ${PROJECT_NAME}_Conversions
+)
+
+target_link_libraries(${PROJECT_NAME}_GraspConstrainer
+    ${PROJECT_NAME}_Conversions
     linuxcmat
 )
 
@@ -570,7 +591,13 @@ target_link_libraries (${PROJECT_NAME}_ForceInsertTask
 # )
 install(PROGRAMS script/keyboardCommand_A.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(PROGRAMS script/keyboardCommandVeh_A.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(PROGRAMS script/keyboardCommand_B.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(PROGRAMS script/keyboardCommandVeh_B.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(PROGRAMS script/keyboardCommandVeh_both.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(PROGRAMS script/keyboardCommand_C.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

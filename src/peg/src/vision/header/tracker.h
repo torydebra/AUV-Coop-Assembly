@@ -20,7 +20,9 @@
 const std::string relative = "/data/";
 const std::string configFile = relative + "camera_";
 const std::string caoModelNoCil = relative + "blockHole.cao";
-const std::string caoModel = relative + "blockHoleCilinder.cao";
+/// to compare result, we cant give different models to mono and stereo.
+/// and mono with cilinder is not implemented yet by visp
+//const std::string caoModel = relative + "blockHoleCilinder.cao";
 //const std::string caoModel = relative + "pegModelCircle.cao";
 const std::string configFileDetector = relative + "detection-config-MONO.xml";
 const std::string initFileClick = relative + "3DPointSquareFace4_";
