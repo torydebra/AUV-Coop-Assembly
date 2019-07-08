@@ -32,7 +32,14 @@ CoordInterfaceCoord::CoordInterfaceCoord(ros::NodeHandle nh, std::string robotNa
   std::string topicCoopVel = "/uwsim/Coord/CoopVel";
   coopVelPub = nh.advertise<geometry_msgs::TwistStamped>(topicCoopVel, 1);
 
-
+  //change goal things
+  if (CHANGE_GOAL){
+    subForceTorque = nh.subscribe("/uwsim/g500_A/forceSensorPeg", 1, &CoordInterfaceCoord::subForceTorqueCallback, this);
+    vectorForce.resize(3, 0.0); //init as dimension 3 and values all 0.0
+    vectorTorque.resize(3, 0.0);
+    std::string updateGoalTopic = "/uwsim/Coord/updatedGoal";
+    pubUpdateGoal = nh.advertise<geometry_msgs::Vector3Stamped>(updateGoalTopic, 1);
+  }
 }
 
 bool CoordInterfaceCoord::getReadyBothRob(){
@@ -74,10 +81,15 @@ int CoordInterfaceCoord::getMatricesFromRobs(
   int return4 = 0;
 
   if (!readxDotA){
+    std::cout << "COORD INTER: xDotA not read yet\n";
     return1 = CoordInterfaceCoord::getNonCoopCartVel(nonCoopCartVelA, robotNameA);
   }
+
   if (!readxDotB){
+    std::cout << "COORD INTER: xDotB not read yet\n";
     return2 = CoordInterfaceCoord::getNonCoopCartVel(nonCoopCartVelB, robotNameB);
+    std::cout << "return bale: " << return2 << "\n";
+
   }
   if (!readJJsharpA){
     return3 = CoordInterfaceCoord::getJJsharp(admisVelToolA, robotNameA);
@@ -147,11 +159,12 @@ int CoordInterfaceCoord::getNonCoopCartVel(
   int vectSize;
   std::vector<double> *tempXdot;
   bool* read;
-  if (robotName.compare(robotNameA)){
+  if (robotName.compare(robotNameA) == 0){
     vectSize = tempXdotA.size();
     tempXdot = &tempXdotA;
     read = &readxDotA;
-  } else if (robotName.compare(robotNameB)){
+
+  } else if (robotName.compare(robotNameB) == 0){
     vectSize = tempXdotB.size();
     tempXdot = &tempXdotB;
     read = &readxDotB;
@@ -161,8 +174,8 @@ int CoordInterfaceCoord::getNonCoopCartVel(
 
   if (vectSize == 0){
 //    std::cout << "[COORDINATOR][COORD_INTERFACE] WARNING:"
-//              << "No xDot_tool to read now "
-//              << std::endl;
+//              << "No xDot_tool to read now for "
+//              << robotName << std::endl;
     return 1;
   }
 
@@ -200,11 +213,11 @@ int CoordInterfaceCoord::getJJsharp(
   int nSize;
   std::vector<double> *tempJJsharp;
   bool* read;
-  if (robotName.compare(robotNameA)){
+  if (robotName.compare(robotNameA) == 0){
     nSize = tempJJsharpA.size();
     tempJJsharp = &tempJJsharpA;
     read = &readJJsharpA;
-  } else if (robotName.compare(robotNameB)){
+  } else if (robotName.compare(robotNameB) == 0){
     nSize = tempJJsharpB.size();
     tempJJsharp = &tempJJsharpB;
     read = &readJJsharpB;
@@ -301,3 +314,36 @@ void CoordInterfaceCoord::subCoordFromMMBCallBack(const peg_msgs::toCoord::Const
   tempJJsharpB = msg->JJsharp.data;
 
 }
+
+int CoordInterfaceCoord::getForceTorque(Eigen::Vector3d *force, Eigen::Vector3d *torque){
+
+  *force = CONV::vector_std2Eigen(vectorForce);
+  *torque = CONV::vector_std2Eigen(vectorTorque);
+
+  return 0;
+}
+
+void CoordInterfaceCoord::subForceTorqueCallback(const geometry_msgs::WrenchStamped& msg){
+
+  vectorForce.at(0) = msg.wrench.force.x;
+  vectorForce.at(1) = msg.wrench.force.y;
+  vectorForce.at(2) = msg.wrench.force.z;
+
+  vectorTorque.at(0) = msg.wrench.torque.x;
+  vectorTorque.at(1) = msg.wrench.torque.y;
+  vectorTorque.at(2) = msg.wrench.torque.z;
+
+}
+
+void CoordInterfaceCoord::publishUpdatedGoal(Eigen::Matrix4d wTgoal){
+
+  geometry_msgs::Vector3Stamped linPosition;
+  linPosition.vector.x = wTgoal(0,3);
+  linPosition.vector.y = wTgoal(1,3);
+  linPosition.vector.z = wTgoal(2,3);
+
+  pubUpdateGoal.publish(linPosition);
+
+}
+
+
