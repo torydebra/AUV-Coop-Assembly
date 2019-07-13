@@ -445,6 +445,7 @@ target_link_libraries(${PROJECT_NAME}_CoordInterfaceMissMan
 )
 
 target_link_libraries(${PROJECT_NAME}_CoordInterfaceCoord
+    ${PROJECT_NAME}_Conversions
 )
 
 target_link_libraries(${PROJECT_NAME}_WorldInterface

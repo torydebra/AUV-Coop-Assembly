@@ -50,4 +50,5 @@ enum ControlPoint {ee, tool};
 
 #define COLLISION_PROPAGATOR true //to set if collision with peg and hole cause disturbances to arm
 #define GRASP_CONSTRAINER true //to firm grasp constrain, which bring ee towards the correspondent point of the other robot peg
+#define CHANGE_GOAL false //to change the goal accordingly to the force arrives
 #endif // DEFINES_H

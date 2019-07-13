@@ -24,6 +24,11 @@ public:
       Eigen::Matrix<double, 6, ARM_DOF>world_J_veh_tip,
       Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces, Eigen::Vector3d torques);
 
+  static std::vector<double> calculateCollisionDisturbVeh(
+      Eigen::Matrix<double, 6, VEHICLE_DOF>world_J_veh_tip,
+      Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces, Eigen::Vector3d torques);
+
+
   static std::vector<double> calculateCollisionDisturb(
       Eigen::Matrix<double, 6, ARM_DOF>world_J_veh_tip,
       Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces);
@@ -33,10 +38,16 @@ private:
   CollisionPropagator();
 
   static Eigen::Matrix<double, ARM_DOF, 1> fromPegTipToWholeArm(
-      Eigen::Matrix<double, 6, ARM_DOF>tip_J_link0_tip,
+      Eigen::Matrix<double, 6, ARM_DOF>tip_J_veh_tip,
       Eigen::Vector3d forces, Eigen::Vector3d torques);
+
+  static Eigen::Matrix<double, VEHICLE_DOF, 1> fromPegTipToVehicle(
+      Eigen::Matrix<double, 6, VEHICLE_DOF>tip_J_veh_tip,
+      Eigen::Vector3d forces, Eigen::Vector3d torques);
+
+
   static Eigen::Matrix<double, ARM_DOF, 1> fromPegTipToWholeArm(
-      Eigen::Matrix<double, 6, ARM_DOF>tip_J_link0_tip,
+      Eigen::Matrix<double, 6, ARM_DOF>tip_J_veh_tip,
       Eigen::Vector3d forces);
 };
 

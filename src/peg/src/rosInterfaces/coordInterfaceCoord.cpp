@@ -81,14 +81,11 @@ int CoordInterfaceCoord::getMatricesFromRobs(
   int return4 = 0;
 
   if (!readxDotA){
-    std::cout << "COORD INTER: xDotA not read yet\n";
     return1 = CoordInterfaceCoord::getNonCoopCartVel(nonCoopCartVelA, robotNameA);
   }
 
   if (!readxDotB){
-    std::cout << "COORD INTER: xDotB not read yet\n";
     return2 = CoordInterfaceCoord::getNonCoopCartVel(nonCoopCartVelB, robotNameB);
-    std::cout << "return bale: " << return2 << "\n";
 
   }
   if (!readJJsharpA){

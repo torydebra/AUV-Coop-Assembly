@@ -1,10 +1,11 @@
-#ifndef COORDINTERFACEMISSMAN_H
+﻿#ifndef COORDINTERFACEMISSMAN_H
 #define COORDINTERFACEMISSMAN_H
 
 #include <iostream>
 #include <vector>
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <peg_msgs/toCoord.h>
 #include <std_msgs/Bool.h>
 #include <Eigen/Core>
@@ -27,6 +28,9 @@ public:
 
   int getCoopCartVel(Eigen::Matrix<double, VEHICLE_DOF, 1> *coopCartVel_eigen);
 
+  //change goal things
+  int getUpdatedGoal(Eigen::Matrix4d *wTgoalTool_eigen);
+
 private:
   std::string robotName;
 
@@ -43,6 +47,13 @@ private:
   ros::Subscriber coopVelSub;
   std::vector<double> tempCoopVel;
   void subMMFromCoordCallBack(const geometry_msgs::TwistStamped& msg);
+
+  //change goal things
+  geometry_msgs::Vector3 updatedPosLin;
+  ros::Subscriber subUpdatedGoal;
+  void subUpdatedGoalCallback(const geometry_msgs::Vector3Stamped& msg);
+  bool updateGoalArrived;
+
 
 };
 

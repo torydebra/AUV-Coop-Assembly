@@ -30,9 +30,13 @@ int main(int argc, char **argv){
   Eigen::Matrix4d wTt;
   worldInterface.getwT(&wTt, toolName);
 
+
+
   /// GOAL TOOL
   //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
-  double goalLinearVectTool[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
+  //double goalLinearVectTool[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
+  double goalLinearVectTool[] = {0.9799999999999999, -9.999999999999998, 8.378840300977453}; //with error
+
   //std::vector<double> eulRad = {0, 0, -1.443185307179587}; //true angular
   std::vector<double> eulRad = {0.0, 0.0, -1.443185307179587}; //with error on z: 0.1rad ~ 6deg
 
@@ -48,13 +52,17 @@ int main(int argc, char **argv){
   //to get inside the hole of 0.2m:
   Eigen::Vector3d v_inside;
   //v_inside << 0.40, 0.18, 0; //rigth big hole + error
-  v_inside << 0.40, 0, 0;
+  v_inside << 0.20, 0, 0;
   Eigen::Vector3d w_inside = FRM::eul2Rot(eulRad) * v_inside;
 
   /// trasl part
   wTgoalTool_eigen(0, 3) = goalLinearVectTool[0] + w_inside(0);
   wTgoalTool_eigen(1, 3) = goalLinearVectTool[1] + w_inside(1);
   wTgoalTool_eigen(2, 3) = goalLinearVectTool[2] + w_inside(2);
+
+  Eigen::Matrix4d wTgoalTool_ideal = wTgoalTool_eigen; //the perfect goal for log purpose
+
+
 
   CoordInterfaceCoord coordInterface(nh, robotNameA, robotNameB);
   Eigen::Matrix<double, VEHICLE_DOF, 1> nonCoopCartVelA_eigen;
@@ -63,6 +71,12 @@ int main(int argc, char **argv){
   Eigen::Matrix<double, VEHICLE_DOF, VEHICLE_DOF> admisVelToolB_eigen;
   Eigen::Matrix<double, VEHICLE_DOF, 1> refTool;
   Eigen::Matrix<double, VEHICLE_DOF, 1> coopVelToolFeasible;
+  Eigen::Vector3d forcePegTip;
+  Eigen::Vector3d torquePegTip;
+//  coordInterface.getForceTorque(&forcePegTip, &torquePegTip);
+//  forcePegTip = FRM::saturateVectorEigen(forcePegTip, 5);
+//  torquePegTip = FRM::saturateVectorEigen(torquePegTip, 5);
+  double changeMagnitude = 0.0005; //gain for change the goals according to force arrived
 
   ///Log things
   Logger logger;
@@ -90,6 +104,27 @@ int main(int argc, char **argv){
     while(readyBothRob){
       boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
       coordInterface.publishStartBoth(true);
+
+      worldInterface.getwT(&wTt, toolName);
+
+      /// CHANGE GOAL
+      if (CHANGE_GOAL){ //if active, calculate and modify joint command accordingly
+
+        coordInterface.getForceTorque(&forcePegTip, &torquePegTip);
+        forcePegTip = FRM::saturateVectorEigen(forcePegTip, 5);
+        torquePegTip = FRM::saturateVectorEigen(torquePegTip, 5);
+
+        if (forcePegTip.norm() > 0 || torquePegTip.norm() > 0) {
+          wTgoalTool_eigen = changeGoal(changeMagnitude, forcePegTip, wTgoalTool_eigen, wTt);
+          coordInterface.publishUpdatedGoal(wTgoalTool_eigen);
+
+          ///DEBUGG
+          std::cout << "Goal modified:\n";
+          std::cout << wTgoalTool_eigen;
+          std::cout << "\n\n";
+        }
+      }
+      /// END CHANGE GOAL
 
       //if at least one did not arrive, repeat loop, but call each get only once (this is done inside methods class interface)
       int returned = 1;
@@ -127,10 +162,26 @@ int main(int argc, char **argv){
 
 
       ///LOGGING
+
+      CMAT::TransfMatrix wTgoaltool_cmat = CONV::matrix_eigen2cmat(wTt);
+      CMAT::TransfMatrix wTgoalTool_ideal_cmat = CONV::matrix_eigen2cmat(wTgoalTool_ideal);
+      CMAT::Vect6 errorSwapped = CMAT::CartError(wTgoaltool_cmat, wTgoalTool_ideal_cmat);//ang;lin
+      // ang and lin must be swapped because in yDot and jacob linear part is before
+
+      Eigen::Matrix<double, VEHICLE_DOF, 1> error;
+      error(0) = errorSwapped(4);
+      error(1) = errorSwapped(5);
+      error(2) = errorSwapped(6);
+      error(3) = errorSwapped(1);
+      error(4) = errorSwapped(2);
+      error(5) = errorSwapped(3);
       if (pathLog.size() != 0){
         Eigen::Matrix4d wTt2;
         worldInterface.getwT(&wTt2, toolName2);
-        logger.logCartError(wTt, wTt2, "stressTool");
+        //logger.logCartError(wTt, wTt2, "stressTool");
+        logger.logNumbers(wTgoalTool_eigen, "wTgoal");
+        logger.logNumbers(wTt, "wTt");
+        logger.logNumbers(error, "realgoal_Tool_error");
       }
 
       readyBothRob = coordInterface.getReadyBothRob();
@@ -217,4 +268,22 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> calculateRefTool(Eigen::Matrix4d wTgoaltoo
 
   return reference;
 
+}
+
+Eigen::Matrix4d changeGoal(double changeMagnitude, Eigen::Vector3d forcePegTip, Eigen::Matrix4d wTgoalTool_eigen,
+                           Eigen::Matrix4d wTt_eigen){
+
+  if (forcePegTip(1) != 0 || forcePegTip(2) != 0) {
+    Eigen::Vector3d change;
+    Eigen::Vector3d wChange;
+
+    change << changeMagnitude*forcePegTip;
+    change(0) = 0; //nullified modification on x axis
+    wChange = wTgoalTool_eigen.topLeftCorner<3,3>() * change;
+    wChange = FRM::saturateVectorEigen(wChange, 0.001); //orig 0.0005
+
+    wTgoalTool_eigen.topRightCorner<3,1>() += wChange;
+  }
+
+  return wTgoalTool_eigen;
 }

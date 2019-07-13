@@ -14,7 +14,7 @@ ForceInsertTask::ForceInsertTask(int dim, bool eqType, std::string robotName)
     gain = 0.07;
     break;
   case 2:
-    gain = 0.035;
+    gain = 0.001;
     break;
   }
 
@@ -62,14 +62,11 @@ void ForceInsertTask::setActivation(Eigen::Vector3d force, Eigen::Vector3d torqu
       double forceNorm = force.norm();
       double torqueNorm = torque.norm();
 
-      A(1,1) = CMAT::DecreasingBellShapedFunction(negValueForActMax, negValueForAct,
-                                                  0, 1, forceNorm) +
-               CMAT::IncreasingBellShapedFunction(posValueForAct, posValueForActMax ,
+      //with norms decreasing not necessary because they are always positive
+      A(1,1) = CMAT::IncreasingBellShapedFunction(posValueForAct, posValueForActMax ,
                                                    0, 1, forceNorm);
 
-      A(2,2) = CMAT::DecreasingBellShapedFunction(negValueForActMax, negValueForAct,
-                                                  0, 1, torqueNorm) +
-               CMAT::IncreasingBellShapedFunction(posValueForAct, posValueForActMax ,
+      A(2,2) = CMAT::IncreasingBellShapedFunction(posValueForAct, posValueForActMax ,
                                                    0, 1, torqueNorm);
 
       break;

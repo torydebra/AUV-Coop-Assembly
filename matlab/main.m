@@ -1,9 +1,9 @@
 clearvars;
 
-% rootPath = '~/LogVision_Good/clickMethod/depth';
-% robotNameA = 'g500_A';
-% robotNameB = 'g500_B';
-% coordName = 'Coordinator/';
+ rootPath = '~/logPeg/saberr11/';
+robotNameA = 'g500_A';
+robotNameB = 'g500_B';
+ coordName = 'Coordinator/';
 
 %millisecond indicated in missionManager
 global sControlLoop
@@ -25,8 +25,12 @@ sControlLoop = 0.1;
 %plotYDotDivided(rootPath, robotNameA, 'yDotTPIK1'); %ang e lin vel of vehicle divided
 % plotYDotDivided(rootPath, robotNameA, 'yDotFinal');
 % plotYDotDivided(rootPath, robotNameA, 'yDotFinalWithCollision');
-% plotVector(rootPath, robotNameA, 'forces');
-% plotVector(rootPath, robotNameA, 'torques');
+plotForcesWorld(rootPath, robotNameA);
+plotTorquesWorld(rootPath, robotNameA);
+plot6DVectorDivided(rootPath, robotNameA, 'toolVel4Collision');
+%plotVector(rootPath, robotNameA, 'forcesNotSat');
+%plotVector(rootPath, robotNameA, 'torquesNotSat');
+
 
 % plotYDot(rootPath, robotNameB, 'yDotTPIK1');
 % plotYDot(rootPath, robotNameB, 'yDotFinal');
@@ -69,15 +73,20 @@ sControlLoop = 0.1;
 % end
 % xlabel('time [s]');
 
+%% Plot goal moving for change_goal and pose tool
+plotTransformMatrices(rootPath, coordName);
+plotGenericErrorDivided(strcat(rootPath, coordName, "realgoal_Tool_error.txt"));
+
+
 
 %% Vision
-pathName ="logVisionGood/templ/mono/g500_C/errorMonoL.txt";
-%plotGenericErrorDividedNorm(pathName)
-pathName ="logVisionGood/templ/mono/g500_C/errorMonoR.txt";
-%plotGenericErrorDividedNorm(pathName)
-
-
-pathName ="logVisionGood/templ/stereo/g500_C/errorStereoL.txt";
-plotGenericErrorDividedNorm(pathName)
-pathName ="logVisionGood/templ/depth/g500_C/errorStereoL.txt";
-plotGenericErrorDividedNorm(pathName)
+% pathName ="logVisionGood/templ/mono/g500_C/errorMonoL.txt";
+% %plotGenericErrorDividedNorm(pathName)
+% pathName ="logVisionGood/templ/mono/g500_C/errorMonoR.txt";
+% %plotGenericErrorDividedNorm(pathName)
+% 
+% 
+% pathName ="logVisionGood/templ/stereo/g500_C/errorStereoL.txt";
+% plotGenericErrorDividedNorm(pathName)
+% pathName ="logVisionGood/templ/depth/g500_C/errorStereoL.txt";
+% plotGenericErrorDividedNorm(pathName)

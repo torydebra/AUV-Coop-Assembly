@@ -50,7 +50,7 @@ std::vector<double> GraspConstrainer::calculateGraspVelocities_armVeh(
   error.SetSecondVect3(errorSwapped.GetFirstVect3());
 
   //gain
-  error = 1 * error;
+  error = 3 * error;
 
   //saturate
   //error.SetFirstVect3(FRM::saturateCmat(error.GetFirstVect3(), 0.5)); //linear

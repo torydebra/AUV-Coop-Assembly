@@ -18,6 +18,22 @@ std::vector<double> CollisionPropagator::calculateCollisionDisturb(Eigen::Matrix
 
 }
 
+std::vector<double> CollisionPropagator::calculateCollisionDisturbVeh(Eigen::Matrix<double, 6, VEHICLE_DOF> world_J_veh_tip,
+                                                                      Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces,
+                                                                      Eigen::Vector3d torques){
+
+  Eigen::Matrix<double, 6, VEHICLE_DOF>tip_J_veh_tip;
+  Eigen::Matrix3d pegtipRw = wTpegtip.topLeftCorner<3,3>().transpose();
+  tip_J_veh_tip.topRows<3>() = pegtipRw * world_J_veh_tip.topRows<3>();
+  tip_J_veh_tip.bottomRows<3>() = pegtipRw * world_J_veh_tip.bottomRows<3>();
+
+  Eigen::Matrix<double, VEHICLE_DOF, 1> deltayDotVeh_eigen =
+      CollisionPropagator::fromPegTipToVehicle(tip_J_veh_tip, forces, torques);
+
+  return CONV::vector_eigen2std(deltayDotVeh_eigen);
+
+}
+
 
 
 std::vector<double> CollisionPropagator::calculateCollisionDisturb(Eigen::Matrix<double, 6, ARM_DOF>world_J_veh_tip,
@@ -62,6 +78,28 @@ Eigen::Matrix<double, ARM_DOF, 1> CollisionPropagator::fromPegTipToWholeArm(
 
   return deltayDot_eigen;
 }
+
+/**
+ * @brief CollisionPropagator::fromPegTipToVehicle calculate collision effects on the vehicle
+ * @param tip_J_veh_tip
+ * @param forces
+ * @param torques
+ * @return
+ */
+Eigen::Matrix<double, VEHICLE_DOF, 1> CollisionPropagator::fromPegTipToVehicle(
+    Eigen::Matrix<double, 6, VEHICLE_DOF>tip_J_veh_tip, Eigen::Vector3d forces, Eigen::Vector3d torques){
+
+  Eigen::Matrix<double, VEHICLE_DOF, 1> deltayDotVeh_eigen;
+
+  deltayDotVeh_eigen = ( (tip_J_veh_tip.topRows<3>().transpose()) * forces ) +
+                       ( (tip_J_veh_tip.bottomRows<3>().transpose()) * torques );
+
+  return deltayDotVeh_eigen;
+
+
+
+}
+
 
 /**
  * @brief CollisionPropagation::fromPegTipToWholeArm

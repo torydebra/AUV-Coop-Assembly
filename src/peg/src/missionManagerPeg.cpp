@@ -228,6 +228,11 @@ int main(int argc, char **argv)
 
     /// info from sensors
     robotInterface.getForceTorque(&(robInfo.robotSensor.forcePegTip), &robInfo.robotSensor.torquePegTip);
+    robInfo.robotSensor.forcePegTip = FRM::saturateVectorEigen(robInfo.robotSensor.forcePegTip, 5);
+    robInfo.robotSensor.torquePegTip = FRM::saturateVectorEigen(robInfo.robotSensor.torquePegTip, 5);
+
+    //to try what hapens with only torque
+    //robInfo.robotSensor.forcePegTip << 0, 0, 0;
     std::cout << "force torque arrive:\n"
               << robInfo.robotSensor.forcePegTip << "\n"
               << robInfo.robotSensor.torquePegTip << "\n\n";
@@ -272,10 +277,12 @@ int main(int argc, char **argv)
 
     /** **********   add collision disturbances  **************************++*****************/
     std::vector<double> deltayDot(ARM_DOF);
+    std::vector<double> deltayDotVeh(VEHICLE_DOF);
+    std::vector<double> deltayDotTot(TOT_DOF);
     std::vector<double> yDotFinalWithCollision = yDotFinal;
-    //if (robInfo.robotSensor.forcePegTip.norm() > 0){ //simple way to see if some contact happened
-    if (robInfo.robotSensor.forcePegTip.norm() > 0 || robInfo.robotSensor.torquePegTip.norm() > 0){
-      if (COLLISION_PROPAGATOR){ //if active, calculate and modify joint command accordingly
+    if (COLLISION_PROPAGATOR){
+      if (robInfo.robotSensor.forcePegTip.norm() > 0 || robInfo.robotSensor.torquePegTip.norm() > 0){
+       //if active, calculate and modify joint command accordingly
         //only forces
 //              deltayDot = CollisionPropagator::calculateCollisionDisturb(
 //                    robInfo.robotState.w_Jtool_robot.leftCols<4>(), robInfo.transforms.wTt_eigen,
@@ -286,21 +293,27 @@ int main(int argc, char **argv)
               robInfo.robotState.w_Jtool_robot.leftCols<4>(), robInfo.transforms.wTt_eigen,
               robInfo.robotSensor.forcePegTip, robInfo.robotSensor.torquePegTip);
 
-        deltayDot = FRM::saturateVectorStd(deltayDot, 0.04);
-
         for (int i=0; i<ARM_DOF; i++){
-          yDotFinalWithCollision.at(i) += deltayDot.at(i); //add disturbs to command
+          yDotFinalWithCollision.at(i) += (0.001*deltayDot.at(i)); //add disturbs to command
+          //this is for logging
+          deltayDotTot.at(i)= 0.001*deltayDot.at(i);
           //yDotFinalWithCollision.at(i) = deltayDot.at(i); //reset command and only move arm for disturb
           // but if I reset the force task become useless
         }
-      }
 
-      //debug try: stop vehilce until collision resolved. zeroing vehicle vel both with and withoud collision prop
-      //withou collision prop is the task force which resolve the collision
-      for (int i=ARM_DOF; i<TOT_DOF; i++){
-        yDotFinalWithCollision.at(i) = 0;
-      }
+        deltayDotVeh = CollisionPropagator::calculateCollisionDisturbVeh(
+              robInfo.robotState.w_Jtool_robot.rightCols<6>(), robInfo.transforms.wTt_eigen,
+              robInfo.robotSensor.forcePegTip, robInfo.robotSensor.torquePegTip);
 
+        for (int i=ARM_DOF; i<TOT_DOF; i++){
+          yDotFinalWithCollision.at(i) += (0.01 * deltayDotVeh.at(i-ARM_DOF));
+          deltayDotTot.at(i)= 0.01 * deltayDotVeh.at(i-ARM_DOF);
+        }
+
+        //debug try: stop vehilce until collision resolved. zeroing vehicle vel both with and withoud collision prop
+        //withou collision prop is the task force which resolve the collision NOT GOOD MI SA
+
+      }
     }
 
     /** **********   Send command to vehicle  *************************************************/
@@ -322,6 +335,8 @@ int main(int argc, char **argv)
       logger.logNumbers(yDotFinalWithCollision, "yDotFinalWithCollision");
       logger.logNumbers(robInfo.robotSensor.forcePegTip, "forces");
       logger.logNumbers(robInfo.robotSensor.torquePegTip, "torques");
+      logger.logNumbers(robInfo.robotState.w_Jtool_robot *
+                        CONV::vector_std2Eigen(deltayDotTot), "toolVel4Collision");
       //logger.logNumbers(admisVelTool_eigen, "JJsharp");
 
     }
@@ -448,8 +463,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasks1->push_back(jl);
   tasks1->push_back(ha);
   //tasks1->push_back(eeAvoid);
-  tasks1->push_back(forceInsert);
-  tasks1->push_back(pr6);
+  //tasks1->push_back(forceInsert);
+  //tasks1->push_back(pr6);
   //TODO discutere diff tra pr6 e pr5... il 5 mette più stress sull obj?
   //tasks1->push_back(vehR);
   //tasks1->push_back(vehYaxis);
@@ -478,8 +493,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   //tasksArmVeh->push_back(vehStill);
   tasksArmVeh->push_back(jl);
   tasksArmVeh->push_back(ha);
-  tasksArmVeh->push_back(forceInsert);
-  tasksArmVeh->push_back(pr6);
+  //tasksArmVeh->push_back(forceInsert);
+  //tasksArmVeh->push_back(pr6);
   //tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
 

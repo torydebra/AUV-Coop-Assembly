@@ -30,6 +30,9 @@ private:
   void setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix4d wTtool_eigen);
   void setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot);
 
+  double gainLin;
+  double gainAng;
+
   VehArmType vehArmType;
 };
 #endif // PIPEREACHTASK_H

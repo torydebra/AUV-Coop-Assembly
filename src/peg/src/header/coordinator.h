@@ -27,4 +27,9 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> calculateRefTool(Eigen::Matrix4d wTgoaltoo
                                                        Eigen::Matrix4d wTtool_eigen);
 
 
+Eigen::Matrix4d changeGoal(double changeMagnitude, Eigen::Vector3d forcePegTip,
+                           Eigen::Matrix4d wTgoalTool_eigen,
+                           Eigen::Matrix4d wTt_eigen);
+
+
 #endif // COORDINATOR_H

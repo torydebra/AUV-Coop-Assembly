@@ -42,7 +42,11 @@ CoordInterfaceMissMan::CoordInterfaceMissMan(ros::NodeHandle nh, std::string rob
   toCoordMsg.JJsharp.layout.dim[1].stride = VEHICLE_DOF;
   toCoordMsg.JJsharp.layout.data_offset = 0;
 
-
+  /// goal change things
+  if (CHANGE_GOAL){
+    updateGoalArrived = false;
+    subUpdatedGoal = nh.subscribe("/uwsim/Coord/updatedGoal", 1, &CoordInterfaceMissMan::subUpdatedGoalCallback, this);
+  }
 }
 
 void CoordInterfaceMissMan::pubIamReadyOrNot(bool ready){
@@ -95,8 +99,6 @@ int CoordInterfaceMissMan::publishToCoord(Eigen::Matrix<double, VEHICLE_DOF, 1> 
     }
   }
   toCoordMsg.JJsharp.data = temp;
-
-
   pubToCoord.publish(toCoordMsg);
 
   return 0;
@@ -148,4 +150,25 @@ void CoordInterfaceMissMan::subMMFromCoordCallBack(const geometry_msgs::TwistSta
   tempCoopVel.at(4) = msg.twist.angular.y;
   tempCoopVel.at(5) = msg.twist.angular.z;
 
+}
+
+
+/// change goal thingss
+int CoordInterfaceMissMan::getUpdatedGoal(Eigen::Matrix4d *wTgoalTool_eigen){
+
+  if (updateGoalArrived){
+    (*wTgoalTool_eigen)(0,3) = updatedPosLin.x;
+    (*wTgoalTool_eigen)(1,3) = updatedPosLin.y;
+    (*wTgoalTool_eigen)(2,3) = updatedPosLin.z;
+    updateGoalArrived = false;
+    return 0;
+  }
+
+  return 1;
+
+}
+
+void CoordInterfaceMissMan::subUpdatedGoalCallback(const geometry_msgs::Vector3Stamped &msg){
+  updateGoalArrived = true;
+  updatedPosLin = msg.vector;
 }

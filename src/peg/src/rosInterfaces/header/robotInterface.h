@@ -15,13 +15,13 @@
 #include "../../support/header/formulas.h"
 
 
-#define NELEMENTQUEUE 1 //number of element in queue for force and torque
+#define NELEMENTQUEUE 10 //number of element in queue for force and torque
 
 /** @brief robotInterface: a ros node responsible of taken info from simulator and robot sensors,
  * and of given commands back. It is the intermiate layer between actual robot and mission manager ("main")
  *
  * @note about the force/torque sensor:
- *   NOT VALID ANYMORE WITH RESOLVED LAG ISSUE WITH SIMULATION? **********************************************
+ *   NOT VALID ANYMORE WITH RESOLVED LAG ISSUE WITH SIMULATION? BUT MAYBE USEFUL TO HAVE A SMOOTH BEHAVIOUR **********************************************
  *   we have to make a mean: the sensor on uwsim give values but often they are intervalled with
  *   values = 0. this cause chattering and the robot dont move at all because 0-x velocity are intermittely
  *   given. So idea is use a queue and make a mean of the last 10 15 20 values of the sensor, and give the mean
