@@ -127,6 +127,7 @@ void ForceInsertTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot,
     }
     //not consider vehicle part. Only arm moves to nullify forces
     //w_J_robot.topRows<3>().topRightCorner<3,6>() = Eigen::MatrixXd::Zero(3, 6);
+
     jacobTemp.topRows<1>() = (normalForce.transpose()) * (w_J_robot.topRows<3>());
 
 
@@ -139,8 +140,9 @@ void ForceInsertTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot,
       normalTorque << 0,0,0;
     }
 
-    //not consider vehicle part. Only arm moves to nullify torques
+    //to not consider vehicle part. Only arm moves to nullify torques
     //w_J_robot.bottomRows<3>().topRightCorner<3,6>() = Eigen::MatrixXd::Zero(3, 6);
+
     jacobTemp.bottomRows<1>() = (normalTorque.transpose()) * (w_J_robot.bottomRows<3>());
 
     /// finally convert it to cmat

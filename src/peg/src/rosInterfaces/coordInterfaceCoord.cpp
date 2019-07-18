@@ -38,7 +38,8 @@ CoordInterfaceCoord::CoordInterfaceCoord(ros::NodeHandle nh, std::string robotNa
     vectorForce.resize(3, 0.0); //init as dimension 3 and values all 0.0
     vectorTorque.resize(3, 0.0);
     std::string updateGoalTopic = "/uwsim/Coord/updatedGoal";
-    pubUpdateGoal = nh.advertise<geometry_msgs::Vector3Stamped>(updateGoalTopic, 1);
+    //pubUpdateGoal = nh.advertise<geometry_msgs::Vector3Stamped>(updateGoalTopic, 1);
+    pubUpdateGoal = nh.advertise<peg_msgs::transformMat>(updateGoalTopic, 1);
   }
 }
 
@@ -334,12 +335,31 @@ void CoordInterfaceCoord::subForceTorqueCallback(const geometry_msgs::WrenchStam
 
 void CoordInterfaceCoord::publishUpdatedGoal(Eigen::Matrix4d wTgoal){
 
-  geometry_msgs::Vector3Stamped linPosition;
-  linPosition.vector.x = wTgoal(0,3);
-  linPosition.vector.y = wTgoal(1,3);
-  linPosition.vector.z = wTgoal(2,3);
+//  geometry_msgs::Vector3Stamped linPosition;
+//  linPosition.vector.x = wTgoal(0,3);
+//  linPosition.vector.y = wTgoal(1,3);
+//  linPosition.vector.z = wTgoal(2,3);
 
-  pubUpdateGoal.publish(linPosition);
+//  pubUpdateGoal.publish(linPosition);
+
+  peg_msgs::transformMat transfMsg;
+  transfMsg.linPosition.vector.x = wTgoal(0,3);
+  transfMsg.linPosition.vector.y = wTgoal(1,3);
+  transfMsg.linPosition.vector.z = wTgoal(2,3);
+
+  //COLUMN MAJOR (column 1 .... column 3)
+  transfMsg.rotation.resize(9);
+  transfMsg.rotation.at(0).data = wTgoal(0,0);
+  transfMsg.rotation.at(1).data = wTgoal(1,0);
+  transfMsg.rotation.at(2).data = wTgoal(2,0);
+  transfMsg.rotation.at(3).data = wTgoal(0,1);
+  transfMsg.rotation.at(4).data = wTgoal(1,1);
+  transfMsg.rotation.at(5).data = wTgoal(2,1);
+  transfMsg.rotation.at(6).data = wTgoal(0,2);
+  transfMsg.rotation.at(7).data = wTgoal(1,2);
+  transfMsg.rotation.at(8).data = wTgoal(2,2);
+
+  pubUpdateGoal.publish(transfMsg);
 
 }
 

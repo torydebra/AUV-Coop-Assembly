@@ -15,7 +15,8 @@
 #include "../../support/header/formulas.h"
 
 
-#define NELEMENTQUEUE 10 //number of element in queue for force and torque
+#define NELEMENTQUEUEFOR 10 //number of element in queue for force
+#define NELEMENTQUEUETOR 10
 
 /** @brief robotInterface: a ros node responsible of taken info from simulator and robot sensors,
  * and of given commands back. It is the intermiate layer between actual robot and mission manager ("main")
@@ -33,7 +34,6 @@
  *   in this way we can use std::accumulate to sum all element of each buffer to the divided and
  *   make the mean
  *   NOT VALID ANYMORE WITH RESOLVED LAG ISSUE WITH SIMULATION? *************************************************
- *
 **/
 class RobotInterface
 {

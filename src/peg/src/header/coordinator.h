@@ -27,9 +27,11 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> calculateRefTool(Eigen::Matrix4d wTgoaltoo
                                                        Eigen::Matrix4d wTtool_eigen);
 
 
-Eigen::Matrix4d changeGoal(double changeMagnitude, Eigen::Vector3d forcePegTip,
-                           Eigen::Matrix4d wTgoalTool_eigen,
-                           Eigen::Matrix4d wTt_eigen);
+Eigen::Matrix4d changeGoalLin(double gain, Eigen::Vector3d forcePegTip,
+                              Eigen::Matrix4d wTgoalTool_eigen);
+
+Eigen::Matrix4d changeGoalAng(double gain, Eigen::Vector3d torquePegTip,
+                              Eigen::Matrix3d wRt_eigen, Eigen::Matrix4d wTgoalTool_eigen);
 
 
 #endif // COORDINATOR_H

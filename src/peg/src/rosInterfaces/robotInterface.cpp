@@ -24,8 +24,8 @@ RobotInterface::RobotInterface(ros::NodeHandle nh, std::string robotName)
   vectorForceQueue.resize(3);
   vectorTorqueQueue.resize(3);
   for (int i =0; i<3; i++){ //3 becuase x y z directions
-    vectorForceQueue.at(i) = boost::circular_buffer<double>(NELEMENTQUEUE);
-    vectorTorqueQueue.at(i) = boost::circular_buffer<double>(NELEMENTQUEUE);
+    vectorForceQueue.at(i) = boost::circular_buffer<double>(NELEMENTQUEUEFOR);
+    vectorTorqueQueue.at(i) = boost::circular_buffer<double>(NELEMENTQUEUETOR);
   }
 
   //subForceTorque = nh.subscribe(topicRoot+"forceSensorPeg", 1, &RobotInterface::subForceTorqueCallback, this);

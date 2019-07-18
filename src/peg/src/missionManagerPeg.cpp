@@ -76,8 +76,8 @@ int main(int argc, char **argv)
   /// GOAL TOOL
   //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
   double goalLinearVectTool[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
-  //std::vector<double> eulRad = {0, 0, -1.443185307179587}; //true
-  std::vector<double> eulRad = {0.0, 0.0, -1.303185307179587}; //with error on z: 0.1rad ~ 6deg
+  std::vector<double> eulRad = {0, 0, -1.443185307179587}; //true
+  //std::vector<double> eulRad = {0.0, 0.0, -1.303185307179587}; //with error on z: 0.1rad ~ 6deg
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
 
    //rot part
@@ -88,13 +88,15 @@ int main(int argc, char **argv)
   //to get inside the hole of 0.2m:
   Eigen::Vector3d v_inside;
   //v_inside << 0.40, 0.18, 0; //rigth hole + error
-  v_inside << 0.40, 0, 0;
+  v_inside << 0.20, 0, 0;
   Eigen::Vector3d w_inside = FRM::eul2Rot(eulRad) * v_inside;
 
   //trasl part
   wTgoalTool_eigen(0, 3) = goalLinearVectTool[0] + w_inside(0);
   wTgoalTool_eigen(1, 3) = goalLinearVectTool[1] + w_inside(1);
   wTgoalTool_eigen(2, 3) = goalLinearVectTool[2] + w_inside(2);
+
+  std::cout << "GOALLLLL DEGUBE\n" << wTgoalTool_eigen << "\n\n\n";
 
 
 /** ***************************************************************************************************************

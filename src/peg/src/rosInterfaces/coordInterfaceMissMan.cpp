@@ -160,6 +160,19 @@ int CoordInterfaceMissMan::getUpdatedGoal(Eigen::Matrix4d *wTgoalTool_eigen){
     (*wTgoalTool_eigen)(0,3) = updatedPosLin.x;
     (*wTgoalTool_eigen)(1,3) = updatedPosLin.y;
     (*wTgoalTool_eigen)(2,3) = updatedPosLin.z;
+
+    // ang is in a array with COLUMN MAJOR
+    (*wTgoalTool_eigen)(0,0) = updatedPosAng.at(0);
+    (*wTgoalTool_eigen)(1,0) = updatedPosAng.at(1);
+    (*wTgoalTool_eigen)(2,0) = updatedPosAng.at(2);
+    (*wTgoalTool_eigen)(0,1) = updatedPosAng.at(3);
+    (*wTgoalTool_eigen)(1,1) = updatedPosAng.at(4);
+    (*wTgoalTool_eigen)(2,1) = updatedPosAng.at(5);
+    (*wTgoalTool_eigen)(0,2) = updatedPosAng.at(6);
+    (*wTgoalTool_eigen)(1,2) = updatedPosAng.at(7);
+    (*wTgoalTool_eigen)(2,2) = updatedPosAng.at(8);
+
+
     updateGoalArrived = false;
     return 0;
   }
@@ -168,7 +181,33 @@ int CoordInterfaceMissMan::getUpdatedGoal(Eigen::Matrix4d *wTgoalTool_eigen){
 
 }
 
-void CoordInterfaceMissMan::subUpdatedGoalCallback(const geometry_msgs::Vector3Stamped &msg){
+void CoordInterfaceMissMan::subUpdatedGoalCallback(const peg_msgs::transformMat::ConstPtr &msg){
   updateGoalArrived = true;
-  updatedPosLin = msg.vector;
+  updatedPosLin = msg->linPosition.vector;
+  updatedPosAng.resize(9);
+  for (int i = 0; i < 9; i++){
+    updatedPosAng.at(i) = msg->rotation[i].data;
+  }
 }
+
+
+
+/// old update goal only lin modification (forces)
+//int CoordInterfaceMissMan::getUpdatedGoal(Eigen::Matrix4d *wTgoalTool_eigen){
+
+//  if (updateGoalArrived){
+//    (*wTgoalTool_eigen)(0,3) = updatedPosLin.x;
+//    (*wTgoalTool_eigen)(1,3) = updatedPosLin.y;
+//    (*wTgoalTool_eigen)(2,3) = updatedPosLin.z;
+//    updateGoalArrived = false;
+//    return 0;
+//  }
+
+//  return 1;
+
+//}
+
+//void CoordInterfaceMissMan::subUpdatedGoalCallback(const geometry_msgs::Vector3Stamped &msg){
+//  updateGoalArrived = true;
+//  updatedPosLin = msg.vector;
+//}

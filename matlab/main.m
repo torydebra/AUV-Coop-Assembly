@@ -1,6 +1,6 @@
 clearvars;
 
- rootPath = '~/logPeg/saberr11/';
+ rootPath = '~/logPeg/goalTorquenew25/';
 robotNameA = 'g500_A';
 robotNameB = 'g500_B';
  coordName = 'Coordinator/';
@@ -27,9 +27,9 @@ sControlLoop = 0.1;
 % plotYDotDivided(rootPath, robotNameA, 'yDotFinalWithCollision');
 plotForcesWorld(rootPath, robotNameA);
 plotTorquesWorld(rootPath, robotNameA);
-plot6DVectorDivided(rootPath, robotNameA, 'toolVel4Collision');
-%plotVector(rootPath, robotNameA, 'forcesNotSat');
-%plotVector(rootPath, robotNameA, 'torquesNotSat');
+%plot6DVectorDivided(rootPath, robotNameA, 'toolVel4Collision');
+%plotVector(rootPath, robotNameA, 'forces');
+%plotVector(rootPath, robotNameA, 'torques');
 
 
 % plotYDot(rootPath, robotNameB, 'yDotTPIK1');
@@ -76,7 +76,6 @@ plot6DVectorDivided(rootPath, robotNameA, 'toolVel4Collision');
 %% Plot goal moving for change_goal and pose tool
 plotTransformMatrices(rootPath, coordName);
 plotGenericErrorDivided(strcat(rootPath, coordName, "realgoal_Tool_error.txt"));
-
 
 
 %% Vision

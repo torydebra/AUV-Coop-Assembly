@@ -7,6 +7,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <peg_msgs/toCoord.h>
+#include <peg_msgs/transformMat.h>
 #include <std_msgs/Bool.h>
 #include <Eigen/Core>
 #include "../../support/header/defines.h"
@@ -50,8 +51,10 @@ private:
 
   //change goal things
   geometry_msgs::Vector3 updatedPosLin;
+  std::vector<double> updatedPosAng;
   ros::Subscriber subUpdatedGoal;
-  void subUpdatedGoalCallback(const geometry_msgs::Vector3Stamped& msg);
+  void subUpdatedGoalCallback(const peg_msgs::transformMat::ConstPtr &msg);
+  //void subUpdatedGoalCallback(const geometry_msgs::Vector3Stamped& msg);
   bool updateGoalArrived;
 
 

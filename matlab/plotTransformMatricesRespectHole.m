@@ -20,7 +20,7 @@ toolLin = wTt(1:3, 4, :);
 toolLinSqueezed = squeeze(toolLin(1:3,:,:));
 toolAng = zeros(3, nStep);
 for i = 1:nStep
-  toolAng(1:3,i) = rotm2eul( wTt(1:3,1:3,i), 'ZYX');
+  toolAng(1:3,i) = rotm2eul( wTt(1:3,1:3,i), 'XYZ');
 end
 
 nStep = size(wTgoal, 3);
@@ -29,7 +29,7 @@ goalLin = wTgoal(1:3, 4, :);
 goalLinSqueezed = squeeze(goalLin(1:3,:,:));
 goalAng = zeros(3, nStep);
 for i = 1:nStep
-  goalAng(1:3,i) = rotm2eul( wTgoal(1:3,1:3,i), 'ZYX');
+  goalAng(1:3,i) = rotm2eul( wTgoal(1:3,1:3,i), 'XYZ');
 end
 
 %to plot point where hole limit are

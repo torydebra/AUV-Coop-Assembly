@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
 #include <peg_msgs/toCoord.h>
+#include <peg_msgs/transformMat.h>
 #include <geometry_msgs/WrenchStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <Eigen/Core>

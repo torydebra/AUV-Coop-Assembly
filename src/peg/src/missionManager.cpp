@@ -75,11 +75,11 @@ int main(int argc, char **argv)
 
   /// GOAL TOOL
   //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
-  //double goalLinearVectTool[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
-  double goalLinearVectTool[] = {0.9799999999999999, -9.999999999999998, 8.378840300977453}; //with error
+  double goalLinearVectTool[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
+  //double goalLinearVectTool[] = {0.9799999999999999, -9.999999999999998, 8.378840300977453}; //with error
 
-  //std::vector<double> eulRad = {0, 0, -1.443185307179587}; //true angular
-  std::vector<double> eulRad = {0.0, 0.0, -1.443185307179587}; //with error on z: 0.1rad ~ 6deg
+  std::vector<double> eulRadTrue = {0, 0, -1.443185307179587}; //true angular
+  std::vector<double> eulRad = {0, 0.0, -1.543185307179587}; //with error on z: 0.1rad ~ 6deg
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
 
    //rot part
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
   Eigen::Vector3d v_inside;
   //v_inside << 0.40, 0.18, 0; //rigth big hole + error
   v_inside << 0.20, 0, 0;
-  Eigen::Vector3d w_inside = FRM::eul2Rot(eulRad) * v_inside;
+  Eigen::Vector3d w_inside = FRM::eul2Rot(eulRadTrue) * v_inside;
 
   //trasl part
   wTgoalTool_eigen(0, 3) = goalLinearVectTool[0] + w_inside(0);
@@ -603,7 +603,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasks1->push_back(jl);
   tasks1->push_back(ha);
   //tasks1->push_back(eeAvoid);
-  tasks1->push_back(forceInsert);
+  //tasks1->push_back(forceInsert);
   tasks1->push_back(pr6);
   //TODO discutere diff tra pr6 e pr5... il 5 mette più stress sull obj?
   //tasks1->push_back(vehR);
@@ -623,7 +623,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksCoord->push_back(coopTask6dof);
   tasksCoord->push_back(jl);
   tasksCoord->push_back(ha);
-  tasksCoord->push_back(forceInsert);
+  //tasksCoord->push_back(forceInsert);
   tasksCoord->push_back(pr6);
   //tasksCoord->push_back(shape);
   tasksCoord->push_back(last);
@@ -632,7 +632,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksArmVeh->push_back(constrainVel);
   tasksArmVeh->push_back(jl);
   tasksArmVeh->push_back(ha);
-  tasksArmVeh->push_back(forceInsert);
+  //tasksArmVeh->push_back(forceInsert);
   tasksArmVeh->push_back(pr6);
   //tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
