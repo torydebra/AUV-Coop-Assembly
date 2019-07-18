@@ -3,8 +3,9 @@
 [Documentation](https://torydebra.github.io/AUV-Coop-Assembly/)
 
 
-<img src="images/uwsim.png" width="700">
-<img src="images/uwsim2.png" width="700">
+<img src="images/scenario_whole.png" width="700">
+<img src="images/scenario_onlyTwin.png" width="700">
+<img src="images/scenario_onlyTwin2.png" width="700">
 
 ## Workspace folders (all in development)
 #### src/peg (catkin package)
