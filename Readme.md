@@ -1,6 +1,8 @@
 # AUV-Coop-assembly
 ### MASTER THESIS Robotics Engineering (In Development)
-[Documentation](https://torydebra.github.io/AUV-Coop-Assembly/)
+[Code Documentation](https://torydebra.github.io/AUV-Coop-Assembly/)  
+[Thesis](https://github.com/torydebra/Master_Thesis_Robotic/)  
+
 
 
 <img src="images/scenario_whole.png" width="700">
