@@ -28,6 +28,8 @@ private:
   void setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot,
                    Eigen::Vector3d force,  Eigen::Vector3d torque);
   void setReference(Eigen::Vector3d force, Eigen::Vector3d torque);
+
+  double gainAng;
 };
 
 #endif // FORCEINSERTTASK_H

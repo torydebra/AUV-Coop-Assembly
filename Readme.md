@@ -13,7 +13,7 @@ The "only kinematic" package, simulated with UWsim.
 Folder "toBeAdded_uwsim":
 * model & scenes subfolders in uwsim/data/scenes (along with default scenes and models)
 * terrain & objects in ~/.uwsim/data  
-#### src/peg_dynamics (catkin package)
+#### src/peg_dynamics (catkin package) NOTE: not anymore in master. Maybe useful for future works?
 Package with dynamics of vehicle and arm. The dynamics is provided by FreeFloatingGazebo, a plugin which use Gazebo and UWSim functionalities.  
 Folder "tobeAdded_freeFloatDemo":
 * objects, terrain, scenes, urdf in src folder of freeFloatingGazebo_demo (Maybe also in .uwsim/data?)
@@ -42,7 +42,7 @@ TODO: better put as separate package various support/helper classes that have no
 * [**UWSim**](http://www.irs.uji.es/uwsim/) Undewater Simulator.  
   the last version is the kinetic one (even if tutorial stop at the groovy version, it is only needed to follow it substituting `groovy` with `kinetic`).
 * [**FreeFloating Gazebo**](https://github.com/freefloating-gazebo) Plugin for gazebo and UWSim to introduce   dynamics.  It also contatin a dynamic controller (which I use) which can be use to "transform" position, velocity or force (it can be choosen the modality) to thruster and joints.
-  Both the source (freefloating_gazebo) and the demo (freefloating_gazebo) are needed.
+  Both the source (freefloating_gazebo) and the demo (freefloating_gazebo) are needed. **NOTE** not used anymore, maybe useful for future works?
 #### Code
 * **ROS kinetic**, obviously. 
   It is used not only to communicate with simulator, so also if other simulator is used (no UWSim or Gazebo), it is needed.
@@ -86,7 +86,7 @@ Solution is to change (in cmat_defines.h) :
 #### VISP_HAVE_PCL not setted
 there is a function .track() in the tracker.cpp. This function is declared in a .h which has VISP\_HAVE\_PCL flag before.
 Even with pcl-ros installed, this flag can be unsetted.
-Solution? Not sure I have broken all (at the moment is works, but be sure pcl is installed (ros-pcl is ok)), but I simply add 
+Solution? Not sure if I have broken all (at the moment is works, but be sure pcl is installed (ros-pcl is ok)), but I simply added
 ```c
 #define VISP_HAVE_PCL
 ```

@@ -42,6 +42,6 @@ leg = legend('$\dot{x}$','$\dot{y}$', '$\dot{z}$', '$w_x$', '$w_y$', '$w_z$');
 ylab = ylabel('vehicle commands [m/s], [rad/s]');
 tq = title(strcat(robotName, ' Vehicle command sent (', ydotName, '[5:10])'));
 set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
-set (tq, 'Interpreter', 'none', 'FontSize' , titleFontSize);
-set (ylab, 'Interpreter', 'none', 'FontSize', ylabFontSize);
+set (tq, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
+set (ylab, 'Interpreter', 'latex', 'FontSize', ylabFontSize);
 hold off

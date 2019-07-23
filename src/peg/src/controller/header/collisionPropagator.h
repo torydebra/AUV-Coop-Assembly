@@ -20,6 +20,11 @@
 class CollisionPropagator
 {
 public:
+
+  static std::vector<double> calculateCollisionDisturbArmVeh(
+       Eigen::Matrix<double, 6, TOT_DOF>world_J_tip,
+       Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces, Eigen::Vector3d torques);
+
   static std::vector<double> calculateCollisionDisturb(
       Eigen::Matrix<double, 6, ARM_DOF>world_J_veh_tip,
       Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces, Eigen::Vector3d torques);
@@ -29,13 +34,13 @@ public:
       Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces, Eigen::Vector3d torques);
 
 
-  static std::vector<double> calculateCollisionDisturb(
-      Eigen::Matrix<double, 6, ARM_DOF>world_J_veh_tip,
-      Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces);
-
 private:
   // Disallow creating an instance of this object, it is useless since all functions are static
   CollisionPropagator();
+
+  static Eigen::Matrix<double, TOT_DOF, 1> fromPegTipToWholeRobot(
+      Eigen::Matrix<double, 6, TOT_DOF>world_J_tip, Eigen::Vector3d w_forces, Eigen::Vector3d w_torques);
+
 
   static Eigen::Matrix<double, ARM_DOF, 1> fromPegTipToWholeArm(
       Eigen::Matrix<double, 6, ARM_DOF>tip_J_veh_tip,
@@ -46,9 +51,6 @@ private:
       Eigen::Vector3d forces, Eigen::Vector3d torques);
 
 
-  static Eigen::Matrix<double, ARM_DOF, 1> fromPegTipToWholeArm(
-      Eigen::Matrix<double, 6, ARM_DOF>tip_J_veh_tip,
-      Eigen::Vector3d forces);
 };
 
 #endif // COLLISIONPROPAGATOR_H

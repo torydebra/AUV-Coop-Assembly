@@ -29,7 +29,7 @@ ylab = ylabel('differences');
 leg = legend('$\dot{x}$','$\dot{y}$', '$\dot{z}$', '$w_x$', '$w_y$', '$w_z$');
 tq = title("Difference of cartesian velocity applied to tool");
 
-set(ylab, 'Interpreter', 'none', 'FontSize' , ylabFontSize);
+set(ylab, 'Interpreter', 'latex', 'FontSize' , ylabFontSize);
 set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
 set (tq, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
 

@@ -1,12 +1,12 @@
 function plot6DVectorDivided(rootPath, robotName, vecName)
 
-legFontSize = 13;
-titleFontSize = 16;
-ylabFontSize = 15;
+legFontSize = 19;
+titleFontSize = 18;
+ylabFontSize = 17;
+xlabFontSize = 17;
 
 vecNamestr = strcat( '/', vecName, '.txt');
 vec = importMatrices(strcat(rootPath, robotName, vecNamestr));
-nRow = size(vec, 1);
 nStep = size(vec, 3);
 
 %millisecond indicated in missionManager
@@ -15,21 +15,26 @@ totSecondPassed = sControlLoop*(nStep-1);
 seconds = 0:sControlLoop:totSecondPassed;
 
 % plot joint commands
-figure
+figure('Renderer', 'painters', 'Position', [0 0 710 550])
 subplot(2,1,1);
 hold on;
 for i = 1:3
     a(:) = vec(i,1,:);
     plot(seconds, a);
 end
-xlabel('time [s]');
-leg = legend('x','y', 'z');
-ylab = ylabel(' vector [?]');
-tq = title(strcat(robotName, " LINEAR "  ,vecName));
-set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
-set (tq, 'Interpreter', 'none', 'FontSize' , titleFontSize);
-set (ylab, 'Interpreter', 'none', 'FontSize', ylabFontSize);
-hold off
+xlab = xlabel('time [s]');
+leg = legend('$\dot{x}$','$\dot{y}$', '$\dot{z}$');
+
+if strcmp(vecName, 'toolVel4Collision')
+    ylab = ylabel('Linear Velocity [m/s]');
+    tq = title('Tool Velocities due to Collisions');
+elseif strcmp(vecName, 'toolVel4Grasp')
+    ylab = ylabel('Linear Velocity [m/s]');
+    tq = title('Tool Velocities due to Grasp Constraint');
+else
+  ylab = ylabel(' vector [?]');
+  tq = title(strcat(robotName, " LINEAR "  ,vecName));
+end
 
 subplot(2,1,2);
 hold on;
@@ -37,11 +42,27 @@ for i = 4:6
     a(:) = vec(i,1,:);
     plot(seconds, a);
 end
-xlabel('time [s]');
-leg2 = legend('x_{ang}','y_{ang}', 'z_{ang}');
-ylab2 = ylabel(' vector [?]');
-tq2 = title(strcat(robotName, " ANGULAR "  ,vecName));
+xlab2 = xlabel('time [s]');
+
+leg2 = legend('$w_{x}$','$w_{y}$', '$w_{z}$');
+if strcmp(vecName, 'toolVel4Collision')
+    ylab2 = ylabel('Angular Velocity [rad/s]');
+    tq2 = title('Tool Velocities due to Collisions');
+elseif strcmp(vecName, 'toolVel4Grasp')
+    ylab2 = ylabel('Angular Velocity [rad/s]');
+    tq2 = title('Tool Velocities due to Grasp Constraint');
+else
+	 ylab2 = ylabel(' vector [?]');
+  tq2 = title(strcat(robotName, " ANGULAR "  ,vecName));
+end
+
+set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
+set (tq, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
+set (ylab, 'Interpreter', 'latex', 'FontSize', ylabFontSize);
+set (xlab, 'Interpreter', 'latex', 'FontSize', xlabFontSize);
+
 set(leg2, 'Interpreter', 'latex', 'FontSize' , legFontSize);
-set (tq2, 'Interpreter', 'none', 'FontSize' , titleFontSize);
-set (ylab2, 'Interpreter', 'none', 'FontSize', ylabFontSize);
-hold off
+set (tq2, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
+set (ylab2, 'Interpreter', 'latex', 'FontSize', ylabFontSize);
+set (xlab2, 'Interpreter', 'latex', 'FontSize', xlabFontSize);
+

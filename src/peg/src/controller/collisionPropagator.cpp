@@ -3,6 +3,31 @@
 CollisionPropagator::CollisionPropagator(){} //private costructor not to be used
 
 
+std::vector<double> CollisionPropagator::calculateCollisionDisturbArmVeh(Eigen::Matrix<double, 6, TOT_DOF>world_J_tip,
+                                                Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces, Eigen::Vector3d torques){
+
+  Eigen::Vector3d w_forces = wTpegtip.topLeftCorner<3,3>() * forces;
+  Eigen::Vector3d w_torques = wTpegtip.topLeftCorner<3,3>() * torques;
+
+  Eigen::Matrix<double, TOT_DOF, 1> deltayDot_eigen =
+      CollisionPropagator::fromPegTipToWholeRobot(world_J_tip, w_forces, w_torques);
+
+  return CONV::vector_eigen2std(deltayDot_eigen);
+
+}
+
+Eigen::Matrix<double, TOT_DOF, 1> CollisionPropagator::fromPegTipToWholeRobot(
+    Eigen::Matrix<double, 6, TOT_DOF>world_J_tip, Eigen::Vector3d w_forces, Eigen::Vector3d w_torques){
+
+  Eigen::Matrix<double, TOT_DOF, 1> deltayDot_eigen;
+
+  deltayDot_eigen = ( (world_J_tip.topRows<3>().transpose()) * w_forces ) +
+                    ( (world_J_tip.bottomRows<3>().transpose()) * w_torques );
+
+  return deltayDot_eigen;
+}
+
+
 std::vector<double> CollisionPropagator::calculateCollisionDisturb(Eigen::Matrix<double, 6, ARM_DOF>world_J_veh_tip,
                                                 Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces, Eigen::Vector3d torques){
 
@@ -35,21 +60,21 @@ std::vector<double> CollisionPropagator::calculateCollisionDisturbVeh(Eigen::Mat
 }
 
 
+/// OLD with only forces
+//std::vector<double> CollisionPropagator::calculateCollisionDisturb(Eigen::Matrix<double, 6, ARM_DOF>world_J_veh_tip,
+//                                                Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces){
 
-std::vector<double> CollisionPropagator::calculateCollisionDisturb(Eigen::Matrix<double, 6, ARM_DOF>world_J_veh_tip,
-                                                Eigen::Matrix4d wTpegtip, Eigen::Vector3d forces){
+//  Eigen::Matrix<double, 6, ARM_DOF>tip_J_veh_tip;
+//  Eigen::Matrix3d pegtipRw = wTpegtip.topLeftCorner<3,3>().transpose();
+//  tip_J_veh_tip.topRows<3>() = pegtipRw * world_J_veh_tip.topRows<3>();
+//  tip_J_veh_tip.bottomRows<3>() = pegtipRw * world_J_veh_tip.bottomRows<3>();
 
-  Eigen::Matrix<double, 6, ARM_DOF>tip_J_veh_tip;
-  Eigen::Matrix3d pegtipRw = wTpegtip.topLeftCorner<3,3>().transpose();
-  tip_J_veh_tip.topRows<3>() = pegtipRw * world_J_veh_tip.topRows<3>();
-  tip_J_veh_tip.bottomRows<3>() = pegtipRw * world_J_veh_tip.bottomRows<3>();
+//  Eigen::Matrix<double, ARM_DOF, 1> deltayDot_eigen =
+//      CollisionPropagator::fromPegTipToWholeArm(tip_J_veh_tip, forces);
 
-  Eigen::Matrix<double, ARM_DOF, 1> deltayDot_eigen =
-      CollisionPropagator::fromPegTipToWholeArm(tip_J_veh_tip, forces);
+//  return CONV::vector_eigen2std(deltayDot_eigen);
 
-  return CONV::vector_eigen2std(deltayDot_eigen);
-
-}
+//}
 
 
 
@@ -96,29 +121,4 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> CollisionPropagator::fromPegTipToVehicle(
 
   return deltayDotVeh_eigen;
 
-
-
-}
-
-
-/**
- * @brief CollisionPropagation::fromPegTipToWholeArm
- * @param tip_J_veh_tip jacobian from vehicle to peg tip PROJECTED on peg tip
- * @param forces the force x y z caused by collision
- * @return deltayDot the disturb on each joint caused by the collision only considering forces
- * @note the formula: deltaYdot = JacobianLinear^T * forces + JacobianLinear^T * torques.
- *  where deltaYdot is the command-disturb that will ust be added at the command output of
- *  tpik. jacobian is the one from vehicle to peg tip PROJECTED on peg tip
- *  and force and torques projected on peg tip (already provided by sensor projected here)
- * @warning give the jacobian PROJECTED on peg tip! (pegtipRw * w_Jtool_robot)
-
- */
-Eigen::Matrix<double, ARM_DOF, 1> CollisionPropagator::fromPegTipToWholeArm(
-    Eigen::Matrix<double, 6, ARM_DOF>tip_J_veh_tip, Eigen::Vector3d forces){
-
-  Eigen::Matrix<double, ARM_DOF, 1> deltayDot_eigen;
-
-  deltayDot_eigen = ( (tip_J_veh_tip.topRows<3>().transpose()) * forces );
-
-  return deltayDot_eigen;
 }

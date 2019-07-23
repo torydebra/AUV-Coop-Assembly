@@ -159,9 +159,6 @@ int RobotInterface::getForceTorque(Eigen::Vector3d *force, Eigen::Vector3d *torq
 
   *force = CONV::vector_std2Eigen(sumForces);
   *torque = CONV::vector_std2Eigen(sumTorques);
-  // need to saturate otherwise simulation crashes
-  //*force = FRM::saturateVectorEigen(*force, 1);
-  //*torque = FRM::saturateVectorEigen(*torque, 1);
   return 0;
 }
 

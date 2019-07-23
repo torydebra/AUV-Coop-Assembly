@@ -1,8 +1,9 @@
-function plotForcesWorld(rootPath, robotName)
+function plotForcesWorld(rootPath, robotName, strNorm)
 
 legFontSize = 13;
 titleFontSize = 16;
 ylabFontSize = 15;
+xlabFontSize = 15;
 coordName = 'Coordinator/';
 vec = importMatrices(strcat(rootPath, robotName, '/forces.txt'));
 fileName = "wTt.txt";
@@ -22,13 +23,22 @@ seconds = 0:sControlLoop:totSecondPassed;
 
 % plot joint commands
 figure
-hold on;
-plot(seconds, w_vec);
-xlabel('time [s]');
-leg = legend('x','y', 'z');
-ylab = ylabel(' vector [N]');
-tq = title(strcat(robotName, " forces projected in world"));
-set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
-set (tq, 'Interpreter', 'none', 'FontSize' , titleFontSize);
-set (ylab, 'Interpreter', 'none', 'FontSize', ylabFontSize);
-hold off
+if strcmp(strNorm, 'yes')
+  plot(seconds, vecnorm(w_vec));
+  ylab = ylabel('norm of force [N]');
+  tq = title("Norm of force vector projected in world");
+else
+  plot(seconds, w_vec);
+  leg = legend('x','y', 'z');
+  ylab = ylabel('forces [N]');
+  tq = title(strcat("forces projected in world"));
+  set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
+end
+
+xlab = xlabel('time [s]');
+
+
+set (tq, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
+set (ylab, 'Interpreter', 'latex', 'FontSize', ylabFontSize);
+set (xlab, 'Interpreter', 'latex', 'FontSize', xlabFontSize);
+

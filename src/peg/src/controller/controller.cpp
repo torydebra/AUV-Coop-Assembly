@@ -117,9 +117,11 @@ std::vector<double> Controller::execAlgorithm(std::vector<Task*> tasks){
     }
 
     ////DEBUG
-//    std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
-//    yDot_cmat.PrintMtx();
-//    std::cout << "\n";
+//    if (tasks[i]->getName().compare("PIPE_REACHING_GOAL") == 0){
+//        std::cout << "[CONTROLLER] yDot after " << tasks[i]->getName() << ": \n";
+//        yDot_cmat.PrintMtx();
+//        std::cout << "\n";
+//    }
   }
 
   return (CONV::vector_cmat2std(yDot_cmat));

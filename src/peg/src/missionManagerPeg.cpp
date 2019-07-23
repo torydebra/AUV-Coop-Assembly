@@ -321,9 +321,9 @@ int main(int argc, char **argv)
     /** **********   Send command to vehicle  *************************************************/
     //robotInterface.sendyDot(yDotTPIK1);
     //robotInterface.sendyDot(yDotOnlyVeh);
-    //robotInterface.sendyDot(yDotFinal);
+    robotInterface.sendyDot(yDotFinal);
     //yDotFinalWithCollision = FRM::saturateVectorStd(yDotFinalWithCollision, 0.01);
-    robotInterface.sendyDot(yDotFinalWithCollision);
+    //robotInterface.sendyDot(yDotFinalWithCollision);
 
 
     /** **********   Log things  ************************************************************/
@@ -447,8 +447,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
 
 
   ///MISSION TASKS
-  Task* pr5 = new PipeReachTask(5, eqType, robotName, ONLYVEH);
-  Task* pr6 = new PipeReachTask(6, eqType, robotName, BOTH);
+  Task* pr5 = new PipeReachTask(5, eqType, robotName, ONLYVEH, LINANGBOTH);
+  Task* pr6 = new PipeReachTask(6, eqType, robotName, BOTH, LINANGBOTH);
 
   Task* eer = new EndEffectorReachTask(6, eqType, robotName);
   Task* vehR = new VehicleReachTask(3, eqType, robotName, ANGULAR);
@@ -465,7 +465,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasks1->push_back(jl);
   tasks1->push_back(ha);
   //tasks1->push_back(eeAvoid);
-  //tasks1->push_back(forceInsert);
+  tasks1->push_back(forceInsert);
   //tasks1->push_back(pr6);
   //TODO discutere diff tra pr6 e pr5... il 5 mette più stress sull obj?
   //tasks1->push_back(vehR);
@@ -495,7 +495,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   //tasksArmVeh->push_back(vehStill);
   tasksArmVeh->push_back(jl);
   tasksArmVeh->push_back(ha);
-  //tasksArmVeh->push_back(forceInsert);
+  tasksArmVeh->push_back(forceInsert);
   //tasksArmVeh->push_back(pr6);
   //tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);

@@ -5,16 +5,23 @@
  * @param dim
  * @param eqType
  * @param robotName
- * @note with dimension 1 (force norm type) the gain must be higher?
  */
 ForceInsertTask::ForceInsertTask(int dim, bool eqType, std::string robotName)
   : Task(dim, eqType, robotName, "FORCE_INSERTION"){
   switch (dimension){
   case 1:
-    gain = 0.07;
+    gain = 0.09;
     break;
   case 2:
+    gain = 0.01;
+    gainAng = 0.01;
+    break;
+  case 3:
     gain = 0.001;
+    break;
+  case 6:
+    gain = 0.001;
+    gainAng = 0.001;
     break;
   }
 
@@ -22,10 +29,16 @@ ForceInsertTask::ForceInsertTask(int dim, bool eqType, std::string robotName)
 
 int ForceInsertTask::updateMatrices(Infos* const robInfo){
 
-  setActivation(robInfo->robotSensor.forcePegTip, robInfo->robotSensor.torquePegTip);
-  setJacobian(robInfo->robotState.w_Jtool_robot,
-              robInfo->robotSensor.forcePegTip, robInfo->robotSensor.torquePegTip);
-  setReference(robInfo->robotSensor.forcePegTip, robInfo->robotSensor.torquePegTip);
+  Eigen::Vector3d force = robInfo->robotSensor.forcePegTip;
+  Eigen::Vector3d torque = robInfo->robotSensor.torquePegTip;
+  force(0) *= 0.3; //forces on x are always too high, this help considering not so much the forces on x
+  Eigen::Vector3d w_force = robInfo->transforms.wTt_eigen.topLeftCorner<3,3>() * force;
+  Eigen::Vector3d w_torque = robInfo->transforms.wTt_eigen.topLeftCorner<3,3>() * torque;
+
+  setActivation(w_force, w_torque);
+  setJacobian(robInfo->robotState.w_Jtool_robot, w_force, w_torque);
+  setReference(w_force, w_torque);
+
   return 0;
 
 }
@@ -44,8 +57,8 @@ void ForceInsertTask::setActivation(Eigen::Vector3d force, Eigen::Vector3d torqu
 
   } else {
 
-    double negValueForActMax = -1; //which means that when force is > |1| activation is 1
-    double posValueForActMax = 1;
+    double negValueForActMax = -1;
+    double posValueForActMax = 2;
     double negValueForAct = -0.001;
     double posValueForAct = 0.001;
 
@@ -82,11 +95,23 @@ void ForceInsertTask::setActivation(Eigen::Vector3d force, Eigen::Vector3d torqu
       break;
     }
     case 6: {
-      //not implemented
+      for (int i=1; i<=3; i++){
+        A(i,i) = CMAT::DecreasingBellShapedFunction(negValueForActMax, negValueForAct,
+                                                    0, 1, force(i-1)) +
+                 CMAT::IncreasingBellShapedFunction(posValueForAct, posValueForActMax,
+                                                     0, 1, force(i-1));
+      }
+
+      for (int i=4; i<=6; i++){
+        A(i,i) = CMAT::DecreasingBellShapedFunction(negValueForActMax, negValueForAct,
+                                                    0, 1, torque(i-4)) +
+                 CMAT::IncreasingBellShapedFunction(posValueForAct, posValueForActMax,
+                                                     0, 1, torque(i-4));
+      }
       break;
     }
-    }
-  }
+    } /// END SWITCH
+  } /// END IF
 }
 
 void ForceInsertTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot,
@@ -98,7 +123,7 @@ void ForceInsertTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot,
 
     Eigen::Vector3d normalForce;
     double normForce = force.norm();
-    if (normForce > 0) {
+    if (normForce > 0.001) {
       normalForce = force/normForce;
     } else {
       normalForce << 0,0,0;
@@ -125,11 +150,10 @@ void ForceInsertTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot,
     } else {
       normalForce << 0,0,0;
     }
+
     //not consider vehicle part. Only arm moves to nullify forces
-    //w_J_robot.topRows<3>().topRightCorner<3,6>() = Eigen::MatrixXd::Zero(3, 6);
-
-    jacobTemp.topRows<1>() = (normalForce.transpose()) * (w_J_robot.topRows<3>());
-
+    //w_J_robot.rightCols<6>() = Eigen::MatrixXd::Zero(6, 6);
+    jacobTemp.topRows<1>() = - (normalForce.transpose()) * (w_J_robot.topRows<3>());
 
     /// torques
     Eigen::Vector3d normalTorque;
@@ -140,10 +164,7 @@ void ForceInsertTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot,
       normalTorque << 0,0,0;
     }
 
-    //to not consider vehicle part. Only arm moves to nullify torques
-    //w_J_robot.bottomRows<3>().topRightCorner<3,6>() = Eigen::MatrixXd::Zero(3, 6);
-
-    jacobTemp.bottomRows<1>() = (normalTorque.transpose()) * (w_J_robot.bottomRows<3>());
+    jacobTemp.bottomRows<1>() = - (normalTorque.transpose()) * (w_J_robot.bottomRows<3>());
 
     /// finally convert it to cmat
     J = CONV::matrix_eigen2cmat(jacobTemp);
@@ -156,7 +177,7 @@ void ForceInsertTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot,
     break;
   }
   case 6: {
-    //not implemented
+    J = CONV::matrix_eigen2cmat(w_J_robot);
     break;
   }
 
@@ -177,14 +198,14 @@ void ForceInsertTask::setReference(Eigen::Vector3d force, Eigen::Vector3d torque
   }
 
   case 2:{
-    error(1) = 0 - force.norm();
+    error(1) = - force.norm();
     reference(1) = gain * error(1);
-    reference(1) = FRM::saturateScalar(reference(1), 0.002);
+    reference(1) = FRM::saturateScalar(reference(1), 0.04);
 
 
-    error(2) = 0 - torque.norm();
-    reference(2) = gain * error(2);
-    reference(2) = FRM::saturateScalar(reference(2), 0.002);
+    error(2) = - torque.norm();
+    reference(2) = gainAng * error(2);
+    reference(2) = FRM::saturateScalar(reference(2), 0.04);
 
     break;
   }
@@ -198,7 +219,6 @@ void ForceInsertTask::setReference(Eigen::Vector3d force, Eigen::Vector3d torque
   }
 
   case 6: {
-    /// jacob and act not implemented so I dont know why I put here this
 
     CMAT::Vect3 force_cmat = CONV::matrix_eigen2cmat(force);
     CMAT::Vect3 torque_cmat = CONV::matrix_eigen2cmat(torque);
@@ -211,10 +231,10 @@ void ForceInsertTask::setReference(Eigen::Vector3d force, Eigen::Vector3d torque
     reference(1) = gain * ( - force_cmat(1));
     reference(2) = gain * ( - force_cmat(2));
     reference(3) = gain * ( - force_cmat(3));
-    reference(4) = gain * ( - torque_cmat(1));
-    reference(5) = gain * ( - torque_cmat(2));
-    reference(6) = gain * ( - torque_cmat(3));
-    reference = FRM::saturateCmat(reference, 0.5);
+    reference(4) = gainAng * ( - torque_cmat(1));
+    reference(5) = gainAng * ( - torque_cmat(2));
+    reference(6) = gainAng * ( - torque_cmat(3));
+    reference = FRM::saturateCmat(reference, 0.001);
     break;
   }
   default:

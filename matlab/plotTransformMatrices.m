@@ -2,9 +2,11 @@ function plotTransformMatrices(rootPath, coordName)
 
 holeDim = 0.14;
 
-legFontSize = 13;
-titleFontSize = 16;
-ylabFontSize = 15;
+legFontSize = 19;
+titleFontSize = 18;
+ylabFontSize = 17;
+xlabFontSize = 17;
+
 
 wLinGReal = [1.02545;  -10.1984;  8.37884];
                     
@@ -40,8 +42,9 @@ for i = 1:nStep
   goalAng(1:3,i) = rotm2eul( wTgoal(1:3,1:3,i), 'XYZ');
 end
 
+%%
+figure('Renderer', 'painters', 'Position', [0 0 2000 900])
 %% plot X lin
-figure
 subplot(2,3,1);
 plot(seconds, toolLinSqueezed(1,:));
 hold on;
@@ -49,9 +52,9 @@ plot(seconds, goalLinSqueezed(1,:));
 hold on;
 plot([seconds(1), seconds(end)], [wLinGReal(1), wLinGReal(1)]);
 hold off;
-xlabel('time [s]');
+xlab1 = xlabel('time [s]');
 ylab1 = ylabel('Vectors (X) [m]');
-tq1 = title("X Position of tool, goal and realGoal respect world");
+tq1 = title("X Position of tool, goal and goalReal");
 leg1 = legend('$x_{tool}$', '$x_{goal}$', '$x_{goalReal}$');
 
 %% plot y lin
@@ -62,9 +65,9 @@ plot(seconds, goalLinSqueezed(2,:));
 hold on;
 plot([seconds(1), seconds(end)], [wLinGReal(2), wLinGReal(2)]);
 hold off;
-xlabel('time [s]');
+xlab2 = xlabel('time [s]');
 ylab2 = ylabel('Vectors (Y) [m]');
-tq2 = title("Y Position of tool, goal and realGoal respect world");
+tq2 = title("Y Position of tool, goal and goalReal");
 leg2 = legend('$y_{tool}$', '$y_{goal}$', '$y_{goalReal}$');
 
 %% plot z lin
@@ -75,9 +78,9 @@ plot(seconds, goalLinSqueezed(3,:));
 hold on;
 plot([seconds(1), seconds(end)], [wLinGReal(3), wLinGReal(3)]);
 hold off;
-xlabel('time [s]');
+xlab3 = xlabel('time [s]');
 ylab3 = ylabel('Vectors (Z) [m]');
-tq3 = title("Z Position of tool, goal and realGoal respect world");
+tq3 = title("Z Position of tool, goal and goalReal");
 leg3 = legend('$z_{tool}$', '$z_{goal}$', '$z_{goalReal}$');
 
 %% plot x ang
@@ -88,9 +91,9 @@ plot(seconds, goalAng(1,:));
 hold on
 plot([seconds(1), seconds(end)], [wAngGReal(1), wAngGReal(1)]);
 hold off;
-xlabel('time [s]');
+xlab4 = xlabel('time [s]');
 ylab4 = ylabel('Vectors (roll) [rad]');
-tq4 = title("Roll Position of tool, goal and realGoal respect world");
+tq4 = title("Roll of tool, goal and goalReal");
 leg4 = legend('$roll_{tool}$', '$roll_{goal}$', '$roll_{goalReal}$');
 
 %% plot y ang
@@ -101,9 +104,9 @@ plot(seconds, goalAng(2,:));
 hold on
 plot([seconds(1), seconds(end)], [wAngGReal(2), wAngGReal(2)]);
 hold off;
-xlabel('time [s]');
+xlab5 = xlabel('time [s]');
 ylab5 = ylabel('Vectors (pitch) [rad]');
-tq5 = title("Pitch Position of tool, goal and realGoal respect world");
+tq5 = title("Pitch of tool, goal and goalReal");
 leg5 = legend('$pitch_{tool}$', '$pitch_{goal}$', '$pitch_{goalReal}$');
 
 %% plot z ang
@@ -114,22 +117,22 @@ plot(seconds, goalAng(3,:));
 hold on
 plot([seconds(1), seconds(end)], [wAngGReal(3), wAngGReal(3)]);
 hold off;
-xlabel('time [s]');
+xlab6 = xlabel('time [s]');
 ylab6 = ylabel('Vectors (yaw) [rad]');
-tq6 = title("Yaw Position of tool, goal and realGoal respect world");
+tq6 = title("Yaw of tool, goal and goalReal");
 leg6 = legend('$yaw_{tool}$', '$yaw_{goal}$', '$yaw_{goalReal}$');
 
-set(ylab1, 'Interpreter', 'none', 'FontSize' , ylabFontSize);
+set(ylab1, 'Interpreter', 'latex', 'FontSize' , ylabFontSize);
 set (tq1, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
-set(ylab2, 'Interpreter', 'none', 'FontSize' , ylabFontSize);
+set(ylab2, 'Interpreter', 'latex', 'FontSize' , ylabFontSize);
 set (tq2, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
-set(ylab3, 'Interpreter', 'none', 'FontSize' , ylabFontSize);
+set(ylab3, 'Interpreter', 'latex', 'FontSize' , ylabFontSize);
 set (tq3, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
-set(ylab4, 'Interpreter', 'none', 'FontSize' , ylabFontSize);
+set(ylab4, 'Interpreter', 'latex', 'FontSize' , ylabFontSize);
 set (tq4, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
-set(ylab5, 'Interpreter', 'none', 'FontSize' , ylabFontSize);
+set(ylab5, 'Interpreter', 'latex', 'FontSize' , ylabFontSize);
 set (tq5, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
-set(ylab6, 'Interpreter', 'none', 'FontSize' , ylabFontSize);
+set(ylab6, 'Interpreter', 'latex', 'FontSize' , ylabFontSize);
 set (tq6, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
 set(leg1, 'Interpreter', 'latex', 'FontSize' , legFontSize);
 set(leg2, 'Interpreter', 'latex', 'FontSize' , legFontSize);
@@ -137,6 +140,14 @@ set(leg3, 'Interpreter', 'latex', 'FontSize' , legFontSize);
 set(leg4, 'Interpreter', 'latex', 'FontSize' , legFontSize);
 set(leg5, 'Interpreter', 'latex', 'FontSize' , legFontSize);
 set(leg6, 'Interpreter', 'latex', 'FontSize' , legFontSize);
+set(xlab1, 'Interpreter', 'latex', 'FontSize' , xlabFontSize);
+set(xlab2, 'Interpreter', 'latex', 'FontSize' , xlabFontSize);
+set(xlab3, 'Interpreter', 'latex', 'FontSize' , xlabFontSize);
+set(xlab4, 'Interpreter', 'latex', 'FontSize' , xlabFontSize);
+set(xlab5, 'Interpreter', 'latex', 'FontSize' , xlabFontSize);
+set(xlab6, 'Interpreter', 'latex', 'FontSize' , xlabFontSize);
+
+
 
 
 
@@ -147,7 +158,7 @@ set(leg6, 'Interpreter', 'latex', 'FontSize' , legFontSize);
 % hold on
 % plot(seconds, goalAng);
 % hold off;
-% xlabel('time [s]');
+% xlab = xlabel('time [s]');
 % ylab2 = ylabel('tool and goal angular position  [rad]');
 % tq2 = title("Angular position of tool and goal");
 % leg2 = legend('$roll_tool$','$pitch_tool$', '$yaw_tool$', '$roll_goal$', '$pitch_goal$', '$yaw_goal$');

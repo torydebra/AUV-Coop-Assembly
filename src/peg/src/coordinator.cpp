@@ -35,10 +35,10 @@ int main(int argc, char **argv){
   /// GOAL TOOL
   //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
   double goalLinearVectToolTrue[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
-  double goalLinearVectTool[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453}; //with error
+  double goalLinearVectTool[] =     {0.9999999999999999, -9.999999999999998, 8.378840300977453}; //with error
 
   std::vector<double> eulRadTrue = {0, 0, -1.443185307179587}; //true angular
-  std::vector<double> eulRad = {0, 0.0, -1.543185307179587}; //with error on z: 0.1rad ~ 6deg
+  std::vector<double> eulRad = {0, 0, -1.443185307179587}; //with error on z: 0.1rad ~ 6deg
 
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
 
@@ -77,11 +77,8 @@ int main(int argc, char **argv){
   Eigen::Matrix<double, VEHICLE_DOF, 1> coopVelToolFeasible;
   Eigen::Vector3d forcePegTip;
   Eigen::Vector3d torquePegTip;
-//  coordInterface.getForceTorque(&forcePegTip, &torquePegTip);
-//  forcePegTip = FRM::saturateVectorEigen(forcePegTip, 5);
-//  torquePegTip = FRM::saturateVectorEigen(torquePegTip, 5);
   double changeMagnitude = 0.0005; //gain for change the goals according to force arrived
-  double angGain = 0.1;
+  //double changeMagnitudeAng = 0.0001;
 
   ///Log things
   Logger logger;
@@ -119,9 +116,9 @@ int main(int argc, char **argv){
         std::cout << "force:\n" << forcePegTip << "\n torques:\n" << torquePegTip << "\n";
 
         if (forcePegTip.norm() > 0 || torquePegTip.norm() > 0) {
-          //wTgoalTool_eigen = changeGoalLin(changeMagnitude, forcePegTip, wTgoalTool_eigen);
-          wTgoalTool_eigen = changeGoalAng(angGain, torquePegTip,
-                                           wTt.topLeftCorner<3,3>(), wTgoalTool_eigen);
+          wTgoalTool_eigen = changeGoalLin(changeMagnitude, forcePegTip, wTgoalTool_eigen);
+          //wTgoalTool_eigen = changeGoalAng(changeMagnitudeAng, forcePegTip, wTt.topLeftCorner<3,3>(),  wTgoalTool_eigen);
+
 
           coordInterface.publishUpdatedGoal(wTgoalTool_eigen);
 
@@ -216,7 +213,6 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> execCoordAlgo(
   double muA = muZero + ((refTool-nonCoopCartVelA_eigen).norm());
   double muB = muZero + ((refTool-nonCoopCartVelB_eigen).norm());
 
-
   //xHatDot_tool
   Eigen::Matrix<double, VEHICLE_DOF, 1> coopVelTool;
   coopVelTool = (1 / (muA + muB)) *
@@ -260,17 +256,18 @@ Eigen::Matrix<double, VEHICLE_DOF, 1> calculateRefTool(Eigen::Matrix4d wTgoaltoo
 
 
   Eigen::Matrix<double, VEHICLE_DOF, 1> reference;
-  reference(0) = errorSwapped(4);
-  reference(1) = errorSwapped(5);
-  reference(2) = errorSwapped(6);
-  reference(3) = errorSwapped(1);
-  reference(4) = errorSwapped(2);
-  reference(5) = errorSwapped(3);
+  double gainLin = 0.05;
+  double gainAng = 0.08;
+  reference(0) = gainLin*errorSwapped(4);
+  reference(1) = gainLin*errorSwapped(5);
+  reference(2) = gainLin*errorSwapped(6);
+  reference(3) = gainAng*errorSwapped(1);
+  reference(4) = gainAng*errorSwapped(2);
+  reference(5) = gainAng*errorSwapped(3);
 
-  reference *= 0.01;
 
-  reference.topRows(3) = FRM::saturateVectorEigen(reference.topRows(3), 0.05);
-  reference.bottomRows(3) = FRM::saturateVectorEigen(reference.bottomRows(3), 0.05);
+  reference.topRows(3) = FRM::saturateVectorEigen(reference.topRows(3), 0.1);
+  reference.bottomRows(3) = FRM::saturateVectorEigen(reference.bottomRows(3), 0.1);
 
 
   return reference;
@@ -286,7 +283,7 @@ Eigen::Matrix4d changeGoalLin(double gain, Eigen::Vector3d forcePegTip, Eigen::M
     tchange << gain*forcePegTip;
     tchange(0) = 0; //nullified modification on x axis (x axis of tool)
     wChange = wTgoalTool_eigen.topLeftCorner<3,3>() * tchange;
-    wChange = FRM::saturateVectorEigen(wChange, 0.001); //orig 0.0005
+    wChange = FRM::saturateVectorEigen(wChange, 0.0007); //orig 0.0005
 
     wTgoalTool_eigen.topRightCorner<3,1>() += wChange;
   }
@@ -294,6 +291,11 @@ Eigen::Matrix4d changeGoalLin(double gain, Eigen::Vector3d forcePegTip, Eigen::M
   return wTgoalTool_eigen;
 }
 
+
+
+
+
+/// change ANG not work properly
 /// version all in world
 Eigen::Matrix4d changeGoalAng(double gain, Eigen::Vector3d torquePegTip,
                               Eigen::Matrix3d wRt_eigen, Eigen::Matrix4d wTgoalTool_eigen){
@@ -303,25 +305,25 @@ Eigen::Matrix4d changeGoalAng(double gain, Eigen::Vector3d torquePegTip,
 
     double dt = 0.1; //frequency of arrived sensor info is 10 hz
     Eigen::Vector3d w_angVel; //angular vel of new goal respect old goal projected on frame old goal
-    torquePegTip(0) = 0; //nullified modification on x axis (x axis of tool)
+    //torquePegTip(0) = 0; //nullified modification on x axis (x axis of tool)
 
     //integrating torque (it should be multiplied by dt first (integration)
     // but I "include" dt in the gain. So gain must be less than dt. Multiply also for gain and not
     // only by dt is necessary to reduce the intensity of the torque (as done in previous function for forces)
     w_angVel = gain * (wRt_eigen * torquePegTip); //torque is respect to the tool
-    w_angVel = FRM::saturateVectorEigen(w_angVel, 0.005);
+    w_angVel = FRM::saturateVectorEigen(w_angVel, 0.0001);
 
     CMAT::RotMatrix wRg_cmat = CONV::matrix_eigen2cmat(wTgoalTool_eigen.topLeftCorner<3,3>());
     //Strap down: Out = e^[wdt^] * gRnewg_0_cmat
     CMAT::RotMatrix wRnewg = wRg_cmat.StrapDown(CONV::matrix_eigen2cmat(w_angVel), dt);
 
     ///debug
-    std::cout << "DEBug:\n torquePegTip:\n" << torquePegTip << "\n w_angVel\n:" << w_angVel << "\n wRnewg:\n";
-    wRnewg.PrintMtx();
-    std::cout << "angleAxis: \n";
-    CMAT::Vect3 vec = CONV::matrix_eigen2cmat(w_angVel);
-    vec.AngleAxis().PrintMtx();
-    std::cout << std::endl;
+//    std::cout << "DEBug:\n torquePegTip:\n" << torquePegTip << "\n w_angVel\n:" << w_angVel << "\n wRnewg:\n";
+//    wRnewg.PrintMtx();
+//    std::cout << "angleAxis: \n";
+//    CMAT::Vect3 vec = CONV::matrix_eigen2cmat(w_angVel);
+//    vec.AngleAxis().PrintMtx();
+//    std::cout << std::endl;
 
     wTgoalTool_eigen.topLeftCorner<3,3>() = CONV::matrix_cmat2eigen(wRnewg);
   }

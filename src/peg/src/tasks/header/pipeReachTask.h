@@ -17,12 +17,12 @@
  *  and the arm (tried fast and it does not work, the two pegs go away a lot)
  */
 enum VehArmType {ONLYVEH, ONLYARM, BOTH};
-
+enum AngLinType {LIN, ANG, LINANGBOTH};
 
 class PipeReachTask : public Task {
 
 public:
-  PipeReachTask(int dimension, bool eqType, std::string robotName, VehArmType vehArmType);
+  PipeReachTask(int dim, bool eqType, std::string robotName, VehArmType vehArmType, AngLinType angLinType = LINANGBOTH);
   int updateMatrices(struct Infos* const robInfo);
 
 private:
@@ -34,5 +34,6 @@ private:
   double gainAng;
 
   VehArmType vehArmType;
+  AngLinType angLinType;
 };
 #endif // PIPEREACHTASK_H

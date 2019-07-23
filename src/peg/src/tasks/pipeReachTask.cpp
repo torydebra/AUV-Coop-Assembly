@@ -1,11 +1,13 @@
 #include "header/pipeReachTask.h"
 
-PipeReachTask::PipeReachTask(int dim, bool eqType, std::string robotName, VehArmType vehArmType)
+PipeReachTask::PipeReachTask(int dim, bool eqType, std::string robotName, VehArmType vehArmType, AngLinType angLinType)
   : Task(dim, eqType, robotName, "PIPE_REACHING_GOAL"){
   //gain = 0.05;
   gainLin = 0.05;
   gainAng = 0.08;
   this->vehArmType = vehArmType;
+  this->angLinType = angLinType;
+
 }
 
 
@@ -47,6 +49,26 @@ void PipeReachTask::setJacobian(Eigen::Matrix<double, 6, TOT_DOF> w_J_robot){
   else if (dimension == 5){
     CMAT::Matrix J_temp = CONV::matrix_eigen2cmat(w_J_robot);
     J = J_temp.DeleteRow(4);
+  } else if (dimension == 3){
+    switch (angLinType){
+    case LIN:
+    {
+      J = CONV::matrix_eigen2cmat(w_J_robot.topRows<3>());
+      break;
+    }
+    case ANG:
+    {
+      J = CONV::matrix_eigen2cmat(w_J_robot.bottomRows<3>());
+      break;
+    }
+    default:
+    {
+      std::cerr << "ERROR: dimension 3 and not lin ang specified\n";
+      exit(-1);
+    }
+
+    }
+
   }
 
 }
@@ -103,7 +125,7 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
     vect2_ang(1) = this->gainAng * errorSwapped(2);
     vect2_ang(2) = this->gainAng * errorSwapped(3);
 
-    vect3_lin = FRM::saturateCmat(vect3_lin, 0.3);
+    vect3_lin = FRM::saturateCmat(vect3_lin, 0.1);
     vect2_ang = FRM::saturateCmat(vect2_ang, 0.1);
 
     this->reference(1) = vect3_lin(1);
@@ -111,6 +133,50 @@ void PipeReachTask::setReference(Eigen::Matrix4d wTgoaltool_eigen, Eigen::Matrix
     this->reference(3) = vect3_lin(3);
     this->reference(4) = vect2_ang(1);
     this->reference(5) = vect2_ang(2);
+
+  } else if (dimension == 3){
+    switch (angLinType){
+    case LIN:
+    {
+      error(1)= errorSwapped(4);
+      error(2)= errorSwapped(5);
+      error(3)= errorSwapped(6);
+
+      CMAT::Vect3 vect3_lin;
+      vect3_lin = (this->gainLin * errorSwapped.GetSecondVect3());
+
+      vect3_lin = FRM::saturateCmat(vect3_lin, 0.1); //0.1 before
+
+      this->reference(1) = vect3_lin(1);
+      this->reference(2) = vect3_lin(2);
+      this->reference(3) = vect3_lin(3);
+
+      break;
+    }
+    case ANG:
+    {
+      error(1)= errorSwapped(1);
+      error(2)= errorSwapped(2);
+      error(3)= errorSwapped(3);
+
+      CMAT::Vect3 vect3_ang;
+      vect3_ang= (this->gainAng * errorSwapped.GetFirstVect3());
+
+      vect3_ang = FRM::saturateCmat(vect3_ang, 0.1);
+
+      this->reference(1) = vect3_ang(1);
+      this->reference(2) = vect3_ang(2);
+      this->reference(3) = vect3_ang(3);
+
+      break;
+    }
+    default:
+    {
+      std::cerr << "ERROR: dimension 3 and not lin ang specified\n";
+      exit(-1);
+    }
+
+    }
   }
 
 }

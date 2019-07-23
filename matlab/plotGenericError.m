@@ -25,7 +25,7 @@ tq = title("Cartesian Error");
 
 leg = legend('$x$','$y$', '$z$', '$roll$', '$pitch$', '$yaw$');
 set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
-set(ylab, 'Interpreter', 'none', 'FontSize' , ylabFontSize);
+set(ylab, 'Interpreter', 'latex', 'FontSize' , ylabFontSize);
 
 set (tq, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
 hold off

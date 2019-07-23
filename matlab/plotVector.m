@@ -26,6 +26,6 @@ leg = legend('x','y', 'z');
 ylab = ylabel(' vector [?]');
 tq = title(strcat(robotName, " "  ,vecName));
 set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
-set (tq, 'Interpreter', 'none', 'FontSize' , titleFontSize);
-set (ylab, 'Interpreter', 'none', 'FontSize', ylabFontSize);
+set (tq, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
+set (ylab, 'Interpreter', 'latex', 'FontSize', ylabFontSize);
 hold off

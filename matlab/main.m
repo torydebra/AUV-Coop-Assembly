@@ -1,9 +1,9 @@
 clearvars;
 
- rootPath = '~/logPeg/goalTorquenew25/';
+rootPath = '~/logPegBella/all/';
 robotNameA = 'g500_A';
 robotNameB = 'g500_B';
- coordName = 'Coordinator/';
+coordName = 'Coordinator/';
 
 %millisecond indicated in missionManager
 global sControlLoop

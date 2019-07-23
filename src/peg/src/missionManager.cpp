@@ -75,11 +75,11 @@ int main(int argc, char **argv)
 
   /// GOAL TOOL
   //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
-  double goalLinearVectTool[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
-  //double goalLinearVectTool[] = {0.9799999999999999, -9.999999999999998, 8.378840300977453}; //with error
+  //double goalLinearVectTool[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
+  double goalLinearVectTool[] =   {0.9999999999999999, -9.999999999999998, 8.378840300977453}; //with error
 
   std::vector<double> eulRadTrue = {0, 0, -1.443185307179587}; //true angular
-  std::vector<double> eulRad = {0, 0.0, -1.543185307179587}; //with error on z: 0.1rad ~ 6deg
+  std::vector<double> eulRad = {0, 0.0, -1.443185307179587}; //with error on z: 0.1rad ~ 6deg
   Eigen::Matrix4d wTgoalTool_eigen = Eigen::Matrix4d::Identity();
 
    //rot part
@@ -204,11 +204,7 @@ int main(int argc, char **argv)
   setTaskLists(robotName, &tasksTPIK1, &tasksCoop, &tasksArmVehCoord);
 
 
-  /// VEctors for control and adding disturbances
-  std::vector<double> deltayDot(ARM_DOF);
-  std::vector<double> deltayDotVeh(VEHICLE_DOF);
-  std::vector<double> deltayDotTot(TOT_DOF);
-  std::vector<double> yDotFinalWithCollision(TOT_DOF);
+
 /** ***************************************************************************************************************
                                LOGGING
 ********************************************************************************************************************/
@@ -302,6 +298,7 @@ int main(int argc, char **argv)
     robInfo.transforms.wTt_eigen = robInfo.robotState.wTv_eigen *
         robInfo.robotState.vTee_eigen * robInfo.robotStruct.eeTtoolTip;
 
+
     kdlHelper.getJacobianEE(robInfo.robotState.jState, &(robInfo.robotState.link0_Jee_man));
     computeWholeJacobianEE(&robInfo);
 
@@ -317,9 +314,9 @@ int main(int argc, char **argv)
       if (coordInterface.getUpdatedGoal(&(robInfo.transforms.wTgoalTool_eigen)) == 0) {
 
         ///DEBUGG
-        std::cout << "Goal modified:\n";
-        std::cout << robInfo.transforms.wTgoalTool_eigen;
-        std::cout << "\n\n";
+        //std::cout << "Goal modified:\n";
+        //std::cout << robInfo.transforms.wTgoalTool_eigen;
+        //std::cout << "\n\n";
       }
     }
 
@@ -364,42 +361,28 @@ int main(int argc, char **argv)
     }
 
     /** **********   add COLLISION PROPAGATOR  **************************++*****************/
+    /// VEctors for control and adding disturbances
+    std::vector<double> deltayDotTot(TOT_DOF); //per log purpose
+    std::vector<double> yDotFinalWithCollision(TOT_DOF);
     yDotFinalWithCollision = yDotFinal;
     if (COLLISION_PROPAGATOR){ //if active, calculate and modify joint command accordingly
       if (robotName.compare("g500_A") == 0){
 
         if (robInfo.robotSensor.forcePegTip.norm() > 0 ||
             robInfo.robotSensor.torquePegTip.norm() > 0){
-          //only forces
-  //              deltayDot = CollisionPropagator::calculateCollisionDisturb(
-  //                    robInfo.robotState.w_Jtool_robot.leftCols<4>(), robInfo.transforms.wTt_eigen,
-  //                    robInfo.robotSensor.forcePegTip);
 
-          //forces and torques
-
-          deltayDot = CollisionPropagator::calculateCollisionDisturb(
-                robInfo.robotState.w_Jtool_robot.leftCols<4>(), robInfo.transforms.wTt_eigen,
-                robInfo.robotSensor.forcePegTip, robInfo.robotSensor.torquePegTip);
-
+          deltayDotTot = CollisionPropagator::calculateCollisionDisturbArmVeh(robInfo.robotState.w_Jtool_robot,
+               robInfo.transforms.wTt_eigen, robInfo.robotSensor.forcePegTip, robInfo.robotSensor.torquePegTip);
 
           for (int i=0; i<ARM_DOF; i++){
-            yDotFinalWithCollision.at(i) += (0.0001 * deltayDot.at(i)); //add disturbs to command
-            deltayDotTot.at(i)= 0.00001*deltayDot.at(i);
-
-            //yDotFinalWithCollision.at(i) = deltayDot.at(i); //reset command and only move arm for disturb
-            // but if I reset the force task become useless
+            deltayDotTot.at(i) *= 0.00005; // tori keep this it is needed for logs
+            yDotFinalWithCollision.at(i) += deltayDotTot.at(i); //add disturbs to command
           }
 
-          deltayDotVeh = CollisionPropagator::calculateCollisionDisturbVeh(
-                robInfo.robotState.w_Jtool_robot.rightCols<6>(), robInfo.transforms.wTt_eigen,
-                robInfo.robotSensor.forcePegTip, robInfo.robotSensor.torquePegTip);
-
-          for (int i=ARM_DOF; i<TOT_DOF; i++){
-            yDotFinalWithCollision.at(i) += (0.0001 * deltayDotVeh.at(i-ARM_DOF));
-            deltayDotTot.at(i)= 0.0001 * deltayDotVeh.at(i-ARM_DOF);
-
+          for (int i=ARM_DOF; i<TOT_DOF; i++){ //vehicle
+            deltayDotTot.at(i) *= 0.0001;
+            yDotFinalWithCollision.at(i) += deltayDotTot.at(i);
           }
-
 
           //debug try: stop vehilce until collision resolved. zeroing vehicle vel both with and withoud collision prop
           //withou collision prop is the task force which resolve the collision
@@ -407,11 +390,11 @@ int main(int argc, char **argv)
           // yDotFinalWithCollision.at(i) = 0;
           //}
           ///DEBUGG
-          std::cout << "collision command:\n";
-          for (auto const& c : deltayDot){
-            std::cout << c << ' ';
-          }
-          std::cout << "\n\n";
+//          std::cout << "collision command:\n";
+//          for (auto const& c : deltayDot){
+//            std::cout << c << ' ';
+//          }
+//          std::cout << "\n\n";
         }
       }
     }
@@ -421,6 +404,8 @@ int main(int argc, char **argv)
     /** ************* FIRM GRASP CONSTRAINER  ****************************++*******/
 
     std::vector<double> yDotFinalWithGrasp = yDotFinalWithCollision;
+    std::vector<double> graspyDot(TOT_DOF);
+
     if (GRASP_CONSTRAINER){
 
       if (robotName.compare("g500_B") == 0){
@@ -431,7 +416,6 @@ int main(int argc, char **argv)
 //            robInfo.robotState.w_Jtool_robot.leftCols<ARM_DOF>(),
 //            robInfo.transforms.otherEE_T_EE);
 
-      std::vector<double> graspyDot(TOT_DOF);
       graspyDot = GraspConstrainer::calculateGraspVelocities_armVeh(
             robInfo.robotState.w_Jtool_robot,
             robInfo.transforms.wTotherPeg,
@@ -467,18 +451,21 @@ int main(int argc, char **argv)
     ///Log things
     if (pathLog.size() != 0){
       logger.logAllForTasks(tasksArmVehCoord);
+      logger.logNumbers(tasksArmVehCoord.at(4)->getJacobian(), "forceJacob");
       //TODO flag LOGGED to not print same thing twice
       //or maybe another list with ALL task only to log here and create folder for log
       //for the moment, yDot are exactly how vehicle and arm are moving
       logger.logNumbers(yDotTPIK1, "yDotTPIK1");
-      logger.logNumbers(yDotFinal, "yDotFinal");
-      logger.logNumbers(yDotFinalWithCollision, "yDotFinalWithCollision");
+      logger.logNumbers(yDotFinal, "yDotFinal"); //after cooperation and arm-veh
+      logger.logNumbers(yDotFinalWithCollision, "yDotFinalWithCollision"); //after collision
       logger.logNumbers(robInfo.robotSensor.forcePegTip, "forces");
       logger.logNumbers(robInfo.robotSensor.torquePegTip, "torques");
-      logger.logNumbers(forceNotSat, "forcesNotSat");
-      logger.logNumbers(torqueNotSat, "torquesNotSat");
+      //logger.logNumbers(forceNotSat, "forcesNotSat");
+      //logger.logNumbers(torqueNotSat, "torquesNotSat");
       logger.logNumbers(robInfo.robotState.w_Jtool_robot *
                         CONV::vector_std2Eigen(deltayDotTot), "toolVel4Collision");
+      logger.logNumbers(robInfo.robotState.w_Jtool_robot *
+                        CONV::vector_std2Eigen(graspyDot), "toolVel4Grasp");
       //logger.logNumbers(admisVelTool_eigen, "JJsharp");
       logger.logNumbers(robInfo.robotState.w_Jtool_robot
                               * CONV::vector_std2Eigen(yDotOnlyVeh), "toolCartVelCoop");
@@ -506,20 +493,20 @@ int main(int argc, char **argv)
 //                 * CONV::vector_std2Eigen(yDotFinal)
 //              << "\n\n";
 
-    std::vector<Task*> tasksDebug = tasksArmVehCoord;
-    for(int i=0; i<tasksDebug.size(); i++){
-      if (tasksDebug[i]->getName().compare("FORCE_INSERTION") == 0){
-        std::cout << "Activation " << tasksDebug[i]->getName() << ": \n";
-        tasksDebug[i]->getActivation().PrintMtx() ;
-        std::cout << "\n";
-        std::cout << "JACOBIAN " << tasksDebug[i]->getName() << ": \n";
-        tasksDebug[i]->getJacobian().PrintMtx();
-        std::cout<< "\n";
-        std::cout << "REFERENCE " << tasksDebug[i]->getName() << ": \n";
-        tasksDebug[i]->getReference().PrintMtx() ;
-        std::cout << "\n";
-      }
-    }
+//    std::vector<Task*> tasksDebug = tasksArmVehCoord;
+//    for(int i=0; i<tasksDebug.size(); i++){
+//      if (tasksDebug[i]->getName().compare("PIPE_REACHING_GOAL") == 0){
+//        std::cout << "Activation " << tasksDebug[i]->getName() << ": \n";
+//        tasksDebug[i]->getActivation().PrintMtx() ;
+//        std::cout << "\n";
+//        std::cout << "JACOBIAN " << tasksDebug[i]->getName() << ": \n";
+//        tasksDebug[i]->getJacobian().PrintMtx();
+//        std::cout<< "\n";
+//        std::cout << "REFERENCE " << tasksDebug[i]->getName() << ": \n";
+//        tasksDebug[i]->getReference().PrintMtx() ;
+//        std::cout << "\n";
+//      }
+//    }
 
     controller.resetAllUpdatedFlags(tasksTPIK1);
     controller.resetAllUpdatedFlags(tasksCoop);
@@ -586,8 +573,10 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   //Task* vehStill = new VehicleNullVelTask(6, eqType, robotName);
 
   ///MISSION TASKS
-  //Task* pr5 = new PipeReachTask(5, eqType, robotName, ONLYVEH);
+  //Task* pr5 = new PipeReachTask(5, eqType, robotName, BOTH);
   Task* pr6 = new PipeReachTask(6, eqType, robotName, BOTH);
+  Task* pr3Lin = new PipeReachTask(3, eqType, robotName, BOTH, LIN);
+  Task* pr3Ang = new PipeReachTask(3, eqType, robotName, BOTH, ANG);
 
   //Task* eer = new EndEffectorReachTask(6, eqType, robotName);
   //Task* vehR = new VehicleReachTask(3, eqType, robotName, ANGULAR);
@@ -605,6 +594,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   //tasks1->push_back(eeAvoid);
   //tasks1->push_back(forceInsert);
   tasks1->push_back(pr6);
+  //tasks1->push_back(pr3Ang);
+  //tasks1->push_back(pr3Lin);
   //TODO discutere diff tra pr6 e pr5... il 5 mette più stress sull obj?
   //tasks1->push_back(vehR);
   //tasks1->push_back(vehYaxis);
@@ -625,6 +616,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksCoord->push_back(ha);
   //tasksCoord->push_back(forceInsert);
   tasksCoord->push_back(pr6);
+  //tasksCoord->push_back(pr3Ang);
+  //tasksCoord->push_back(pr3Lin);
   //tasksCoord->push_back(shape);
   tasksCoord->push_back(last);
 
@@ -634,6 +627,8 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksArmVeh->push_back(ha);
   //tasksArmVeh->push_back(forceInsert);
   tasksArmVeh->push_back(pr6);
+  //tasksArmVeh->push_back(pr3Ang);
+  //tasksArmVeh->push_back(pr3Lin);
   //tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
 
