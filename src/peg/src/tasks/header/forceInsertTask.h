@@ -30,6 +30,7 @@ private:
   void setReference(Eigen::Vector3d force, Eigen::Vector3d torque);
 
   double gainAng;
+  Eigen::Vector3d integralFor;
 };
 
 #endif // FORCEINSERTTASK_H

@@ -53,5 +53,16 @@ enum ControlPoint {ee, tool};
 #define GRASP_CONSTRAINER true //to firm grasp constrain, which bring ee towards the correspondent point of the other robot peg
 
 ///method for the mission
-#define CHANGE_GOAL false //to change the goal accordingly to the force arrives
+#define CHANGE_GOAL true //to change the goal accordingly to the force arrives
+#define VISION_ON false //to say if coordinator must take hole pose from Vision Robot
+//WARNING: with Vision_ON true also the change goal must be active, for how the code is structured
+//deal with vision without change goal is a future ideal "TODO": other method must be added to pass updated goal
+//(from vision) from coordinator to the two robots
+
+//vision thing
+#define DETECT_METHOD 1 //0: init click, 1: find squares, 2: template match
+#define TRACK_METHOD 1 //0: mono cameras, 1:Stereo camera
+#define USE_DEPTH false //use depth or not. It has meaning only if Track method is 1 (stereo)
+
+
 #endif // DEFINES_H

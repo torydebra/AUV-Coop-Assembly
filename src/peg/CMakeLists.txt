@@ -177,7 +177,7 @@ add_library(${PROJECT_NAME}_RobotVisionInterface src/rosInterfaces/robotVisionIn
 add_library(${PROJECT_NAME}_WorldInterface src/rosInterfaces/worldInterface.cpp)
 add_library(${PROJECT_NAME}_CoordInterfaceMissMan src/rosInterfaces/coordInterfaceMissMan.cpp)
 add_library(${PROJECT_NAME}_CoordInterfaceCoord src/rosInterfaces/coordInterfaceCoord.cpp)
-add_library(${PROJECT_NAME}_VisionInterfaceMissMan src/rosInterfaces/visionInterfaceMissMan.cpp)
+add_library(${PROJECT_NAME}_VisionInterfaceCoord src/rosInterfaces/visionInterfaceCoord.cpp)
 add_library(${PROJECT_NAME}_VisionInterfaceVision src/rosInterfaces/visionInterfaceVision.cpp)
 
 add_library(${PROJECT_NAME}_KdlHelper src/helper/kdlHelper.cpp)
@@ -262,6 +262,7 @@ target_link_libraries(${PROJECT_NAME}_Coordinator
     ${catkin_LIBRARIES}
     ${PROJECT_NAME}_WorldInterface
     ${PROJECT_NAME}_CoordInterfaceCoord
+    ${PROJECT_NAME}_VisionInterfaceCoord
     linuxcmat
     ${PROJECT_NAME}_Formulas
     ${PROJECT_NAME}_Conversions
@@ -273,7 +274,6 @@ target_link_libraries(${PROJECT_NAME}_MissionManagerA
     ${PROJECT_NAME}_RobotInterface
     ${PROJECT_NAME}_WorldInterface
     ${PROJECT_NAME}_CoordInterfaceMissMan
-    ${PROJECT_NAME}_VisionInterfaceMissMan
     ${PROJECT_NAME}_Logger
     ${PROJECT_NAME}_Controller
     ${PROJECT_NAME}_Formulas
@@ -303,7 +303,6 @@ target_link_libraries(${PROJECT_NAME}_MissionManagerAPeg
     ${PROJECT_NAME}_RobotInterface
     ${PROJECT_NAME}_WorldInterface
     ${PROJECT_NAME}_CoordInterfaceMissMan
-    ${PROJECT_NAME}_VisionInterfaceMissMan
     ${PROJECT_NAME}_Logger
     ${PROJECT_NAME}_Controller
     ${PROJECT_NAME}_Formulas
@@ -333,7 +332,6 @@ target_link_libraries(${PROJECT_NAME}_MissionManagerB
     ${PROJECT_NAME}_RobotInterface
     ${PROJECT_NAME}_WorldInterface
     ${PROJECT_NAME}_CoordInterfaceMissMan
-    ${PROJECT_NAME}_VisionInterfaceMissMan
     ${PROJECT_NAME}_Logger
     ${PROJECT_NAME}_Controller
     ${PROJECT_NAME}_Formulas
@@ -451,7 +449,7 @@ target_link_libraries(${PROJECT_NAME}_WorldInterface
     tf
 )
 
-target_link_libraries(${PROJECT_NAME}_VisionInterfaceMissMan
+target_link_libraries(${PROJECT_NAME}_VisionInterfaceCoord
     ${PROJECT_NAME}_Conversions
 )
 target_link_libraries(${PROJECT_NAME}_VisionInterfaceVision

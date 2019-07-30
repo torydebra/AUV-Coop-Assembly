@@ -25,6 +25,8 @@ ForceInsertTask::ForceInsertTask(int dim, bool eqType, std::string robotName)
     break;
   }
 
+  integralFor << 0,0,0;
+
 }
 
 int ForceInsertTask::updateMatrices(Infos* const robInfo){
@@ -198,8 +200,9 @@ void ForceInsertTask::setReference(Eigen::Vector3d force, Eigen::Vector3d torque
   }
 
   case 2:{
-    error(1) = - force.norm();
-    reference(1) = gain * error(1);
+    error(1) = - force.norm(); //for old logs, not used anymore?
+    //integralFor = (force * 0.1) + integralFor;
+    reference(1) = gain*(error(1)); // - 0.005 * (integralFor.norm());
     reference(1) = FRM::saturateScalar(reference(1), 0.04);
 
 

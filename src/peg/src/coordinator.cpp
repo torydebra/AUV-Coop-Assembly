@@ -35,7 +35,7 @@ int main(int argc, char **argv){
   /// GOAL TOOL
   //double goalLinearVectTool[] = {-0.27, -0.102, 2.124};
   double goalLinearVectToolTrue[] = {0.9999999999999999, -9.999999999999998, 8.378840300977453};
-  double goalLinearVectTool[] =     {0.9999999999999999, -9.999999999999998, 8.378840300977453}; //with error
+  double goalLinearVectTool[] =   {0.9999999999999999, -9.999999999999998, 8.378840300977453}; //with error
 
   std::vector<double> eulRadTrue = {0, 0, -1.443185307179587}; //true angular
   std::vector<double> eulRad = {0, 0, -1.443185307179587}; //with error on z: 0.1rad ~ 6deg
@@ -87,6 +87,38 @@ int main(int argc, char **argv){
     logger.createDirectoryForNode();
   }
 
+
+  /************   WAIT FOR VISION ROBOT AND TAKE HOLE POSE FROM IT *******************************/
+  if (VISION_ON){ //if active, also change goal must be active
+
+    double msVisio = 100;
+    boost::asio::io_service ioVisio;
+    std::cout << "[COORDINATOR] Wating for Vision Robot giving Hole's Pose...\n";
+
+    VisionInterfaceCoord visionInterface(nh, "COORDINATOR");
+    while (0 != visionInterface.getHoleTransform(&(wTgoalTool_eigen))){
+      boost::asio::deadline_timer loopRater(ioVisio, boost::posix_time::milliseconds(msVisio));
+      ros::spinOnce();
+      loopRater.wait(); //wait for msVisio millisec
+    }
+
+    std::cout <<"[COORDINATOR] arrived wThole: " << wTgoalTool_eigen << "\n";
+
+    // it is overwritten previous wTgoal, but
+    // vision give wThole, the goal is inside of 20 cm of it
+    // note that w_inside is calculated from ideal wRhole
+    wTgoalTool_eigen(0, 3) += w_inside(0);
+    wTgoalTool_eigen(1, 3) += w_inside(1);
+    wTgoalTool_eigen(2, 3) += w_inside(2);
+
+ }
+
+  /************************************************************************************************/
+
+
+
+  /*********************************** MAIN LOOP*****************************************************/
+
   int ms = MS_CONTROL_LOOP;
   boost::asio::io_service io;
 
@@ -95,6 +127,7 @@ int main(int argc, char **argv){
     while(!(readyBothRob)){ //wait until both ready, meanwhile publish false to make no robot start
       boost::asio::deadline_timer loopRater(io, boost::posix_time::milliseconds(ms));
       coordInterface.publishStartBoth(false);
+      coordInterface.publishUpdatedGoal(wTgoalTool_eigen);
 
       readyBothRob = coordInterface.getReadyBothRob();
       ros::spinOnce();

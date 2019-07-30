@@ -10,6 +10,7 @@
 
 #include "../rosInterfaces/header/worldInterface.h"
 #include "../rosInterfaces/header/coordInterfaceCoord.h"
+#include "../rosInterfaces/header/visionInterfaceCoord.h"
 
 #include "../support/header/defines.h"
 #include "../support/header/formulas.h"

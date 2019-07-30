@@ -190,9 +190,7 @@ int main(int argc, char **argv)
   robInfo.transforms.wTt_eigen = robInfo.robotState.wTv_eigen *
       robInfo.robotState.vTee_eigen * robInfo.robotStruct.eeTtoolTip;
 
-
   CoordInterfaceMissMan coordInterface(nh, robotName);
-  VisionInterfaceMissMan visionInterface(nh, robotName);
 
   ///Controller
   Controller controller(robotName);
@@ -233,6 +231,9 @@ int main(int argc, char **argv)
   while(!coordInterface.getStartFromCoord()){
     boost::asio::deadline_timer loopRater(ioinit, boost::posix_time::milliseconds(msinit));
     coordInterface.pubIamReadyOrNot(true);
+    if (coordInterface.getUpdatedGoal(&(robInfo.transforms.wTgoalTool_eigen)) == 0) {
+      std::cout << "[" << robotName << "][MISSION_MANAGER] Arrived goal from coordinator!\n";
+    }
 
     ros::spinOnce();
     loopRater.wait();
@@ -285,11 +286,7 @@ int main(int argc, char **argv)
     //          << robInfo.robotSensor.forcePegTip << "\n"
     //          << robInfo.robotSensor.torquePegTip << "\n\n";
 
-    /// VISION
-    //visionInterface.getHoleTransform(&(robInfo.transforms.wTholeEstimated_eigen));
-    //DEBUG VISION
-    //std::cout <<"ARRIVED wThole" << robInfo.transforms.wTholeEstimated_eigen << "\n\n";
-    //robInfo.transforms.wTgoalTool_eigen = robInfo.transforms.wTholeEstimated_eigen;
+
 
     //get ee pose RESPECT LINK 0
     kdlHelper.getEEpose(robInfo.robotState.jState, &(robInfo.robotState.link0Tee_eigen));
@@ -460,8 +457,6 @@ int main(int argc, char **argv)
       logger.logNumbers(yDotFinalWithCollision, "yDotFinalWithCollision"); //after collision
       logger.logNumbers(robInfo.robotSensor.forcePegTip, "forces");
       logger.logNumbers(robInfo.robotSensor.torquePegTip, "torques");
-      //logger.logNumbers(forceNotSat, "forcesNotSat");
-      //logger.logNumbers(torqueNotSat, "torquesNotSat");
       logger.logNumbers(robInfo.robotState.w_Jtool_robot *
                         CONV::vector_std2Eigen(deltayDotTot), "toolVel4Collision");
       logger.logNumbers(robInfo.robotState.w_Jtool_robot *
@@ -496,8 +491,8 @@ int main(int argc, char **argv)
 //    std::vector<Task*> tasksDebug = tasksArmVehCoord;
 //    for(int i=0; i<tasksDebug.size(); i++){
 //      if (tasksDebug[i]->getName().compare("PIPE_REACHING_GOAL") == 0){
-//        std::cout << "Activation " << tasksDebug[i]->getName() << ": \n";
-//        tasksDebug[i]->getActivation().PrintMtx() ;
+//        std::cout << "ERROR " << tasksDebug[i]->getName() << ": \n";
+//        tasksDebug[i]->getError().PrintMtx() ;
 //        std::cout << "\n";
 //        std::cout << "JACOBIAN " << tasksDebug[i]->getName() << ": \n";
 //        tasksDebug[i]->getJacobian().PrintMtx();
@@ -592,7 +587,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasks1->push_back(jl);
   tasks1->push_back(ha);
   //tasks1->push_back(eeAvoid);
-  //tasks1->push_back(forceInsert);
+  tasks1->push_back(forceInsert);
   tasks1->push_back(pr6);
   //tasks1->push_back(pr3Ang);
   //tasks1->push_back(pr3Lin);
@@ -600,7 +595,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   //tasks1->push_back(vehR);
   //tasks1->push_back(vehYaxis);
   //tasks1->push_back(eer);
-  //tasks1->push_back(shape);
+  tasks1->push_back(shape);
   tasks1->push_back(last);
 
   //TODO ASK al momento fatte così le versioni 6dof di pr e coop sono
@@ -614,22 +609,22 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksCoord->push_back(coopTask6dof);
   tasksCoord->push_back(jl);
   tasksCoord->push_back(ha);
-  //tasksCoord->push_back(forceInsert);
+  tasksCoord->push_back(forceInsert);
   tasksCoord->push_back(pr6);
   //tasksCoord->push_back(pr3Ang);
   //tasksCoord->push_back(pr3Lin);
-  //tasksCoord->push_back(shape);
+  tasksCoord->push_back(shape);
   tasksCoord->push_back(last);
 
   tasksArmVeh->push_back(coopTask6dof);
   tasksArmVeh->push_back(constrainVel);
   tasksArmVeh->push_back(jl);
   tasksArmVeh->push_back(ha);
-  //tasksArmVeh->push_back(forceInsert);
+  tasksArmVeh->push_back(forceInsert);
   tasksArmVeh->push_back(pr6);
   //tasksArmVeh->push_back(pr3Ang);
   //tasksArmVeh->push_back(pr3Lin);
-  //tasksArmVeh->push_back(shape);
+  tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
 
 }

@@ -14,16 +14,25 @@ global sControlLoop
 totSecondPassed = sControlLoop*(nStep-1);
 seconds = 0:sControlLoop:totSecondPassed;
 
+global secInsertion
+
 figure('Renderer', 'painters', 'Position', [0 0 710 550])
 subplot(2,1,1);
 hold on;
 if strcmp(strNorm,'yes')
       plot(seconds, vecnorm(errorsSqueezed(1:3,:))  );
+      %xlim([0,300]);
+     %ylim([0,0.65]);
 else
       plot(seconds, errorsSqueezed(1:3,:));
 end
+%vertical line to show where insertion begin
+plot([secInsertion; secInsertion], [ylim]', '--m');
+text([secInsertion+2], [5.65], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
+%ylim([-5.5,1]);
 hold off;
 xlab1 = xlabel('time [s]');
+
 
 if strcmp(fileName,'realgoal_Tool_error')
     if strcmp(strNorm,'yes')
@@ -47,9 +56,13 @@ subplot(2,1,2);
 hold on;
 if strcmp(strNorm,'yes')
   plot(seconds, vecnorm(errorsSqueezed(4:6,:)));
+  %xlim([0,300]);
 else
   plot(seconds, errorsSqueezed(4:6,:) );
 end
+%vertical line to show where insertion begin
+plot([secInsertion; secInsertion], [ylim]', '--m');
+text([secInsertion+2], [0.038], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
 hold off;
 xlab2 = xlabel('time [s]');
 
@@ -57,6 +70,8 @@ if strcmp(fileName,'realgoal_Tool_error')
     if strcmp(strNorm,'yes')
         ylab2 = ylabel('norm of error [rad]');
         tq2 = title("Norm of Angular error between goal (real) and tool");
+        ylim([0,0.041]);
+
     else
         ylab2 = ylabel('errors [rad]');
         tq2 = title("Angular error between goal (real) and tool");

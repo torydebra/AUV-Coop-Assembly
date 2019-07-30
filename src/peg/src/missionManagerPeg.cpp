@@ -239,7 +239,6 @@ int main(int argc, char **argv)
               << robInfo.robotSensor.forcePegTip << "\n"
               << robInfo.robotSensor.torquePegTip << "\n\n";
     worldInterface.getwPos(&(robInfo.exchangedInfo.otherRobPos), otherRobotName);
-    //visionInterface.getHoleTransform(&(robInfo.transforms.wTholeEstimated_eigen));
 
 
     //get ee pose RESPECT LINK 0
@@ -496,7 +495,7 @@ void setTaskLists(std::string robotName, std::vector<Task*> *tasks1,
   tasksArmVeh->push_back(jl);
   tasksArmVeh->push_back(ha);
   tasksArmVeh->push_back(forceInsert);
-  //tasksArmVeh->push_back(pr6);
+  tasksArmVeh->push_back(pr6);
   //tasksArmVeh->push_back(shape);
   tasksArmVeh->push_back(last);
 

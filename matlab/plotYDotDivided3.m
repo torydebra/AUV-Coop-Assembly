@@ -1,4 +1,4 @@
-function plotYDotDivided(rootPath, robotName, ydotName)
+function plotYDotDivided3(rootPath, robotName, ydotName)
 
 legFontSize = 19;
 titleFontSize = 18;
@@ -26,6 +26,30 @@ global secInsertion
 figure('Renderer', 'painters', 'Position', [0 0 750 990])
 subplot(3,1,1);
 
+subplot(1,2,1)
+hold on;
+for i = 1:4
+    a(:) = yDot(i,1,:);
+    plot(seconds, a);
+end
+plot([secInsertion; secInsertion], [-0.06,0.03]', '--m');
+text([secInsertion+2], [0.024], {'\rightarrow Inside the hole'}, 'Color', 'magenta', 'FontSize',14);
+hold off;
+xlab = xlabel('time [s]');
+leg = legend('$\dot{q}_1$','$\dot{q}_2$', '$\dot{q}_3$', '$\dot{q}_4$');
+ylab = ylabel('Joint velocities [rad/s]');
+if strcmp(robotName, 'g500_A')
+  tq = title('Joint command for Robot A');
+else
+  tq = title('Joint command for Robot B');
+end
+ylim([-0.06,0.03]);
+set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
+set (tq, 'Interpreter', 'latex', 'FontSize' , titleFontSize);
+set (ylab, 'Interpreter', 'latex', 'FontSize', ylabFontSize);
+set (xlab, 'Interpreter', 'latex', 'FontSize', xlabFontSize);
+
+subplot(1,2,2)
 hold on;
 for i = 1:4
     a(:) = yDot(i,1,:);

@@ -87,11 +87,6 @@ int main(int argc, char** argv){
                                   INIT VISION
 *******************************************************************************************************************/
 
-  bool stereo = true;
-  bool initByClick = false;
-  bool useDepth = false;
-
-
   /// Initial images
   vpImage<unsigned char> imageL_vp, imageR_vp, imageRangeR_vp;
   cv::Mat imageL_cv, imageR_cv, imageRangeR_cv;
@@ -106,7 +101,7 @@ int main(int argc, char** argv){
 
   //DEPTH camera
   pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud(new pcl::PointCloud<pcl::PointXYZ>());
-  if (useDepth){
+  if (USE_DEPTH){
 
     robotVisInterface.getRangeRightImage(&imageRangeR_cv);
     imageRangeR_cv.convertTo(imageRangeR_cv, CV_16UC1);
@@ -135,7 +130,7 @@ int main(int argc, char** argv){
   display_left.init(imageL_vp, 100, 100, "Model-based tracker (Left)");
   display_right.init(imageR_vp, 110 + (int)imageL_vp.getWidth(), 100,
                      "Model-based tracker (Right)");
-  if (useDepth){
+  if (USE_DEPTH){
     display_rangeRight.init(imageRangeR_vp, 120+(int)imageL_vp.getWidth()+(int)imageR_vp.getWidth(),
                             100, "Model-based tracker (Range Right)");
     vpDisplay::display(imageRangeR_vp);
@@ -145,10 +140,10 @@ int main(int argc, char** argv){
   /// CREATE TRACKERS
   std::vector<std::string> cameraNames(2); //for config files
   cameraNames.at(0) = "left";
-  if (!useDepth){
-    cameraNames.at(1) = "right";
-  } else {
+  if (USE_DEPTH){
     cameraNames.at(1) = "rangeRight";
+  } else {
+    cameraNames.at(1) = "right";
   }
 
   MonoTracker* monoTrackerL;
@@ -158,7 +153,7 @@ int main(int argc, char** argv){
   // note: here it must be putted the transf from RIGTH to LEFT and not viceversa
   mapCameraTransf[cameraNames.at(0)] = vpHomogeneousMatrix();  //identity
 
-  if (!useDepth){
+  if (!USE_DEPTH){
     mapCameraTransf[cameraNames.at(1)] =
       CONV::transfMatrix_eigen2visp(robVisInfo.robotStruct.cRTcL);
   } else {
@@ -168,7 +163,7 @@ int main(int argc, char** argv){
 
   std::map<std::string, const vpImage<unsigned char> *> mapOfImages;
   mapOfImages[cameraNames.at(0)] = &imageL_vp;
-  if (!useDepth){
+  if (!USE_DEPTH){
     mapOfImages[cameraNames.at(1)] = &imageR_vp;
   } else {
     mapOfImages[cameraNames.at(1)] = &imageRangeR_vp;
@@ -179,99 +174,119 @@ int main(int argc, char** argv){
   mapOfcameraToObj[cameraNames.at(0)] = vpHomogeneousMatrix();
   mapOfcameraToObj[cameraNames.at(1)] = vpHomogeneousMatrix();
 
-  if (stereo==false){/// Mono
+  if (TRACK_METHOD == 0){  /// Mono
     monoTrackerL = new MonoTracker(robotName, cameraNames.at(0),
                      vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
     monoTrackerR = new MonoTracker(robotName, cameraNames.at(1),
                      vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
-  } else {/// Stereo
+  } else if (TRACK_METHOD == 1) {/// Stereo
     std::vector<int> trackerTypes;
     trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
-    if (!useDepth){
+    if (!USE_DEPTH){
       trackerTypes.push_back(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
     } else {
       trackerTypes.push_back(vpMbGenericTracker::DEPTH_DENSE_TRACKER);
     }
 
     stereoTracker = new StereoTracker(robotName, cameraNames, mapCameraTransf, trackerTypes);
+  } else {
+    std::cerr << "[" << robotName << "][MISSION_MANAGER] NOT RECOGNIZED METHOD " << TRACK_METHOD <<
+              " for tracking Phase"<< std::endl;
+    return -1;
   }
 
   /// START DETECTION
 
   std::vector<std::vector<cv::Point>> found4CornersVectorL, found4CornersVectorR; //used if initclick false
-  if (initByClick){
-    if (stereo == false){
+  if (DETECT_METHOD == 0){ //init by click method
+    if (TRACK_METHOD == 0){ //mono
       monoTrackerL->initTrackingByClick(&imageL_vp);
       monoTrackerR->initTrackingByClick(&imageR_vp);
-    } else {
+
+    } else { //stereo (depth or not depth here is the same
       stereoTracker->initTrackingByClick(mapOfImages);
     }
 
 
   } else { //find point without click //TODO, parla anche di altri metodi provati
 
-    if (useDepth){
-      /// FIND SQUARE METHOD
-//      Detector::findSquare(imageL_cv, &found4CornersVectorL);
-//      Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
+    if (USE_DEPTH){
+      if (DETECT_METHOD == 1){       /// FIND SQUARE METHOD
+        Detector::findSquare(imageL_cv, &found4CornersVectorL);
+        Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
 
-      /// TEMPLATE MATCH METHOD
+      } else if (DETECT_METHOD == 2){       /// TEMPLATE MATCH METHOD
           cv::Mat templL1 = cv::imread(sourcePath + templName);
           found4CornersVectorL.resize(1);
           Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL.at(0)));
+
+      } else {
+        std::cerr << "[" << robotName << "][MISSION_MANAGER] NOT RECOGNIZED METHOD " << DETECT_METHOD <<
+                  " for detection Phase"<< std::endl;
+        return -1;
+
+      }
 
       append2Dto3Dfile(found4CornersVectorL.at(0), sourcePath);
 
     } else {  // no depth use
 
-    /// FIND SQUARE METHOD
-      // https://docs.opencv.org/3.4/db/d00/samples_2cpp_2squares_8cpp-example.html#a20
-//    Detector::findSquare(imageL_cv, &found4CornersVectorL);
-//    Detector::findSquare(imageR_cv, &found4CornersVectorR);
-//    Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
-//    Detector::drawSquares(imageR_cv, found4CornersVectorR, "right");
+      if (DETECT_METHOD == 1){       /// FIND SQUARE METHOD
+        //https://docs.opencv.org/3.4/db/d00/samples_2cpp_2squares_8cpp-example.html#a20
+        Detector::findSquare(imageL_cv, &found4CornersVectorL);
+        Detector::findSquare(imageR_cv, &found4CornersVectorR);
+        Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
+        Detector::drawSquares(imageR_cv, found4CornersVectorR, "right");
 
-    /// TEMPLATE MATCHING OPENCV
-     // https://docs.opencv.org/3.4.6/de/da9/tutorial_template_matching.html
-    //TODO usare diversi template da diverse angolazioni...
-    // scrivi che template va anche bene però se simoa storti rispetto
-    // al hole non riusciamo a fare un buon contorno perchè la regione visibile
-    // non è un quadrato giusto e non possiamo sapere le dimensioni dei lati
-    // in pixel nella immagine che si vede dalle camere... ci vorrebbe homography
-    // per rectify immagini...
-    //TODO rectify?
-    cv::Mat templL1 = cv::imread(sourcePath + templName);
-    cv::Mat templR1 = cv::imread(sourcePath + templName);
-    found4CornersVectorL.resize(1);
-    found4CornersVectorR.resize(1);
-    Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL.at(0)));
-    Detector::templateMatching(imageR_cv, templR1, &(found4CornersVectorR.at(0)));
+      } else if (DETECT_METHOD == 2){       /// TEMPLATE MATCH METHOD
+
+        // https://docs.opencv.org/3.4.6/de/da9/tutorial_template_matching.html
+        //TODO usare diversi template da diverse angolazioni...
+        // scrivi che template va anche bene però se simoa storti rispetto
+        // al hole non riusciamo a fare un buon contorno perchè la regione visibile
+        // non è un quadrato giusto e non possiamo sapere le dimensioni dei lati
+        // in pixel nella immagine che si vede dalle camere... ci vorrebbe homography
+        // per rectify immagini...
+        //TODO rectify?
+        cv::Mat templL1 = cv::imread(sourcePath + templName);
+        cv::Mat templR1 = cv::imread(sourcePath + templName);
+        found4CornersVectorL.resize(1);
+        found4CornersVectorR.resize(1);
+        Detector::templateMatching(imageL_cv, templL1, &(found4CornersVectorL.at(0)));
+        Detector::templateMatching(imageR_cv, templR1, &(found4CornersVectorR.at(0)));
+
+      } else {
+        std::cerr << "[" << robotName << "][MISSION_MANAGER] NOT RECOGNIZED METHOD " << DETECT_METHOD <<
+                  " for detection Phase"<< std::endl;
+        return -1;
+      }
 
 
-    //TODO  if found4CornersVector contain more than one element, pick the best...
-    if (found4CornersVectorR.size() < 1){
-      std::cout << "[" << robotName << "][MISSION_MANAGER] ERROR: NOT FOUND ANY SQUARE IN RIGHT IMAGE" << std::endl;
-      return -1;
-    }
-    if (found4CornersVectorL.size() < 1){
-      std::cout << "[" << robotName << "][MISSION_MANAGER] ERROR: NOT FOUND ANY SQUARE IN LEFT IMAGE" << std::endl;
-      return -1;
-    }
+      //TODO  if found4CornersVector contain more than one element, pick the best...
+      if (found4CornersVectorR.size() < 1){
+        std::cout << "[" << robotName << "][MISSION_MANAGER] ERROR: NOT FOUND ANY SQUARE IN RIGHT IMAGE" << std::endl;
+        return -1;
+      }
+      if (found4CornersVectorL.size() < 1){
+        std::cout << "[" << robotName << "][MISSION_MANAGER] ERROR: NOT FOUND ANY SQUARE IN LEFT IMAGE" << std::endl;
+        return -1;
+      }
 
-    append2Dto3Dfile(found4CornersVectorL.at(0), found4CornersVectorR.at(0), sourcePath);
+      append2Dto3Dfile(found4CornersVectorL.at(0), found4CornersVectorR.at(0), sourcePath);
     }
 
     /// END DETECTION
 
 
   /// init tracking
-    if (stereo == false){
+    if (TRACK_METHOD == 0){
       monoTrackerL->initTrackingByPoint(&imageL_vp);
       monoTrackerR->initTrackingByPoint(&imageR_vp);
 
-    } else {
+    } else { //stereo, depth or not does not matter for this initiTracking
       stereoTracker->initTrackingByPoint(mapOfImages);
+
     }
   }
 
@@ -282,11 +297,11 @@ int main(int argc, char** argv){
 
   //get camera param for display purpose
   vpCameraParameters cam_left, cam_right;
-  if(stereo == false){
+  if (TRACK_METHOD == 0){
     monoTrackerL->getCameraParams(&cam_left);
     monoTrackerR->getCameraParams(&cam_right);
 
-  } else {
+  } else { //stereo
     std::map<std::string, vpCameraParameters> mapOfCamParams;
     stereoTracker->getCamerasParams(&mapOfCamParams);
     cam_left = mapOfCamParams.at(cameraNames.at(0));
@@ -308,7 +323,7 @@ int main(int argc, char** argv){
     vpDisplay::display(imageL_vp);
     vpDisplay::display(imageR_vp);
 
-    if (useDepth){
+    if (USE_DEPTH){
       robotVisInterface.getRangeRightImage(&imageRangeR_cv);
       imageRangeR_cv.convertTo(imageRangeR_cv, CV_16UC1);
 
@@ -328,7 +343,7 @@ int main(int argc, char** argv){
     }
 
     vpHomogeneousMatrix cLThole, cRThole;
-    if (stereo == false){/// METHOD 1 MONO CAMERAS
+    if (TRACK_METHOD == 0){/// METHOD 1 MONO CAMERAS
 
       double ransacErrorL = 0.0;
       double elapsedTimeL = 0.0;
@@ -347,7 +362,7 @@ int main(int argc, char** argv){
       //update map of img
       mapOfImages.at(cameraNames.at(0)) = &imageL_vp;
 
-      if (!useDepth){
+      if (!USE_DEPTH){
         mapOfImages.at(cameraNames.at(1)) = &imageR_vp;
         stereoTracker->stereoTrack(mapOfImages, &mapOfcameraToObj);
       } else {
@@ -373,7 +388,7 @@ int main(int argc, char** argv){
 
 
     vpDisplay::displayFrame(imageL_vp, cLThole, cam_left, 0.25, vpColor::none, 2);
-    if (!useDepth){
+    if (!USE_DEPTH){
       vpDisplay::displayFrame(imageR_vp, cRThole, cam_right, 0.25, vpColor::none, 2);
     } else {
       vpDisplay::displayFrame(imageRangeR_vp, cRThole, cam_right, 0.25, vpColor::none, 2);
@@ -401,7 +416,7 @@ int main(int argc, char** argv){
     vpDisplay::displayText(imageL_vp, 30, 10, "A click to exit.", vpColor::red);
     vpDisplay::flush(imageL_vp);
     vpDisplay::flush(imageR_vp);
-    if (useDepth){
+    if (USE_DEPTH){
       vpDisplay::flush(imageRangeR_vp);
     }
     //vpDisplay::getKeyboardEvent(imageL_vp, 'd');
@@ -415,7 +430,7 @@ int main(int argc, char** argv){
       CMAT::TransfMatrix wThole_cmat =
           CONV::matrix_eigen2cmat(robVisInfo.transforms.wTh_eigen);
 
-      if (stereo == false){
+      if (TRACK_METHOD == 0){
 
         logger.logCartError(robVisInfo.transforms.wTh_eigen,
                                wTh_estimated_left, "errorMonoL");
@@ -438,7 +453,7 @@ int main(int argc, char** argv){
   }
 
 
-  if (stereo == false){
+  if (TRACK_METHOD == 0){
     delete monoTrackerL;
     delete monoTrackerR;
   } else {

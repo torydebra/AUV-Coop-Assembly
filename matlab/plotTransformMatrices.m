@@ -1,7 +1,5 @@
 function plotTransformMatrices(rootPath, coordName)
 
-holeDim = 0.14;
-
 legFontSize = 19;
 titleFontSize = 18;
 ylabFontSize = 17;
@@ -28,6 +26,8 @@ global sControlLoop
 totSecondPassed = sControlLoop*(nStep-1);
 seconds = 0:sControlLoop:totSecondPassed;
 
+global secInsertion
+
 toolLin = wTt(1:3, 4, :);
 toolLinSqueezed = squeeze(toolLin(1:3,:,:));
 toolAng = zeros(3, nStep);
@@ -49,21 +49,27 @@ subplot(2,3,1);
 plot(seconds, toolLinSqueezed(1,:));
 hold on;
 plot(seconds, goalLinSqueezed(1,:));
-hold on;
 plot([seconds(1), seconds(end)], [wLinGReal(1), wLinGReal(1)]);
+%vertical line to show where insertion begin
+plot([secInsertion; secInsertion], [ylim]', '--m');
+text([secInsertion+2], [1.07], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
 hold off;
 xlab1 = xlabel('time [s]');
 ylab1 = ylabel('Vectors (X) [m]');
 tq1 = title("X Position of tool, goal and goalReal");
 leg1 = legend('$x_{tool}$', '$x_{goal}$', '$x_{goalReal}$');
 
+
 %% plot y lin
 subplot(2,3,2);
 plot(seconds, toolLinSqueezed(2,:));
 hold on;
 plot(seconds, goalLinSqueezed(2,:));
-hold on;
 plot([seconds(1), seconds(end)], [wLinGReal(2), wLinGReal(2)]);
+plot([secInsertion; secInsertion], [ylim]', '--k');
+%vertical line to show where insertion begin
+plot([secInsertion; secInsertion], [ylim]', '--m');
+text([secInsertion+2], [-5.32], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
 hold off;
 xlab2 = xlabel('time [s]');
 ylab2 = ylabel('Vectors (Y) [m]');
@@ -75,8 +81,10 @@ subplot(2,3,3);
 plot(seconds, toolLinSqueezed(3,:));
 hold on;
 plot(seconds, goalLinSqueezed(3,:));
-hold on;
 plot([seconds(1), seconds(end)], [wLinGReal(3), wLinGReal(3)]);
+%vertical line to show where insertion begin
+plot([secInsertion; secInsertion], [ylim]', '--m');
+text([secInsertion+2], [8.465], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
 hold off;
 xlab3 = xlabel('time [s]');
 ylab3 = ylabel('Vectors (Z) [m]');
@@ -88,8 +96,10 @@ subplot(2, 3, 4);
 plot(seconds, toolAng(1,:));
 hold on
 plot(seconds, goalAng(1,:));
-hold on
 plot([seconds(1), seconds(end)], [wAngGReal(1), wAngGReal(1)]);
+%vertical line to show where insertion begin
+plot([secInsertion; secInsertion], [ylim]', '--m');
+text([secInsertion+2], [0.0003], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
 hold off;
 xlab4 = xlabel('time [s]');
 ylab4 = ylabel('Vectors (roll) [rad]');
@@ -101,8 +111,10 @@ subplot(2, 3, 5);
 plot(seconds, toolAng(2,:));
 hold on
 plot(seconds, goalAng(2,:));
-hold on
 plot([seconds(1), seconds(end)], [wAngGReal(2), wAngGReal(2)]);
+%vertical line to show where insertion begin
+plot([secInsertion; secInsertion], [ylim]', '--m');
+text([secInsertion+2], [0.00012], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
 hold off;
 xlab5 = xlabel('time [s]');
 ylab5 = ylabel('Vectors (pitch) [rad]');
@@ -114,9 +126,12 @@ subplot(2, 3, 6);
 plot(seconds, toolAng(3,:));
 hold on
 plot(seconds, goalAng(3,:));
-hold on
 plot([seconds(1), seconds(end)], [wAngGReal(3), wAngGReal(3)]);
+%vertical line to show where insertion begin
+plot([secInsertion; secInsertion], [ylim]', '--m');
+text(secInsertion+2, -1.4475, '\rightarrow Inside the hole', 'Color','magenta', 'FontSize',14);
 hold off;
+ylim([-1.48, -1.44]);
 xlab6 = xlabel('time [s]');
 ylab6 = ylabel('Vectors (yaw) [rad]');
 tq6 = title("Yaw of tool, goal and goalReal");
