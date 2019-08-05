@@ -127,9 +127,8 @@ int main(int argc, char** argv){
   display_left.setDownScalingFactor(vpDisplay::SCALE_AUTO);
   display_right.setDownScalingFactor(vpDisplay::SCALE_AUTO);
   display_rangeRight.setDownScalingFactor(vpDisplay::SCALE_AUTO);
-  display_left.init(imageL_vp, 100, 100, "Model-based tracker (Left)");
-  display_right.init(imageR_vp, 110 + (int)imageL_vp.getWidth(), 100,
-                     "Model-based tracker (Right)");
+  display_left.init(imageL_vp, 70, 750, "Model-based tracker (Left)");
+  display_right.init(imageR_vp, 440, 750, "Model-based tracker (Right)");
   if (USE_DEPTH){
     display_rangeRight.init(imageRangeR_vp, 120+(int)imageL_vp.getWidth()+(int)imageR_vp.getWidth(),
                             100, "Model-based tracker (Range Right)");
@@ -236,8 +235,16 @@ int main(int argc, char** argv){
         //https://docs.opencv.org/3.4/db/d00/samples_2cpp_2squares_8cpp-example.html#a20
         Detector::findSquare(imageL_cv, &found4CornersVectorL);
         Detector::findSquare(imageR_cv, &found4CornersVectorR);
-        Detector::drawSquares(imageL_cv, found4CornersVectorL, "left");
-        Detector::drawSquares(imageR_cv, found4CornersVectorR, "right");
+
+        ///show both images, it is for final video
+        cv::imshow("Left Detection", imageL_cv);
+        cv::moveWindow("Left Detection", 60,80);
+        cv::imshow("Right Detection", imageR_cv);
+        cv::moveWindow("Right Detection", 430,80);
+        cv::waitKey(0);
+
+        Detector::drawSquares(imageL_cv, found4CornersVectorL, "Left Detection");
+        Detector::drawSquares(imageR_cv, found4CornersVectorR, "Right Detection");
 
       } else if (DETECT_METHOD == 2){       /// TEMPLATE MATCH METHOD
 

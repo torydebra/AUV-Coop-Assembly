@@ -146,7 +146,7 @@ int main(int argc, char **argv){
       if (CHANGE_GOAL){ //if active, calculate and modify joint command accordingly
 
         coordInterface.getForceTorque(&forcePegTip, &torquePegTip);
-        std::cout << "force:\n" << forcePegTip << "\n torques:\n" << torquePegTip << "\n";
+        //std::cout << "force:\n" << forcePegTip << "\n torques:\n" << torquePegTip << "\n";
 
         if (forcePegTip.norm() > 0 || torquePegTip.norm() > 0) {
           wTgoalTool_eigen = changeGoalLin(changeMagnitude, forcePegTip, wTgoalTool_eigen);
@@ -193,7 +193,7 @@ int main(int argc, char **argv){
                                           nonCoopCartVelB_eigen, admisVelToolB_eigen,
                                           refTool, &logger);
 
-      std::cout << "Calculated coop vel:\n" << coopVelToolFeasible << "\n\n";
+      std::cout << "Cooperative Tool Velocity\n[x y z  w_x w_y w_z]:\n" << coopVelToolFeasible << "\n";
 
       coordInterface.publishCoopVel(coopVelToolFeasible);
 

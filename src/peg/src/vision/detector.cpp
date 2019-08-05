@@ -56,6 +56,8 @@ void Detector::drawSquares( cv::Mat image, const std::vector<std::vector<cv::Poi
 
   using namespace std;
   using namespace cv;
+
+
   for( size_t i = 0; i < squares.size(); i++ )
     {
         const Point* p = &squares[i][0];

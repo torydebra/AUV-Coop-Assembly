@@ -8,7 +8,6 @@ xlabFontSize = 17;
 fileName = strcat('coopVel.txt');
 xDot = importMatrices(strcat(rootPath, coordName, fileName));
 xDotSqueez = squeeze(xDot);
-nRow = size(xDot, 1);
 nStep = size(xDot, 3);
 
 %millisecond indicated in missionManager
@@ -16,9 +15,17 @@ global sControlLoop
 totSecondPassed = sControlLoop*(nStep-1);
 seconds = 0:sControlLoop:totSecondPassed;
 
+global secInsertion
+
+
 figure('Renderer', 'painters', 'Position', [0 0 710 550])
 subplot(2,1,1)
+hold on;
 plot(seconds, xDotSqueez(1:3,:));
+%vertical line to show where insertion begin
+plot([secInsertion; secInsertion], [-0.1 0.02]', '--m');
+text([secInsertion+2], [0.011], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
+hold off;
 
 xlab = xlabel('time [s]');
 ylab = ylabel('Velocities [m/s]');
@@ -26,7 +33,12 @@ tq = title('Cooperative Tool Linear Velocities');
 leg = legend('$\dot{x}$','$\dot{y}$', '$\dot{z}$'); 
 
 subplot(2,1,2)
+hold on;
 plot(seconds, xDotSqueez(4:6,:));
+%vertical line to show where insertion begin
+plot([secInsertion; secInsertion], [ylim]', '--m');
+text([secInsertion+2], [0.0027], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
+hold off;
 xlab2 = xlabel('time [s]');
 ylab2 = ylabel('Velocities [rad/s]');
 tq2 = title('Cooperative Tool Angular Velocities');

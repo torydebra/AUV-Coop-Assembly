@@ -42,8 +42,8 @@ plot6DVectorDivided(rootPath, robotNameB, 'toolVel4Grasp');
 %% plot coord things 
 %here are plotted velocities of tool, not the final one but the
 %intermidiate that are input and output of the cooperation policy
-plotNonCoopVel(rootPath, coordName, robotNameA);
-plotNonCoopVel(rootPath, coordName, robotNameB);
+%plotNonCoopVel(rootPath, coordName, robotNameA);
+%plotNonCoopVel(rootPath, coordName, robotNameB);
 plotCoopVel(rootPath, coordName); %this is the feasible one
 
 

@@ -54,7 +54,7 @@ enum ControlPoint {ee, tool};
 
 ///method for the mission
 #define CHANGE_GOAL true //to change the goal accordingly to the force arrives
-#define VISION_ON false //to say if coordinator must take hole pose from Vision Robot
+#define VISION_ON true //to say if coordinator must take hole pose from Vision Robot
 //WARNING: with Vision_ON true also the change goal must be active, for how the code is structured
 //deal with vision without change goal is a future ideal "TODO": other method must be added to pass updated goal
 //(from vision) from coordinator to the two robots
