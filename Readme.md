@@ -4,10 +4,11 @@
 [Thesis](https://github.com/torydebra/Master_Thesis_Robotic/blob/master/thesis.pdf)  
 
 
-
-<img src="images/scenario_whole.png" width="700">
-<img src="images/scenario_onlyTwin.png" width="700">
-<img src="images/scenario_onlyTwin2.png" width="700">
+### Screenshots
+<img src="images/1new.png" width="400">
+<img src="images/3.png" width="400">
+<img src="images/7.png" width="400">
+<img src="images/8.png" width="400">
 
 ## Workspace folders (all in development)
 #### src/peg (catkin package)
