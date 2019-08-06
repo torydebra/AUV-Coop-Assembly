@@ -5,10 +5,10 @@
 
 
 ### Screenshots
-<img src="images/1new.png" width="400">
-<img src="images/3.png" width="400">
-<img src="images/7.png" width="400">
-<img src="images/8.png" width="400">
+<p align="center">
+<img src="images/1new.png" width="300" height="210"> <img src="images/3.png" width="300" height="210">
+<img src="images/7.png" width="300" height="210"> <img src="images/8.png" width="300" height="210">
+</p>
 
 ## Workspace folders (all in development)
 #### src/peg (catkin package)
