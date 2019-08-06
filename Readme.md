@@ -10,6 +10,9 @@
 <img src="images/7.png" width="300" height="210"> <img src="images/8.png" width="300" height="210">
 </p>
 
+### Video of the final experiment
+![final-exp-preview](images/videoPreview.png)[final-experiment-video.mp4](https://github.com/torydebra/AUV-Coop-Assembly/raw/master/Video/FinalExp.mp4)
+
 ## Workspace folders (all in development)
 #### src/peg (catkin package)
 The "only kinematic" package, simulated with UWsim.  
