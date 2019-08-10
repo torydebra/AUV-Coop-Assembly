@@ -11,7 +11,10 @@
 </p>
 
 ### Video of the final experiment
-![final-exp-preview](images/videoPreview.png)[final-experiment-video.mp4](https://github.com/torydebra/AUV-Coop-Assembly/raw/master/Video/FinalExp.mp4)
+[GitHub link video](https://github.com/torydebra/AUV-Coop-Assembly/raw/master/Video/FinalExp.mp4)    
+[Streamable link video](https://streamable.com/kvoxq)    
+Same video uploaded twice if one does not work.
+
 
 ## Workspace folders (all in development)
 #### src/peg (catkin package)
