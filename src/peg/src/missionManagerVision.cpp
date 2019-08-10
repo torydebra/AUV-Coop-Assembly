@@ -149,9 +149,9 @@ int main(int argc, char** argv){
   MonoTracker* monoTrackerR;
   StereoTracker* stereoTracker;
   std::map<std::string, vpHomogeneousMatrix> mapCameraTransf;
-  // note: here it must be putted the transf from RIGTH to LEFT and not viceversa
   mapCameraTransf[cameraNames.at(0)] = vpHomogeneousMatrix();  //identity
 
+  // note: here it must be putted the transf from RIGTH to LEFT and not viceversa
   if (!USE_DEPTH){
     mapCameraTransf[cameraNames.at(1)] =
       CONV::transfMatrix_eigen2visp(robVisInfo.robotStruct.cRTcL);
@@ -554,12 +554,3 @@ void append2Dto3Dfile(std::vector<cv::Point> found4CornersL, std::string sourceP
 
   return;
 }
-
-
-
-/**
-  Axis in the model are:
-  x going out of the plane
-  y pointing on the right
-  z go up in the plane
-  */
