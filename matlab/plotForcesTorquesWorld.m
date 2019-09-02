@@ -27,7 +27,7 @@ seconds = 0:sControlLoop:totSecondPassed;
 
 global secInsertion
 
-% plot joint commands
+% plot force
 figure('Renderer', 'painters', 'Position', [0 0 710 550])
 subplot(2,1,1)
 hold on;
@@ -35,31 +35,32 @@ if strcmp(strNorm, 'yes')
   plot(seconds, vecnorm(w_vecFor));
   ylab = ylabel('norm of force [N]');
   tq = title("Norm of force vector projected in world");
-  %xlim([0,250]);
-  %ylim([0,15]);
+  xlim([0,180]);
+  ylim([0,2]);
 else
   plot(seconds, w_vecFor);
   leg = legend('x','y', 'z');
   ylab = ylabel('forces [N]');
   tq = title(strcat("forces projected in world"));
   set(leg, 'Interpreter', 'latex', 'FontSize' , legFontSize);
-  %xlim([0,170]);
+  xlim([0,200]);
 end
+grid on;
 xlab = xlabel('time [s]');
-plot([secInsertion; secInsertion], [ylim]', '--m');
-text([secInsertion+2], [1.85], {'\rightarrow Inside the hole'}, 'Color', 'magenta', 'FontSize',14);
+plot([secInsertion; secInsertion], [0,15], '--m');
+text([secInsertion+2], [14], {'\rightarrow Inside the hole'}, 'Color', 'magenta', 'FontSize',14);
 hold off
 
 
-
+%% torque
 subplot(2,1,2)
 hold on;
 if strcmp(strNorm, 'yes')
   plot(seconds, vecnorm(w_vecTor));
   ylab2 = ylabel('norm of torque [N*m]');
   tq2 = title('Norm of torque vector projected in world');
-    %xlim([0,250]);
-      %ylim([0,20]);
+  xlim([0,180]);
+  ylim([0,0.4]);
       
 else
   plot(seconds, w_vecTor);
@@ -70,10 +71,11 @@ else
     %xlim([0,170]);
 
 end
+grid on;
 xlab2 = xlabel('time [s]');
 
 plot([secInsertion; secInsertion], [ylim]', '--m');
-text([secInsertion+2], [0.28], {'\rightarrow Inside the hole'}, 'Color', 'magenta', 'FontSize',14);
+text([secInsertion+2], [18.7], {'\rightarrow Inside the hole'}, 'Color', 'magenta', 'FontSize',14);
 hold off
 
 set (tq, 'Interpreter', 'latex', 'FontSize' , titleFontSize);

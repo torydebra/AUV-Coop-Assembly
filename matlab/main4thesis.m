@@ -1,6 +1,6 @@
 clearvars;
 
-rootPath = '~/logPegBella/withVision/15/';
+rootPath = 'log/logPegBella/withVision/';
 robotNameA = 'g500_A';
 robotNameB = 'g500_B';
 coordName = 'Coordinator/';
@@ -12,9 +12,10 @@ sControlLoop = 0.1;
 
 %second of insertion phase
 global secInsertion
-secInsertion = 77;
+secInsertion = 77; %withVision exp
+%secInsertion = 23.4; %errorALL exp
 
-%%plot yDot
+%% plot yDot
 %plotYDotDivided(rootPath, robotNameA, 'yDotFinalWithCollision');
 
 %% plot Force Task things
@@ -32,7 +33,7 @@ plotYDotDivided(rootPath, robotNameB, 'yDotFinal'); %after cooperation
 
 
 plotForcesTorquesWorld(rootPath, robotNameA, 'yes');  %yes to plot norm
-plotForcesTorquesWorld(rootPath, robotNameB, 'yes');  %yes to plot norm
+%plotForcesTorquesWorld(rootPath, robotNameB, 'yes');  %yes to plot norm
 
 
 plot6DVectorDivided(rootPath, robotNameA, 'toolVel4Collision');

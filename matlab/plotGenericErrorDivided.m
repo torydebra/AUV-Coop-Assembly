@@ -21,14 +21,15 @@ subplot(2,1,1);
 hold on;
 if strcmp(strNorm,'yes')
       plot(seconds, vecnorm(errorsSqueezed(1:3,:))  );
-      %xlim([0,300]);
-     %ylim([0,0.65]);
+      grid on;
+      xlim([0,10]);
+      ylim([0, 0.03]);
 else
       plot(seconds, errorsSqueezed(1:3,:));
 end
 %vertical line to show where insertion begin
-plot([secInsertion; secInsertion], [ylim]', '--m');
-text([secInsertion+2], [5.65], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
+%plot([secInsertion; secInsertion], [ylim]', '--m');
+%text([secInsertion+2], [5.6], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
 %ylim([-5.5,1]);
 hold off;
 xlab1 = xlabel('time [s]');
@@ -44,6 +45,11 @@ if strcmp(fileName,'realgoal_Tool_error')
         leg1 = legend('$x$','$y$', '$z$');
         set(leg1, 'Interpreter', 'latex', 'FontSize' , legFontSize);
     end
+elseif strcmp(fileName, 'Tracking_error')
+      if strcmp(strNorm,'yes')
+        ylab1 = ylabel('norm [m]');
+        tq1 = title("Norm of Linear error between real pose and estimated one");
+      end
 else
   ylab1 = ylabel('errors [m]');
   tq1 = title("Cartesian Linear Error");
@@ -56,13 +62,15 @@ subplot(2,1,2);
 hold on;
 if strcmp(strNorm,'yes')
   plot(seconds, vecnorm(errorsSqueezed(4:6,:)));
-  %xlim([0,300]);
+  xlim([0,10]);
+  ylim([0, 0.15]);
+  grid on;
 else
   plot(seconds, errorsSqueezed(4:6,:) );
 end
 %vertical line to show where insertion begin
-plot([secInsertion; secInsertion], [ylim]', '--m');
-text([secInsertion+2], [0.038], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
+%plot([secInsertion; secInsertion], [ylim]', '--m');
+%text([secInsertion+2], [0.037], {'\rightarrow Inside the hole'}, 'Color','magenta', 'FontSize',14);
 hold off;
 xlab2 = xlabel('time [s]');
 
@@ -70,7 +78,7 @@ if strcmp(fileName,'realgoal_Tool_error')
     if strcmp(strNorm,'yes')
         ylab2 = ylabel('norm of error [rad]');
         tq2 = title("Norm of Angular error between goal (real) and tool");
-        ylim([0,0.041]);
+        %ylim([0,0.05]);
 
     else
         ylab2 = ylabel('errors [rad]');
@@ -78,6 +86,11 @@ if strcmp(fileName,'realgoal_Tool_error')
         leg2 = legend('$roll$', '$pitch$', '$yaw$');
         set(leg2, 'Interpreter', 'latex', 'FontSize' , legFontSize);
     end
+ elseif strcmp(fileName, 'Tracking_error')
+      if strcmp(strNorm,'yes')
+        ylab2 = ylabel('norm [rad]');
+        tq2 = title("Norm of Angular error between real pose and estimated one");
+      end
 else
   ylab2 = ylabel('errors [rad]');
   tq2 = title("Cartesian Angular Error");

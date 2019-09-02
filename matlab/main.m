@@ -79,13 +79,12 @@ plotGenericErrorDivided(strcat(rootPath, coordName, "realgoal_Tool_error.txt"));
 
 
 %% Vision
-% pathName ="logVisionGood/templ/mono/g500_C/errorMonoL.txt";
-% %plotGenericErrorDividedNorm(pathName)
-% pathName ="logVisionGood/templ/mono/g500_C/errorMonoR.txt";
-% %plotGenericErrorDividedNorm(pathName)
-% 
-% 
-% pathName ="logVisionGood/templ/stereo/g500_C/errorStereoL.txt";
-% plotGenericErrorDividedNorm(pathName)
-% pathName ="logVisionGood/templ/depth/g500_C/errorStereoL.txt";
-% plotGenericErrorDividedNorm(pathName)
+%pathName ="logVisionGood/templ/mono/g500_C/errorMonoL.txt";
+%plotGenericErrorDividedNorm(pathName)
+%pathName ="logVisionGood/templ/mono/g500_C/errorMonoR.txt";
+%plotGenericErrorDividedNorm(pathName)
+ 
+pathName ="logVisionGood/square/mono/g500_C/errorMonoL.txt";
+plotGenericErrorDivided(pathName, 'Tracking_error', 'yes');
+%pathName ="logVisionGood/templ/depth/g500_C/errorStereoL.txt";
+%plotGenericErrorDividedNorm(pathName)

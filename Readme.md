@@ -1,5 +1,5 @@
 # AUV-Coop-assembly
-### MASTER THESIS Robotics Engineering (In Development)
+### MASTER THESIS Robotics Engineering 30-08-2019
 [Code Documentation](https://torydebra.github.io/AUV-Coop-Assembly/)  
 [Thesis](https://github.com/torydebra/Master_Thesis_Robotic/blob/master/thesis.pdf)  
 
@@ -16,7 +16,7 @@
 Same video uploaded twice if one does not work.
 
 
-## Workspace folders (all in development)
+## Workspace folders
 #### src/peg (catkin package)
 The "only kinematic" package, simulated with UWsim.  
 Folder "toBeAdded_uwsim":
